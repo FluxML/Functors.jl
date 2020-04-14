@@ -1,5 +1,7 @@
 module Functors
 
-greet() = print("Hello World!")
+using MacroTools
+
+include("functor.jl")
 
 end # module
