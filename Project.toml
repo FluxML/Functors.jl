@@ -1,0 +1,13 @@
+name = "Functors"
+uuid = "d9f16b24-f501-4c13-a1f2-28368ffc5196"
+authors = ["Mike J Innes <mike.j.innes@gmail.com>"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
