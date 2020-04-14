@@ -1,14 +1,15 @@
-functor(x) = (), _ -> x
+functor(T, x) = (), _ -> x
+functor(x) = functor(typeof(x), x)
 
-functor(x::Tuple) = x, y -> y
-functor(x::NamedTuple) = x, y -> y
+functor(::Type{<:Tuple}, x) = x, y -> y
+functor(::Type{<:NamedTuple}, x) = x, y -> y
 
-functor(x::AbstractArray) = x, y -> y
-functor(x::AbstractArray{<:Number}) = (), _ -> x
+functor(::Type{<:AbstractArray}, x) = x, y -> y
+functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
   @eval m begin
-    Flux.functor(x::$T) = ($([:($f=x.$f) for f in fs]...),), y -> $T(y...)
+    Flux.functor(::Type{<:$T}, x) = ($([:($f=x.$f) for f in fs]...),), y -> $T(y...)
   end
 end
 
