@@ -26,20 +26,20 @@ end
 isleaf(x) = functor(x)[1] === ()
 
 # for Chain
-function t(f, x::Tuple, dx::Tuple)
+function functor_tuple(f, x::Tuple, dx::Tuple)
   map(x, dx) do x, x̄
     fmap1(f, x, x̄)
   end
 end
-t(f, x, dx) = f(x, dx)
-t(f, x, ::Nothing) = x
+functor_tuple(f, x, dx) = f(x, dx)
+functor_tuple(f, x, ::Nothing) = x
 
 # @functor Chain
 # Chain -> func = (layers = (Dense,Dense),), gs -> (layers...)
 function fmap1(f, x, dx)
   func, re = functor(x)
   map(func, dx) do x, x̄
-    t(f, x, x̄)
+    functor_tuple(f, x, x̄)
   end |> re
 end
 
