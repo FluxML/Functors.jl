@@ -9,7 +9,7 @@ functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
   @eval m begin
-    Flux.functor(::Type{<:$T}, x) = ($([:($f=x.$f) for f in fs]...),), y -> $T(y...)
+    Functors.functor(::Type{<:$T}, x) = ($([:($f=x.$f) for f in fs]...),), y -> $T(y...)
   end
 end
 
@@ -25,6 +25,24 @@ end
 
 isleaf(x) = functor(x)[1] === ()
 
+# for Chain
+function t(f, x::Tuple, dx::Tuple)
+  map(x, dx) do x, x̄
+    fmap1(f, x, x̄)
+  end
+end
+t(f, x, dx) = f(x, dx)
+t(f, x, ::Nothing) = x
+
+# @functor Chain
+# Chain -> func = (layers = (Dense,Dense),), gs -> (layers...)
+function fmap1(f, x, dx)
+  func, re = functor(x)
+  map(func, dx) do x, x̄
+    t(f, x, x̄)
+  end |> re
+end
+
 function fmap1(f, x)
   func, re = functor(x)
   re(map(f, func))
@@ -33,4 +51,9 @@ end
 function fmap(f, x; cache = IdDict())
   haskey(cache, x) && return cache[x]
   cache[x] = isleaf(x) ? f(x) : fmap1(x -> fmap(f, x, cache = cache), x)
+end
+
+function fmap(f, x, dx; cache = IdDict())
+  haskey(cache, x) && return cache[x]
+  cache[x] = isleaf(x) ? f(x, dx) : fmap1((x...) -> fmap(f, x..., cache = cache), x, dx)
 end
