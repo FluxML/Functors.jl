@@ -9,7 +9,7 @@ functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
   @eval m begin
-    Flux.functor(::Type{<:$T}, x) = ($([:($f=x.$f) for f in fs]...),), y -> $T(y...)
+    $Functors.functor(::Type{<:$T}, x) = ($([:($f=x.$f) for f in fs]...),), y -> $T(y...)
   end
 end
 
