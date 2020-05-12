@@ -30,6 +30,8 @@ function fmap1(f, x)
   re(map(f, func))
 end
 
+# See https://github.com/FluxML/Functors.jl/issues/2 for a discussion regarding the need for
+# cache.
 function fmap(f, x; cache = IdDict())
   haskey(cache, x) && return cache[x]
   cache[x] = isleaf(x) ? f(x) : fmap1(x -> fmap(f, x, cache = cache), x)
