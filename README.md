@@ -48,3 +48,7 @@ Foo(1.0, [1.0, 2.0, 3.0])
 ```
 
 `functor` returns the parts of the object that can be inspected, as well as a `re` function that takes those values and restructures them back into an object of the original type.
+
+For a discussion regarding implementing functors for which only a subset of the fields are "seen" by `functor`, see [here](https://github.com/FluxML/Functors.jl/issues/3#issuecomment-626747663).
+
+For a discussion regarding the need for a `cache` in the implementation of `fmap`, see [here](https://github.com/FluxML/Functors.jl/issues/2).
