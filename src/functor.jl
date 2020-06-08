@@ -9,7 +9,7 @@ functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
   @eval m begin
-    Functors.functor(::Type{<:$T}, x) = ($([:($f=x.$f) for f in fs]...),), y -> $T(y...)
+    $Functors.functor(::Type{<:$T}, x) = ($([:($f=x.$f) for f in fs]...),), y -> $T(y...)
   end
 end
 
@@ -48,6 +48,8 @@ function fmap1(f, x)
   re(map(f, func))
 end
 
+# See https://github.com/FluxML/Functors.jl/issues/2 for a discussion regarding the need for
+# cache.
 function fmap(f, x; cache = IdDict())
   haskey(cache, x) && return cache[x]
   cache[x] = isleaf(x) ? f(x) : fmap1(x -> fmap(f, x, cache = cache), x)

@@ -1,6 +1,7 @@
-using Functors
-using Test
+using Functors, Test
 
 @testset "Functors.jl" begin
-    # Write your own tests here.
+
+include("basics.jl")
+
 end
