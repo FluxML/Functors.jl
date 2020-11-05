@@ -55,7 +55,7 @@ function fmap(f, x; cache = IdDict())
   cache[x] = isleaf(x) ? f(x) : fmap1(x -> fmap(f, x, cache = cache), x)
 end
 
-function fmap(f, x, dx; cache = IdDict())
+function fmap(f, x, dx...; cache = IdDict())
   haskey(cache, x) && return cache[x]
-  cache[x] = isleaf(x) ? f(x, dx) : fmap1((x...) -> fmap(f, x..., cache = cache), x, dx)
+  cache[x] = isleaf(x) ? f(x, dx...) : fmap1((x...) -> fmap(f, x..., cache = cache), x, dx...)
 end
