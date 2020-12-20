@@ -8,8 +8,14 @@ functor(::Type{<:AbstractArray}, x) = x, y -> y
 functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
+  yᵢ = 0
+  escargs = map(fieldnames(T)) do f
+    f in fs ? :(y[$(yᵢ += 1)]) : :(x.$f)
+  end
+  escfs = [:($f=x.$f) for f in fs]
+  
   @eval m begin
-    $Functors.functor(::Type{<:$T}, x) = ($([:($f=x.$f) for f in fs]...),), y -> $T(y...)
+    $Functors.functor(::Type{<:$T}, x) = ($(escfs...),), y -> $T($(escargs...))
   end
 end
 
