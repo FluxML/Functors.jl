@@ -49,6 +49,25 @@ Foo(1.0, [1.0, 2.0, 3.0])
 
 `functor` returns the parts of the object that can be inspected, as well as a `re` function that takes those values and restructures them back into an object of the original type.
 
-For a discussion regarding implementing functors for which only a subset of the fields are "seen" by `functor`, see [here](https://github.com/FluxML/Functors.jl/issues/3#issuecomment-626747663).
+To include only certain fields, pass a tuple of field names to `@functor`:
+
+```julia
+julia> struct Baz
+         x
+         y
+       end
+
+julia> @functor Baz (x,)
+
+julia> model = Baz(1, 2)
+Baz(1, 2)
+
+julia> fmap(float, model)
+Baz(1.0, 2)
+```
+
+Any field not in the list will not be returned by `functor` and passed through as-is during reconstruction. This is done by invoking the default constructor, so structs that define custom inner constructors are expected to provide one that acts like the default.
+
+It is also possible to implement `functor` by hand when greater flexibility is required. See [here](https://github.com/FluxML/Functors.jl/issues/3) for an example.
 
 For a discussion regarding the need for a `cache` in the implementation of `fmap`, see [here](https://github.com/FluxML/Functors.jl/issues/2).
