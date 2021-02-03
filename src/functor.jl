@@ -60,6 +60,7 @@ function fmap(f, x; cache = IdDict())
   haskey(cache, x) && return cache[x]
   cache[x] = isleaf(x) ? f(x) : fmap1(x -> fmap(f, x, cache = cache), x)
 end
+
 # Allow gradients and other constructs that match the structure of the functor
 # to allow for `map` style computations and return a modified version of the struct.
 # This way we can use `fmap` to update the params with their gradients
