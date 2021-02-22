@@ -72,7 +72,7 @@ It is also possible to implement `functor` by hand when greater flexibility is r
 
 For a discussion regarding the need for a `cache` in the implementation of `fmap`, see [here](https://github.com/FluxML/Functors.jl/issues/2).
 
-To control the depth of descent by `fmap`, the keyword `predicate` can be used:
+Use `predicate` for more fine-grained control over whether `fmap` descends into a particular value:
 ```julia
 julia> using CUDA
 
