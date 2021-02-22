@@ -72,7 +72,7 @@ It is also possible to implement `functor` by hand when greater flexibility is r
 
 For a discussion regarding the need for a `cache` in the implementation of `fmap`, see [here](https://github.com/FluxML/Functors.jl/issues/2).
 
-Use `predicate` for more fine-grained control over whether `fmap` descends into a particular value:
+Use `predicate` for more fine-grained control over whether `fmap` descends into a particular value (the default is `predicate = Functors.isleaf`):
 ```julia
 julia> using CUDA
 
@@ -84,7 +84,7 @@ julia> fmap(cu, x)
  'b': ASCII/Unicode U+0062 (category Ll: Letter, lowercase)
  'c': ASCII/Unicode U+0063 (category Ll: Letter, lowercase)
 
-julia> fmap(cu, x; predicate = CUDA.isbits)
+julia> fmap(cu, x; predicate = CUDA.isbitstype(eltype(x)))
 3-element CuArray{Char,1}:
  'a': ASCII/Unicode U+0061 (category Ll: Letter, lowercase)
  'b': ASCII/Unicode U+0062 (category Ll: Letter, lowercase)
