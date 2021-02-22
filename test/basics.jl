@@ -32,7 +32,16 @@ end
   @test model′.x.y isa Vector{Float64}
 end
 
-@testset "Property list" begin  
+@testset "Predicate" begin
+  f(x::AbstractArray) = x
+  f(x::Char) = 'z'
+
+  x = ['a', 'b', 'c']
+  @test fmap(f, x)  == ['z', 'z', 'z']
+  @test fmap(f, x; predicate = x -> x isa AbstractArray) == x
+end
+
+@testset "Property list" begin
   model = Baz(1, 2, 3)
   model′ = fmap(x -> 2x, model)
   
