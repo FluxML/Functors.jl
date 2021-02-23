@@ -57,23 +57,23 @@ function fmap(f, x; cache = IdDict())
 end
 
 """
-    fcollect(x; recurse = v -> true)
+    fcollect(x; exclude = v -> false)
 
 Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref)
 and collecting the results into a flat array.
 
 Doesn't recurse inside branches rooted at nodes `v`
-for which `recurse(v) == false`.
+for which `exclude(v) == true`.
 In such cases, the root `v` is also excluded from the result.
-By default, `recurse` always yields true. 
+By default, `exclude` always yields `false`. 
 
 See also [`children`](@ref).
 """
-function fcollect(x; cache = [], recurse = v -> true)
+function fcollect(x; cache = [], exclude = v -> false)
   x in cache && return cache
-  if recurse(x)
+  if !exclude(x)
     push!(cache, x)
-    foreach(y -> fcollect(y; cache=cache, recurse=recurse), children(x))
+    foreach(y -> fcollect(y; cache=cache, exclude=exclude), children(x))
   end
   return cache
 end

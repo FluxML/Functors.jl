@@ -34,8 +34,12 @@ end
   @test (model′.x, model′.y, model′.z) == (1, 4, 3)
 end
 
-
-@testset "Nested" begin
-  model = Bar(Foo(1, [1, 2, 3]))
-  @test fcollect(model) == [Bar(Foo(1, [1, 2, 3])), Foo(1, [1, 2, 3]), 1, [1, 2, 3]]
+@testset "fcollect" begin
+  m1 = [1, 2, 3]
+  m2 = 1
+  m3 = Foo(m1, m2)
+  m4 = Bar(m3)
+  @test all(fcollect(m4) .=== [m4, m3, m1, m2])
+  @test all(fcollect(m4, exclude = x -> x isa Array) .=== [m4, m3, m2])
+  @test all(fcollect(m4, exclude = x -> x isa Foo) .=== [m4])
 end
