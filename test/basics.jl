@@ -37,5 +37,5 @@ end
 
 @testset "Nested" begin
   model = Bar(Foo(1, [1, 2, 3]))
-  @show fcollect(model)
+  @test fcollect(model) == [Bar(Foo(1, [1, 2, 3])), Foo(1, [1, 2, 3]), 1, [1, 2, 3]]
 end
