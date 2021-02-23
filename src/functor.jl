@@ -42,3 +42,37 @@ function fmap(f, x; cache = IdDict())
   haskey(cache, x) && return cache[x]
   cache[x] = isleaf(x) ? f(x) : fmap1(x -> fmap(f, x, cache = cache), x)
 end
+
+"""
+    fcollect(x; 
+             recurse = (v, vs) -> true, 
+             f = (v, vs) -> v)
+
+Traverse `x` recursively through the children defined by [`functor`](@ref)
+and return an array containing each node encountered.
+
+Doesn't recurse inside branches rooted at nodes `v` with children `vs` 
+for which `recurse(v, vs) == false`.
+In such cases, the root `v` is also excluded from the result.
+Per default, `recurse` yield always true. 
+
+Doesn't recurse inside branches rooted at nodes `v` with children `vs` 
+for which `recurse(v, vs) == false`.
+In such cases, the root `v` is also excluded from the result.
+Per default, `recurse` yield always true. 
+
+A function `f(v, vs)`, taking in input a node and its children, 
+can optionally be passed, so that the returned array will contain
+`f(v, vs)` instead of `v`. 
+"""
+function fcollect(x; cache = [], 
+                     recurse = (v, vs) -> true, 
+                     f = (v, vs) -> v)
+
+  x in cache && return cache
+  vs = functor(x)[1]
+  recurse(x, vs) || return cache
+  push!(cache, f(x, vs))
+  foreach(y -> fcollect(y; cache=cache, recurse=recurse, f=f), vs)
+  return cache
+end
