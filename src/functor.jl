@@ -54,15 +54,10 @@ and return an array containing each node encountered.
 Doesn't recurse inside branches rooted at nodes `v` with children `vs` 
 for which `recurse(v, vs) == false`.
 In such cases, the root `v` is also excluded from the result.
-Per default, `recurse` yield always true. 
+Per default, `recurse` always yields true. 
 
-Doesn't recurse inside branches rooted at nodes `v` with children `vs` 
-for which `recurse(v, vs) == false`.
-In such cases, the root `v` is also excluded from the result.
-Per default, `recurse` yield always true. 
-
-A function `f(v, vs)`, taking in input a node and its children, 
-can optionally be passed, so that the returned array will contain
+Optionally, a function `f(v, vs)` taking in input a node and its children 
+can  be passed, so that the returned array will contain
 `f(v, vs)` instead of `v`. 
 """
 function fcollect(x; cache = [], 
