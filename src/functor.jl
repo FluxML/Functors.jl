@@ -51,9 +51,12 @@ end
 
 # See https://github.com/FluxML/Functors.jl/issues/2 for a discussion regarding the need for
 # cache.
-function fmap(f, x; predicate = isleaf, cache = IdDict())
+function fmap(f, x; exclude = isleaf, cache = IdDict())
   haskey(cache, x) && return cache[x]
-  cache[x] = predicate(x) ? f(x) : fmap1(x -> fmap(f, x, cache = cache), x)
+  y = exclude(x) ? f(x) : fmap1(x -> fmap(f, x, cache = cache, exclude = exclude), x)
+  cache[x] = y
+
+  return y
 end
 
 """
