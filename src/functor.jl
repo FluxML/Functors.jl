@@ -61,17 +61,16 @@ end
              recurse = (v, vs) -> true, 
              f = (v, vs) -> v)
 
-Traverse `x` recursively through the children defined by [`functor`](@ref)
-and return an array containing each node encountered.
+Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref),
+applying `f` to each node, and collecting the results into a flat array.
 
 Doesn't recurse inside branches rooted at nodes `v` with children `vs` 
 for which `recurse(v, vs) == false`.
 In such cases, the root `v` is also excluded from the result.
-Per default, `recurse` always yields true. 
+By default, `recurse` always yields true. 
 
-Optionally, a function `f(v, vs)` taking in input a node and its children 
-can  be passed, so that the returned array will contain
-`f(v, vs)` instead of `v`. 
+`f` should accept the inputs `(v, vs)` corresponding to the node
+and its children, respectively.
 """
 function fcollect(x; cache = [], 
                      recurse = (v, vs) -> true, 
