@@ -29,7 +29,20 @@ macro functor(args...)
   functorm(args...)
 end
 
-isleaf(x) = functor(x)[1] === ()
+"""
+    isleaf(x)
+
+Return true if `x` has no [`children`](@ref) according to [`functor`](@ref).
+"""
+isleaf(x) = children(x) === ()
+
+"""
+    children(x)
+
+Return the children of `x` as defined by [`functor`](@ref).
+Equivalent to `functor(x)[1]`.
+"""
+children(x) = functor(x)[1]
 
 function fmap1(f, x)
   func, re = functor(x)
@@ -65,7 +78,7 @@ function fcollect(x; cache = [],
                      f = (v, vs) -> v)
 
   x in cache && return cache
-  vs = functor(x)[1]
+  vs = children(x)
   recurse(x, vs) || return cache
   push!(cache, f(x, vs))
   foreach(y -> fcollect(y; cache=cache, recurse=recurse, f=f), vs)
