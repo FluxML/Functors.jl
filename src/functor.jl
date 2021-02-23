@@ -57,29 +57,23 @@ function fmap(f, x; cache = IdDict())
 end
 
 """
-    fcollect(x; 
-             recurse = (v, vs) -> true, 
-             f = (v, vs) -> v)
+    fcollect(x; recurse = v -> true)
 
-Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref),
-applying `f` to each node, and collecting the results into a flat array.
+Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref)
+and collecting the results into a flat array.
 
-Doesn't recurse inside branches rooted at nodes `v` with children `vs` 
-for which `recurse(v, vs) == false`.
+Doesn't recurse inside branches rooted at nodes `v`
+for which `recurse(v) == false`.
 In such cases, the root `v` is also excluded from the result.
 By default, `recurse` always yields true. 
 
-`f` should accept the inputs `(v, vs)` corresponding to the node
-and its children, respectively.
+See also [`children`](@ref).
 """
-function fcollect(x; cache = [], 
-                     recurse = (v, vs) -> true, 
-                     f = (v, vs) -> v)
-
+function fcollect(x; cache = [], recurse = v -> true)
   x in cache && return cache
-  vs = children(x)
-  recurse(x, vs) || return cache
-  push!(cache, f(x, vs))
-  foreach(y -> fcollect(y; cache=cache, recurse=recurse, f=f), vs)
+  if recurse(x)
+    push!(cache, x)
+    foreach(y -> fcollect(y; cache=cache, recurse=recurse), children(x))
+  end
   return cache
 end
