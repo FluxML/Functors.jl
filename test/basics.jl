@@ -50,7 +50,9 @@ end
 
   m1 = [1, 2, 3]
   m2 = Bar(m1)
-  m3 = Foo(m2, NoChildren(:a, :b))
+  m0 = NoChildren(:a, :b)
+  m3 = Foo(m2, m0)
   m4 = Bar(m3)
-  @test all(fcollect(m4) .=== [m4, m3, m2, m1])
+  println(fcollect(m4))
+  @test all(fcollect(m4) .=== [m4, m3, m2, m1, m0])
 end
