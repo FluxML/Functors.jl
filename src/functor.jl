@@ -68,6 +68,39 @@ In such cases, the root `v` is also excluded from the result.
 By default, `exclude` always yields `false`. 
 
 See also [`children`](@ref).
+
+# Examples
+
+```jldoctest
+julia> struct Foo; x; y; end
+
+julia> @functor Foo
+
+julia> struct Bar; x; end
+
+julia> @functor Bar
+
+julia> struct NoChildren; x; y; end 
+
+julia> m = Foo(Bar([1,2,3]), NoChildren(:a, :b))
+
+julia> fcollect(m)
+4-element Vector{Any}:
+ Foo(Bar([1, 2, 3]), NoChildren(:a, :b))
+ Bar([1, 2, 3])
+ [1, 2, 3]
+ NoChildren(:a, :b)
+
+julia> fcollect(m, exclude = v -> v isa Bar)
+2-element Vector{Any}:
+ Foo(Bar([1, 2, 3]), NoChildren(:a, :b))
+ NoChildren(:a, :b)
+ 
+julia> fcollect(m, exclude = v -> Functors.isleaf(v))
+2-element Vector{Any}:
+ Foo(Bar([1, 2, 3]), NoChildren(:a, :b))
+ Bar([1, 2, 3])
+```
 """
 function fcollect(x; cache = [], exclude = v -> false)
   x in cache && return cache

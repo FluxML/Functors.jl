@@ -18,6 +18,11 @@ struct Baz
 end
 @functor Baz (y,)
 
+struct NoChildren 
+  x
+  y
+end
+
 @testset "Nested" begin
   model = Bar(Foo(1, [1, 2, 3]))
 
@@ -42,4 +47,10 @@ end
   @test all(fcollect(m4) .=== [m4, m3, m1, m2])
   @test all(fcollect(m4, exclude = x -> x isa Array) .=== [m4, m3, m2])
   @test all(fcollect(m4, exclude = x -> x isa Foo) .=== [m4])
+
+  m1 = [1, 2, 3]
+  m2 = Bar(m1)
+  m3 = Foo(m2, NoChildren(:a, :b))
+  m4 = Bar(m3)
+  @test all(fcollect(m4) .=== [m4, m3, m2, m1])
 end
