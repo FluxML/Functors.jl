@@ -106,7 +106,7 @@ function fcollect(x; cache = [], exclude = v -> false)
   x in cache && return cache
   if !exclude(x)
     push!(cache, x)
-    foreach(y -> fcollect(y; cache=cache, exclude=exclude), children(x))
+    foreach(y -> fcollect(y; cache = cache, exclude = exclude), children(x))
   end
   return cache
 end
