@@ -71,3 +71,22 @@ Any field not in the list will not be returned by `functor` and passed through a
 It is also possible to implement `functor` by hand when greater flexibility is required. See [here](https://github.com/FluxML/Functors.jl/issues/3) for an example.
 
 For a discussion regarding the need for a `cache` in the implementation of `fmap`, see [here](https://github.com/FluxML/Functors.jl/issues/2).
+
+Use `exclude` for more fine-grained control over whether `fmap` descends into a particular value (the default is `exclude = Functors.isleaf`):
+```julia
+julia> using CUDA
+
+julia> x = ['a', 'b', 'c'];
+
+julia> fmap(cu, x)
+3-element Array{Char,1}:
+ 'a': ASCII/Unicode U+0061 (category Ll: Letter, lowercase)
+ 'b': ASCII/Unicode U+0062 (category Ll: Letter, lowercase)
+ 'c': ASCII/Unicode U+0063 (category Ll: Letter, lowercase)
+
+julia> fmap(cu, x; exclude = x -> CUDA.isbitstype(eltype(x)))
+3-element CuArray{Char,1}:
+ 'a': ASCII/Unicode U+0061 (category Ll: Letter, lowercase)
+ 'b': ASCII/Unicode U+0062 (category Ll: Letter, lowercase)
+ 'c': ASCII/Unicode U+0063 (category Ll: Letter, lowercase)
+```
