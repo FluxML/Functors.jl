@@ -58,7 +58,8 @@ functor_tuple(f, x, ::Nothing) = x
 function fmap1(f, x, dx)
   func, re = functor(x)
   map(func, dx) do x, x̄
-    functor_tuple(f, x, x̄)
+    # functor_tuple(f, x, x̄)
+    f(x, x̄)
   end |> re
 end
 
