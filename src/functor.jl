@@ -49,15 +49,67 @@ function fmap1(f, x)
   re(map(f, func))
 end
 
-# See https://github.com/FluxML/Functors.jl/issues/2 for a discussion regarding the need for
-# cache.
-function fmap(f, x; exclude = isleaf, cache = IdDict())
+"""
+    fmap(f, x; exclude = isleaf, walk = (f′, x) -> ...) 
+    
+A structure and type preserving `map` that works for all [`functor`](@ref)s.
+
+By default, traveres `x` recursively using [`functor`](@ref)
+and transforms every leaf node identified by `exclude` with `f`.
+
+For advanced customization of the traversal behaviour, pass a custom `walk` function.
+This function must itself call the continuation f′ to continue traversal.
+
+# Examples
+```jldoctest
+julia> struct Foo; x; y; end
+
+julia> @functor Foo
+
+julia> struct Bar; x; end
+
+julia> @functor Bar
+
+julia> m = Foo(Bar([1,2,3]), (4, 5));
+
+julia> fmap(x -> 2x, m)
+Foo(Bar([2, 4, 6]), (8, 10))
+
+julia> fmap(string, m)
+Foo(Bar("[1, 2, 3]"), ("4", "5"))
+
+julia> fmap(string, m, exclude = v -> v isa Bar)
+Foo("Bar([1, 2, 3])", (4, 5))
+```
+"""
+function fmap(f, x; exclude = isleaf, walk = fmap1, cache = IdDict())
   haskey(cache, x) && return cache[x]
-  y = exclude(x) ? f(x) : fmap1(x -> fmap(f, x, cache = cache, exclude = exclude), x)
+  y = exclude(x) ? f(x) : walk(x -> fmap(f, x, exclude = exclude, walk = walk, cache = cache), x)
   cache[x] = y
 
   return y
 end
+
+"""
+    fmapstructure(f, x; exclude = isleaf)
+    
+Like [`fmap`](@ref), but doesn't preserve the type of custom structs.
+
+Useful for when the output must be plain-old julia data structures.
+
+# Examples
+```jldoctest
+julia> struct Foo; x; y; end
+
+julia> @functor Foo
+
+julia> m = Foo([1,2,3], (4, 5));
+
+julia> fmapstructure(x -> 2x, m)
+(x = [2, 4, 6], y = (8, 10))
+```
+"""
+fmapstructure(f, x; kwargs...) = fmap(f, x; walk=(f, x) -> map(f, children(x)), kwargs...)
 
 """
     fcollect(x; exclude = v -> false)
