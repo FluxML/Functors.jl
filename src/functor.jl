@@ -13,7 +13,7 @@ function makefunctor(m::Module, T, fs = fieldnames(T))
     f in fs ? :(y[$(yᵢ += 1)]) : :(x.$f)
   end
   escfs = [:($f=x.$f) for f in fs]
-  
+
   @eval m begin
     $Functors.functor(::Type{<:$T}, x) = ($(escfs...),), y -> $T($(escargs...))
   end
@@ -44,14 +44,14 @@ Equivalent to `functor(x)[1]`.
 """
 children(x) = functor(x)[1]
 
-function fmap1(f, x)
+function _default_walk(f, x)
   func, re = functor(x)
   re(map(f, func))
 end
 
 """
-    fmap(f, x; exclude = isleaf, walk = (f′, x) -> ...) 
-    
+    fmap(f, x; exclude = isleaf, walk = (f′, x) -> ...)
+
 A structure and type preserving `map` that works for all [`functor`](@ref)s.
 
 By default, traveres `x` recursively using [`functor`](@ref)
@@ -82,7 +82,7 @@ julia> fmap(string, m, exclude = v -> v isa Bar)
 Foo("Bar([1, 2, 3])", (4, 5))
 ```
 """
-function fmap(f, x; exclude = isleaf, walk = fmap1, cache = IdDict())
+function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict())
   haskey(cache, x) && return cache[x]
   y = exclude(x) ? f(x) : walk(x -> fmap(f, x, exclude = exclude, walk = walk, cache = cache), x)
   cache[x] = y
@@ -92,7 +92,7 @@ end
 
 """
     fmapstructure(f, x; exclude = isleaf)
-    
+
 Like [`fmap`](@ref), but doesn't preserve the type of custom structs.
 
 Useful for when the output must be plain-old julia data structures.
@@ -120,7 +120,7 @@ and collecting the results into a flat array.
 Doesn't recurse inside branches rooted at nodes `v`
 for which `exclude(v) == true`.
 In such cases, the root `v` is also excluded from the result.
-By default, `exclude` always yields `false`. 
+By default, `exclude` always yields `false`.
 
 See also [`children`](@ref).
 
@@ -135,7 +135,7 @@ julia> struct Bar; x; end
 
 julia> @functor Bar
 
-julia> struct NoChildren; x; y; end 
+julia> struct NoChildren; x; y; end
 
 julia> m = Foo(Bar([1,2,3]), NoChildren(:a, :b))
 
@@ -150,7 +150,7 @@ julia> fcollect(m, exclude = v -> v isa Bar)
 2-element Vector{Any}:
  Foo(Bar([1, 2, 3]), NoChildren(:a, :b))
  NoChildren(:a, :b)
- 
+
 julia> fcollect(m, exclude = v -> Functors.isleaf(v))
 2-element Vector{Any}:
  Foo(Bar([1, 2, 3]), NoChildren(:a, :b))
