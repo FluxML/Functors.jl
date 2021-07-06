@@ -50,15 +50,15 @@ function _default_walk(f, x)
 end
 
 """
-    fmap(f, x; exclude = isleaf, walk = (f′, x) -> ...)
+    fmap(f, x; exclude = isleaf, walk = Functors._default_walk)
 
 A structure and type preserving `map` that works for all [`functor`](@ref)s.
 
 By default, traveres `x` recursively using [`functor`](@ref)
 and transforms every leaf node identified by `exclude` with `f`.
 
-For advanced customization of the traversal behaviour, pass a custom `walk` function.
-This function must itself call the continuation f′ to continue traversal.
+For advanced customization of the traversal behaviour, pass a custom `walk` function of the form `(f', xs) -> ...`.
+This function walks (maps) over `xs` calling the continuation `f'` to continue traversal.
 
 # Examples
 ```jldoctest
@@ -93,9 +93,9 @@ end
 """
     fmapstructure(f, x; exclude = isleaf)
 
-Like [`fmap`](@ref), but doesn't preserve the type of custom structs.
+Like [`fmap`](@ref), but doesn't preserve the type of custom structs. Instead, it returns a (potentially nested) `NamedTuple`.
 
-Useful for when the output must be plain-old julia data structures.
+Useful for when the output must not contain custom structs.
 
 # Examples
 ```jldoctest
@@ -109,7 +109,7 @@ julia> fmapstructure(x -> 2x, m)
 (x = [2, 4, 6], y = (8, 10))
 ```
 """
-fmapstructure(f, x; kwargs...) = fmap(f, x; walk=(f, x) -> map(f, children(x)), kwargs...)
+fmapstructure(f, x; kwargs...) = fmap(f, x; walk = (f, x) -> map(f, children(x)), kwargs...)
 
 """
     fcollect(x; exclude = v -> false)
