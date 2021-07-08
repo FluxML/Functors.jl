@@ -54,7 +54,7 @@ end
 
 A structure and type preserving `map` that works for all [`functor`](@ref)s.
 
-By default, traveres `x` recursively using [`functor`](@ref)
+By default, traverses `x` recursively using [`functor`](@ref)
 and transforms every leaf node identified by `exclude` with `f`.
 
 For advanced customization of the traversal behaviour, pass a custom `walk` function of the form `(f', xs) -> ...`.
@@ -80,6 +80,9 @@ Foo(Bar("[1, 2, 3]"), ("4", "5"))
 
 julia> fmap(string, m, exclude = v -> v isa Bar)
 Foo("Bar([1, 2, 3])", (4, 5))
+
+julia> fmap(x -> 2x, m, walk=(f, x) -> x isa Bar ? x : Functors._default_walk(f, x))
+Foo(Bar([1, 2, 3]), (8, 10))
 ```
 """
 function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict())
