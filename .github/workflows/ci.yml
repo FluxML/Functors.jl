@@ -73,10 +73,9 @@ jobs:
       - run: |
           julia --project=docs/ -e '
             using Functors
-            # using Pkg; Pkg.activate("docs")
             using Documenter
             using Documenter: doctest
-            DocMeta.setdocmeta!(Functors, :DocTestSetup, :(using Functors); recursive=true)
+            DocMeta.setdocmeta!(Functors, :DocTestSetup, :(using Functors); recursive = true)
             doctest(Functors)'
       - run: julia --project=docs docs/make.jl
         env:
