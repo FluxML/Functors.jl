@@ -3,7 +3,7 @@ using Documenter, Functors
 DocMeta.setdocmeta!(Functors, :DocTestSetup, :(using Functors); recursive = true)
 
 makedocs(modules = [Functors],
-         doctest = false # VERSION == v"1.5",
+         doctest = false, # VERSION == v"1.5",
          sitename = "Functors",
          pages = ["Home" => "index.md"]
          format = Documenter.HTML(
