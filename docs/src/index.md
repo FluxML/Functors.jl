@@ -55,11 +55,3 @@ Baz(1.0, 2)
 
 Any field not in the list will be passed through as-is during reconstruction. This is done by invoking the default constructor, so structs that define custom inner constructors are expected to provide one that acts like the default.
 
-```@docs
-Functors.@functor
-Functors.fmap
-Functors.children
-Functors.isleaf
-Functors.fcollect
-Functors.fmapstructure
-```
