@@ -1,7 +1,15 @@
 # Functors.jl
 ## Heard you like structs
 
-[![][docs-stable-img]][docs-stable-url]  [![][docs-dev-img]][docs-dev-url]  [![][action-img]][action-url]
+[![][docs-stable-img]][docs-stable-url]
+[![][docs-dev-img]][docs-dev-url]
+[![][action-img]][action-url]
+
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://fluxml.ai/Functors.jl/stable/
+
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-dev-url]: https://fluxml.ai/Functors.jl/dev/
 
 Functors.jl provides tools to express a powerful design pattern for dealing with large/ nested structures, as in machine learning and optimisation. For large machine learning models it can be cumbersome or inefficient to work with parameters as one big, flat vector, and structs help manage complexity; but it is also desirable to easily operate over all parameters at once, e.g. for changing precision or applying an optimiser update step.
 
