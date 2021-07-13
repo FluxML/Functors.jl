@@ -86,6 +86,7 @@ julia> @functor Bar
 julia> struct NoChildren; x; y; end 
 
 julia> m = Foo(Bar([1,2,3]), NoChildren(:a, :b))
+Foo(Bar([1, 2, 3]), NoChildren(:a, :b))
 
 julia> fcollect(m)
 4-element Vector{Any}:
