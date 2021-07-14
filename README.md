@@ -1,10 +1,23 @@
-# Functors
+# Functors.jl
 
-Functors.jl provides a mechanism – really more of a design pattern – for dealing with large structures containing numerical parameters, as in machine learning and optimisation. For large models it can be cumbersome or inefficient to work with parameters as one big, flat vector, and structs help manage complexity; but you also want to easily operate over all parameters at once, e.g. for changing precision or applying an optimiser update step.
+[![][docs-stable-img]][docs-stable-url]
+[![][docs-dev-img]][docs-dev-url]
+[![][action-img]][action-url]
+
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://fluxml.ai/Functors.jl/stable/
+
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-dev-url]: https://fluxml.ai/Functors.jl/dev/
+
+[action-img]: https://github.com/FluxML/Zygote.jl/workflows/CI/badge.svg
+[action-url]: https://github.com/FluxML/Zygote.jl/actions
+
+Functors.jl provides tools to express a powerful design pattern for dealing with large/ nested structures, as in machine learning and optimisation. For large machine learning models it can be cumbersome or inefficient to work with parameters as one big, flat vector, and structs help manage complexity; but it is also desirable to easily operate over all parameters at once, e.g. for changing precision or applying an optimiser update step.
 
 Functors.jl provides `fmap` to make those things easy, acting as a 'map over parameters':
 
-```julia
+```julia-repl
 julia> using Functors
 
 julia> struct Foo
@@ -23,7 +36,7 @@ Foo(1.0, [1.0, 2.0, 3.0])
 
 It works also with deeply-nested models:
 
-```julia
+```julia-repl
 julia> struct Bar
          x
        end
@@ -39,7 +52,7 @@ Bar(Foo(1.0, [1.0, 2.0, 3.0]))
 
 The workhorse of `fmap` is actually a lower level function, `functor`:
 
-```julia
+```julia-repl
 julia> xs, re = functor(Foo(1, [1, 2, 3]))
 ((x = 1, y = [1, 2, 3]), var"#21#22"())
 
@@ -51,7 +64,7 @@ Foo(1.0, [1.0, 2.0, 3.0])
 
 To include only certain fields, pass a tuple of field names to `@functor`:
 
-```julia
+```julia-repl
 julia> struct Baz
          x
          y
@@ -73,7 +86,8 @@ It is also possible to implement `functor` by hand when greater flexibility is r
 For a discussion regarding the need for a `cache` in the implementation of `fmap`, see [here](https://github.com/FluxML/Functors.jl/issues/2).
 
 Use `exclude` for more fine-grained control over whether `fmap` descends into a particular value (the default is `exclude = Functors.isleaf`):
-```julia
+
+```julia-repl
 julia> using CUDA
 
 julia> x = ['a', 'b', 'c'];
