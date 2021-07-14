@@ -1,5 +1,4 @@
 # Functors.jl
-## Heard you like structs
 
 [![][docs-stable-img]][docs-stable-url]
 [![][docs-dev-img]][docs-dev-url]
