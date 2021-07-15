@@ -1,7 +1,7 @@
 name = "Functors"
 uuid = "d9f16b24-f501-4c13-a1f2-28368ffc5196"
 authors = ["Mike J Innes <mike.j.innes@gmail.com>"]
-version = "0.2.2"
+version = "0.2.3"
 
 [deps]
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
