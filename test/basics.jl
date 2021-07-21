@@ -45,6 +45,13 @@ end
   @test fmap(f, x; exclude = x -> x isa AbstractArray) == x
 end
 
+@testset "Walk" begin
+  model = Foo((0, Bar([1, 2, 3])), [4, 5])
+
+  model′ = fmapstructure(identity, model)
+  @test model′ == (; x=(0, (; x=[1, 2, 3])), y=[4, 5])
+end
+
 @testset "Property list" begin
   model = Baz(1, 2, 3)
   model′ = fmap(x -> 2x, model)
