@@ -29,6 +29,35 @@ macro functor(args...)
   functorm(args...)
 end
 
+function makeflexiblefunctor(m::Module, T, pfield)
+  pfield = QuoteNode(pfield)
+  @eval m begin
+    $Functors.functor(::Type{<:$T}, x) = begin
+      function re(y)
+        all_args = map(fieldnames($T)) do fn
+          field = fn in getfield(x, $pfield) ? getfield(y, fn) : getfield(x, fn)
+          return field
+        end
+        return $T(all_args...)
+      end
+      func = (; (p => getfield(x, p) for p in getfield(x, $pfield))...)
+      return func, re
+    end
+
+  end
+
+end
+
+function flexiblefunctorm(T, pfield = :params)
+  pfield isa Symbol || error("@flexiblefunctor T param_field")
+  pfield = QuoteNode(pfield)
+  :(makeflexiblefunctor(@__MODULE__, $(esc(T)), $(esc(pfield))))
+end
+
+macro flexiblefunctor(args...)
+  flexiblefunctorm(args...)
+end
+
 """
     isleaf(x)
 
