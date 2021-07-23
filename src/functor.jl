@@ -32,15 +32,13 @@ end
 function makeflexiblefunctor(m::Module, T, pfield)
   pfield = QuoteNode(pfield)
   @eval m begin
-    $Functors.functor(::Type{<:$T}, x) = begin
+    function $Functors.functor(::Type{<:$T}, x)
+      pfields = getproperty(x, $pfield)
       function re(y)
-        all_args = map(fieldnames($T)) do fn
-          field = fn in getfield(x, $pfield) ? getfield(y, fn) : getfield(x, fn)
-          return field
-        end
+        all_args = map(fn -> getproperty(fn in pfields ? y : x, fn), fieldnames($T))
         return $T(all_args...)
       end
-      func = NamedTuple{pfields}(map(p -> getfield(x, p), pfields))
+      func = NamedTuple{pfields}(map(p -> getproperty(x, p), pfields))
       return func, re
     end
 
