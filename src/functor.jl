@@ -40,7 +40,7 @@ function makeflexiblefunctor(m::Module, T, pfield)
         end
         return $T(all_args...)
       end
-      func = (; (p => getfield(x, p) for p in getfield(x, $pfield))...)
+      func = NamedTuple{pfields}(map(p -> getfield(x, p), pfields))
       return func, re
     end
 
