@@ -20,8 +20,8 @@ function makefunctor(m::Module, T, fs = fieldnames(T))
 end
 
 function functorm(T, fs = nothing)
-  fs == nothing || isexpr(fs, :tuple) || error("@functor T (a, b)")
-  fs = fs == nothing ? [] : [:($(map(QuoteNode, fs.args)...),)]
+  fs === nothing || Meta.isexpr(fs, :tuple) || error("@functor T (a, b)")
+  fs = fs === nothing ? [] : [:($(map(QuoteNode, fs.args)...),)]
   :(makefunctor(@__MODULE__, $(esc(T)), $(fs...)))
 end
 
