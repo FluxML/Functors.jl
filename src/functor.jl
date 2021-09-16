@@ -9,7 +9,7 @@ functor(::Type{T}; kwargs...) where T = Functor{T}(NamedTuple{fieldnames(T)}(val
 backing(x) = x
 backing(func::Functor) = getfield(func, :inner)
 # TODO better name
-paramvalues(x) = backing(x)
+children(x) = backing(x)
 
 Base.getproperty(func::Functor, prop::Symbol) = getproperty(backing(func), prop)
 Base.getindex(func::Functor, prop) = getindex(backing(func), prop)
@@ -31,13 +31,13 @@ function makefunctor(m::Module, T, fs=fieldnames(T))
   
     @eval m begin
         $Functors.project(x::$T) = $Functors.Functor{$T}(($(escfields...),))
-        $Functors.paramvalues(func::$Functors.Functor{$T}) = ($(escfs...),)
+        $Functors.children(func::$Functors.Functor{$T}) = ($(escfs...),)
         $Functors.fmap(f, func::$Functors.Functor{$T}) = $Functors.Functor{$T}(($(escfmap...),))
     end
 end
 
 function functorm(T, fs=nothing)
-    fs === nothing || Meta.isexpr(fs, :tuple) || error("@functor T (a, b)")
+fs === nothing || Meta.isexpr(fs, :tuple) || error("@functor T (a, b)")
 fs = fs === nothing ? [] : [:($(map(QuoteNode, fs.args)...),)]
     :(makefunctor(@__MODULE__, $(esc(T)), $(fs...)))
 end
@@ -45,17 +45,6 @@ end
 macro functor(args...)
     functorm(args...)
 end
-
-# recursion schemes
-cata(f, x) = f(fmap(y -> cata(f, y), project(x)))
-ana(f, x) = embed(fmap(y -> ana(f, y), f(x)))
-
-# aliases
-const fold = cata
-const unfold = ana
-
-# convenience functions
-rfmap(f, x) = cata(embed ∘ f, x)
 
 # built-ins
 fmap(f, xs::T) where T <: Union{Tuple,NamedTuple,AbstractArray} = map(f, xs)
