@@ -19,14 +19,14 @@ struct Unary <: Expr
     op::String
     arg::Expr
 end
-@functor Unary
+@functor Unary (arg,)
 
 struct Binary <: Expr
     lhs::Expr
     op::String
     rhs::Expr
 end
-@functor Binary
+@functor Binary (lhs, rhs)
 
 struct Paren <: Expr
     inner::Expr
@@ -73,7 +73,6 @@ end
         countnodes(e::Functor{Paren}) = 1 + e.inner
         countnodes(e::Functor{Literal}) = 1
         countnodes(e::Functor{Ident}) = 1
-        countnodes(e::Union{String,Int}) = 0
         countnodes(e) = e
 
         @test Functors.cata(countnodes, call) == 4
@@ -95,7 +94,7 @@ end
 
 @testset "ana" begin
     function nested(n)
-        go(m) = m == 0 ? Literal(n) : Functor{Paren}((;inner=(m - 1)))
+        go(m) = m == 0 ? Literal(n) : functor(Paren, m - 1)
         Functors.ana(go, n)
     end
     
