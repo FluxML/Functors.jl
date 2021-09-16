@@ -12,6 +12,7 @@ struct Call <: Expr
     fn::Expr
     args::Vector{Expr}
 end
+Base.:(==)(c1::Call, c2::Call) = c1.fn == c2.fn && c1.args == c2.args
 @functor Call
 
 struct Unary <: Expr
@@ -44,22 +45,52 @@ end
 
 
 @testset "cata" begin
-    countnodes(e::Functor{Unary}) = 1 + e.arg
-    countnodes(e::Functor{Binary}) = 1 + e.lhs + e.rhs
-    countnodes(e::Functor{Call}) = 1 + e.fn + sum(e.args)
-    countnodes(e::Functor{Index}) = 1 + e.arg + e.idx
-    countnodes(e::Functor{Paren}) = 1 + e.inner
-    countnodes(e::Functor{Literal}) = 1
-    countnodes(e::Functor{Ident}) = 1
-    countnodes(e::Union{String,Int}) = 0
-    countnodes(e) = e
-
     ten, add = Literal(10), Ident("add")
     call = Call(add, [ten, ten])
 
-    @test Functors.cata(countnodes, call) == 4
-    
-    @show Functors.cata(Functors.backing, call)
+    @testset "converting to POJOs" begin
+        expected = (fn = (;name="add"), args = [(;val=10), (;val=10)])
+        @test Functors.cata(Functors.backing, call) == expected
+    end
+
+    @testset "roundtrip" begin
+        @test Functors.cata(Functors.embed, call) == call
+    end
+
+    @testset "rfmap" begin
+        f64(x) = x
+        f64(x::Real) = Float64(x)
+
+        expected = Call(Ident("add"), [Literal(10.), Literal(10.)])
+        @test Functors.rfmap(f64, call) == expected
+    end
+
+    @testset "counting nodes" begin
+        countnodes(e::Functor{Unary}) = 1 + e.arg
+        countnodes(e::Functor{Binary}) = 1 + e.lhs + e.rhs
+        countnodes(e::Functor{Call}) = 1 + e.fn + sum(e.args)
+        countnodes(e::Functor{Index}) = 1 + e.arg + e.idx
+        countnodes(e::Functor{Paren}) = 1 + e.inner
+        countnodes(e::Functor{Literal}) = 1
+        countnodes(e::Functor{Ident}) = 1
+        countnodes(e::Union{String,Int}) = 0
+        countnodes(e) = e
+
+        @test Functors.cata(countnodes, call) == 4
+    end
+        
+    @testset "pretty-printing" begin
+        prettyprint(l::Functor{Literal}) = repr(l.val)
+        prettyprint(i::Functor{Ident}) = i.name
+        prettyprint(c::Functor{Call}) = "$(c.fn)($(join(c.args, ",")))"
+        prettyprint(i::Functor{Index}) = "$(i.arg)[$(i.idx)]"
+        prettyprint(u::Functor{Unary}) = u.op * u.expr
+        prettyprint(b::Functor{Binary}) = b.lhs * b.op * b.rhs
+        prettyprint(p::Functor{Paren}) = "[$(p.inner)]"
+        prettyprint(e) = e
+        
+        @test Functors.cata(prettyprint, call) == "add(10,10)"
+    end
 end
 
 @testset "ana" begin

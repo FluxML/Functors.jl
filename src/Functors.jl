@@ -1,7 +1,7 @@
 module Functors
 
-export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect
-
 include("functor.jl")
+
+export Functor, @functor, fmap
 
 end # module
