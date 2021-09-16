@@ -16,13 +16,13 @@ struct Unfold{F,C}
 end
 Unfold(f) = Unfold(f, IdDict())
 
-function (f::Unfold)(x)
-    haskey(f.cache, x) && return f.cache[x]
-    f.cache[x] = embed(fmap(f, f.fn(x)))
+function (u::Unfold)(x)
+    haskey(u.cache, x) && return u.cache[x]
+    u.cache[x] = embed(fmap(u, u.fn(x)))
 end
 
 fold(f, x) = Fold(f)(x)
-ana(f, x) = Unfold(f)(x)
+unfold(f, x) = Unfold(f)(x)
 
 # aliases
 const cata = fold

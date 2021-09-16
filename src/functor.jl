@@ -24,7 +24,7 @@ embed(func::Functor{T}) where T = T(backing(func)...)
 
 function makefunctor(m::Module, T, fs=fieldnames(T))
     escfields = [:($field = x.$field) for field in fieldnames(T)]
-    escfs = [:($field = x.$field) for field in fs]
+    escfs = [:($field = func.$field) for field in fs]
     escfmap = map(fieldnames(T)) do field
         field in fs ? :($field = f(func.$field)) : :($field = func.$field)
     end
@@ -32,6 +32,7 @@ function makefunctor(m::Module, T, fs=fieldnames(T))
     @eval m begin
         $Functors.project(x::$T) = $Functors.Functor{$T}(($(escfields...),))
         $Functors.children(func::$Functors.Functor{$T}) = ($(escfs...),)
+        # Ref. https://gitlab.haskell.org/ghc/ghc/-/wikis/commentary/compiler/derive-functor
         $Functors.fmap(f, func::$Functors.Functor{$T}) = $Functors.Functor{$T}(($(escfmap...),))
     end
 end

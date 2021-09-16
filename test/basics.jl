@@ -44,17 +44,17 @@ end
 @functor Literal
 
 
-@testset "cata" begin
+@testset "folding" begin
     ten, add = Literal(10), Ident("add")
     call = Call(add, [ten, ten])
 
     @testset "converting to POJOs" begin
         expected = (fn = (;name="add"), args = [(;val=10), (;val=10)])
-        @test Functors.cata(Functors.backing, call) == expected
+        @test Functors.fold(Functors.backing, call) == expected
     end
 
     @testset "roundtrip" begin
-        @test Functors.cata(Functors.embed, call) == call
+        @test Functors.fold(Functors.embed, call) == call
     end
 
     @testset "rfmap" begin
@@ -88,28 +88,36 @@ end
         prettyprint(p::Functor{Paren}) = "[$(p.inner)]"
         prettyprint(e) = e
         
-        @test Functors.cata(prettyprint, call) == "add(10,10)"
+        @test Functors.fold(prettyprint, call) == "add(10,10)"
     end
 end
 
-@testset "ana" begin
+@testset "unfolding" begin
     function nested(n)
         go(m) = m == 0 ? Literal(n) : functor(Paren, m - 1)
-        Functors.ana(go, n)
+        Functors.unfold(go, n)
     end
     
     @test nested(3) == 3 |> Literal |> Paren |> Paren |> Paren
 end
 
-# @static if VERSION >= v"1.6"
-#   @testset "ComposedFunction" begin
-#     f1 = Foo(1.1, 2.2)
-#     f2 = Bar(3.3)
-#     @test Functors.functor(f1 ∘ f2)[1] == (outer = f1, inner = f2)
-#     @test Functors.functor(f1 ∘ f2)[2]((outer = f1, inner = f2)) == f1 ∘ f2
-#     @test fmap(x -> x + 10, f1 ∘ f2) == Foo(11.1, 12.2) ∘ Bar(13.3)
-#   end
-# end
+@static if VERSION >= v"1.6"
+    @testset "ComposedFunction" begin
+        struct Foo a; b end
+        struct Bar c end
+        @functor Foo
+        @functor Bar
+        
+        plus10(x) = x
+        plus10(x::Real) = x + 10
+
+        f1 = Foo(1.1, 2.2)
+        f2 = Bar(3.3)
+        @test Functors.children(Functors.project(f1 ∘ f2)) == (outer = f1, inner = f2)
+        @test Functors.embed(Functors.project(f1 ∘ f2)) == f1 ∘ f2
+        @test Functors.rfmap(plus10, f1 ∘ f2) == Foo(11.1, 12.2) ∘ Bar(13.3)
+    end
+end
 
 # @testset "Nested" begin
 #   model = Bar(Foo(1, [1, 2, 3]))
@@ -117,7 +125,7 @@ end
 #   model′ = fmap(float, model)
 
 #   @test model.x.y == model′.x.y
-#   @test model′.x.y isa Vector{Float64}
+        #   @test model′.x.y isa Vector{Float64}
 # end
 
 # @testset "Exclude" begin
