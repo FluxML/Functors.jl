@@ -78,7 +78,7 @@ end
         @test Functors.cata(countnodes, call) == 4
     end
         
-    @testset "pretty-printing" begin
+    @testset "pretty printing" begin
         prettyprint(l::Functor{Literal}) = repr(l.val)
         prettyprint(i::Functor{Ident}) = i.name
         prettyprint(c::Functor{Call}) = "$(c.fn)($(join(c.args, ",")))"
@@ -90,6 +90,73 @@ end
         
         @test Functors.fold(prettyprint, call) == "add(10,10)"
     end
+
+    @testset "zipped fold" begin
+        calldata = (fn = (;name="add"), args = [(;val=5), (;val=5)])
+
+        # div(x) = x
+        div(x, _) = x
+        div(x::Number, y::Number) = x / y
+        expected = Call(Ident("add"), [Literal(2.), Literal(2.)])
+        @test Functors.rfmap(div, call, calldata) == expected
+        
+        # pairnums(x) = x
+        pairnums(x, y) = x => y
+        expected = (fn = (;name="add" => "add"), args = [(;val=5 => 10), (;val=5 => 10)])
+        @test Functors.rfmap(pairnums, calldata, call) == expected
+    end
+
+    # based on https://github.com/FluxML/Flux.jl/issues/1284
+    @testset "L₂ regularization" begin
+        struct Chain{T <: Tuple}
+            layers::T
+        end
+
+        Chain(layers...) = Chain(layers)
+        Functors.project(c::Chain) = Functors.Functor{Chain}(c.layers)
+
+        struct Dense{W,B}
+            weight::W
+            bias::B
+        end
+        @functor Dense
+
+        struct Conv{W,B}
+            weight::W
+            bias::B
+        end
+        @functor Conv
+
+        struct SkipConnection{L,C}
+            layer::L
+            connection::C
+        end
+        @functor SkipConnection
+        
+        _isbitsarray(::AbstractArray{<:Number}) = true
+        _isbitsarray(::AbstractArray{T}) where T = isbitstype(T)
+        _isbitsarray(x) = false
+        custom_isleaf(x) = Functors.isleaf(x) || _isbitsarray(x)
+
+        L₂(x) = sum(something(Functors.children(x), 0))
+        L₂(a::AbstractArray{<:Number}) = length(a)
+        L₂(d::Functor{Dense}) = d.weight
+        L₂(c::Functor{Conv}) = c.weight
+
+        conv1 = Conv(ones(3, 3, 4, 4), ones(4))
+        conv2 = Conv(ones(3, 3, 4, 4), ones(4))
+        dense1 = Dense(ones(4, 2), ones(2))
+        dense2 = Dense(ones(2, 1), ones(1))
+
+        model = Chain(
+            SkipConnection(conv1, conv2),
+            x -> dropdims(max(x, dims=2), dims=2),
+            dense1,
+            dense2
+        )
+        expected = sum(length, (conv1.weight, conv2.weight, dense1.weight, dense2.weight))
+        @test Functors.fold(L₂, model; isleaf=custom_isleaf) == expected
+    end
 end
 
 @testset "unfolding" begin
@@ -98,11 +165,11 @@ end
         Functors.unfold(go, n)
     end
     
-    @test nested(3) == 3 |> Literal |> Paren |> Paren |> Paren
+    # @test nested(3) == 3 |> Literal |> Paren |> Paren |> Paren
 end
 
 @static if VERSION >= v"1.6"
-    @testset "ComposedFunction" begin
+        @testset "ComposedFunction" begin
         struct Foo a; b end
         struct Bar c end
         @functor Foo
@@ -118,122 +185,3 @@ end
         @test Functors.rfmap(plus10, f1 ∘ f2) == Foo(11.1, 12.2) ∘ Bar(13.3)
     end
 end
-
-# @testset "Nested" begin
-#   model = Bar(Foo(1, [1, 2, 3]))
-
-#   model′ = fmap(float, model)
-
-#   @test model.x.y == model′.x.y
-        #   @test model′.x.y isa Vector{Float64}
-# end
-
-# @testset "Exclude" begin
-#   f(x::AbstractArray) = x
-#   f(x::Char) = 'z'
-
-#   x = ['a', 'b', 'c']
-#   @test fmap(f, x)  == ['z', 'z', 'z']
-#   @test fmap(f, x; exclude = x -> x isa AbstractArray) == x
-
-#   x = (['a', 'b', 'c'], ['d', 'e', 'f'])
-#   @test fmap(f, x)  == (['z', 'z', 'z'], ['z', 'z', 'z'])
-#   @test fmap(f, x; exclude = x -> x isa AbstractArray) == x
-# end
-
-# @testset "Walk" begin
-#   model = Foo((0, Bar([1, 2, 3])), [4, 5])
-
-#   model′ = fmapstructure(identity, model)
-#   @test model′ == (; x=(0, (; x=[1, 2, 3])), y=[4, 5])
-# end
-
-# @testset "Property list" begin
-#   model = Baz(1, 2, 3)
-#   model′ = fmap(x -> 2x, model)
-  
-#   @test (model′.x, model′.y, model′.z) == (1, 4, 3)
-# end
-
-# @testset "fcollect" begin
-#   m1 = [1, 2, 3]
-#   m2 = 1
-#   m3 = Foo(m1, m2)
-#   m4 = Bar(m3)
-#   @test all(fcollect(m4) .=== [m4, m3, m1, m2])
-#   @test all(fcollect(m4, exclude = x -> x isa Array) .=== [m4, m3, m2])
-#   @test all(fcollect(m4, exclude = x -> x isa Foo) .=== [m4])
-
-#   m1 = [1, 2, 3]
-#   m2 = Bar(m1)
-#   m0 = NoChildren(:a, :b)
-#   m3 = Foo(m2, m0)
-#   m4 = Bar(m3)
-#   @test all(fcollect(m4) .=== [m4, m3, m2, m1, m0])
-# end
-
-# struct FFoo
-#   x
-#   y
-#   p
-# end
-# @flexiblefunctor FFoo p
-
-# struct FBar
-#   x
-#   p
-# end
-# @flexiblefunctor FBar p
-
-# struct FBaz
-#   x
-#   y
-#   z
-#   p
-# end
-# @flexiblefunctor FBaz p
-
-# @testset "Flexible Nested" begin
-#   model = FBar(FFoo(1, [1, 2, 3], (:y, )), (:x,))
-
-#   model′ = fmap(float, model)
-
-#   @test model.x.y == model′.x.y
-#   @test model′.x.y isa Vector{Float64}
-# end
-
-# @testset "Flexible Walk" begin
-#   model = FFoo((0, FBar([1, 2, 3], (:x,))), [4, 5], (:x, :y))
-
-#   model′ = fmapstructure(identity, model)
-#   @test model′ == (; x=(0, (; x=[1, 2, 3])), y=[4, 5])
-
-#   model2 = FFoo((0, FBar([1, 2, 3], (:x,))), [4, 5], (:x,))
-
-#   model2′ = fmapstructure(identity, model2)
-#   @test model2′ == (; x=(0, (; x=[1, 2, 3])))
-# end
-
-# @testset "Flexible Property list" begin
-#   model = FBaz(1, 2, 3, (:x, :z))
-#   model′ = fmap(x -> 2x, model)
-
-#   @test (model′.x, model′.y, model′.z) == (2, 2, 6)
-# end
-
-# @testset "Flexible fcollect" begin
-#   m1 = 1
-#   m2 = [1, 2, 3]
-#   m3 = FFoo(m1, m2, (:y, ))
-#   m4 = FBar(m3, (:x,))
-#   @test all(fcollect(m4) .=== [m4, m3, m2])
-#   @test all(fcollect(m4, exclude = x -> x isa Array) .=== [m4, m3])
-#   @test all(fcollect(m4, exclude = x -> x isa FFoo) .=== [m4])
-
-#   m0 = NoChildren(:a, :b)
-#   m1 = [1, 2, 3]
-#   m2 = FBar(m1, ())
-#   m3 = FFoo(m2, m0, (:x, :y,))
-#   m4 = FBar(m3, (:x,))
-#   @test all(fcollect(m4) .=== [m4, m3, m2, m0])
-# end
