@@ -194,6 +194,9 @@ julia> fcollect(m, exclude = v -> Functors.isleaf(v))
 ```
 """
 function fcollect(x; output = [], cache = Base.IdSet(), exclude = v -> false)
+    # note: we don't have an `OrderedIdSet`, so we use an `IdSet` for the cache
+    # (to ensure we get exactly 1 copy of each distinct array), and a usual `Vector`
+    # for the results, to preserve traversal order (important downstream!).
     x in cache && return output
     if !exclude(x)
       push!(cache, x)
