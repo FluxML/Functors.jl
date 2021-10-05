@@ -149,7 +149,8 @@ fmapstructure(f, x; kwargs...) = fmap(f, x; walk = (f, x) -> map(f, children(x))
     fcollect(x; exclude = v -> false)
 
 Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref)
-and collecting the results into a flat array.
+and collecting the results into a flat array, ordered by a breadth-first
+traversal of `x`, respecting the iteration order of `children` calls.
 
 Doesn't recurse inside branches rooted at nodes `v`
 for which `exclude(v) == true`.
@@ -192,11 +193,15 @@ julia> fcollect(m, exclude = v -> Functors.isleaf(v))
  Bar([1, 2, 3])
 ```
 """
-function fcollect(x; cache = [], exclude = v -> false)
-  x in cache && return cache
-  if !exclude(x)
-    push!(cache, x)
-    foreach(y -> fcollect(y; cache = cache, exclude = exclude), children(x))
-  end
-  return cache
+function fcollect(x; output = [], cache = Base.IdSet(), exclude = v -> false)
+    # note: we don't have an `OrderedIdSet`, so we use an `IdSet` for the cache
+    # (to ensure we get exactly 1 copy of each distinct array), and a usual `Vector`
+    # for the results, to preserve traversal order (important downstream!).
+    x in cache && return output
+    if !exclude(x)
+      push!(cache, x)
+      push!(output, x)
+      foreach(y -> fcollect(y; cache=cache, output=output, exclude=exclude), children(x))
+    end
+    return output
 end

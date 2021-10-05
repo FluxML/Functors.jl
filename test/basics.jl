@@ -84,6 +84,11 @@ end
   m3 = Foo(m2, m0)
   m4 = Bar(m3)
   @test all(fcollect(m4) .=== [m4, m3, m2, m1, m0])
+
+  m1 = [1, 2, 3]
+  m2 = [1, 2, 3]
+  m3 = Foo(m1, m2)
+  @test all(fcollect(m3) .=== [m3, m1, m2])
 end
 
 struct FFoo
