@@ -192,11 +192,12 @@ julia> fcollect(m, exclude = v -> Functors.isleaf(v))
  Bar([1, 2, 3])
 ```
 """
-function fcollect(x; cache = [], exclude = v -> false)
-  x in cache && return cache
-  if !exclude(x)
-    push!(cache, x)
-    foreach(y -> fcollect(y; cache = cache, exclude = exclude), children(x))
-  end
-  return cache
+function fcollect(x; output = [], cache = Base.IdSet(), exclude = v -> false)
+    x in cache && return output
+    if !exclude(x)
+      push!(cache, x)
+      push!(output, x)
+      foreach(y -> fcollect(y; cache=cache, output=output, exclude=exclude), children(x))
+    end
+    return output
 end
