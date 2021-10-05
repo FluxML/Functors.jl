@@ -149,7 +149,8 @@ fmapstructure(f, x; kwargs...) = fmap(f, x; walk = (f, x) -> map(f, children(x))
     fcollect(x; exclude = v -> false)
 
 Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref)
-and collecting the results into a flat array.
+and collecting the results into a flat array, ordered by a breadth-first
+traversal of `x`, respecting the iteration order of `children` calls.
 
 Doesn't recurse inside branches rooted at nodes `v`
 for which `exclude(v) == true`.
