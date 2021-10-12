@@ -94,16 +94,13 @@ end
     @testset "zipped fold" begin
         calldata = (fn = (;name="add"), args = [(;val=5), (;val=5)])
 
-        # div(x) = x
         div(x, _) = x
         div(x::Number, y::Number) = x / y
         expected = Call(Ident("add"), [Literal(2.), Literal(2.)])
         @test Functors.rfmap(div, call, calldata) == expected
         
-        # pairnums(x) = x
-        pairnums(x, y) = x => y
         expected = (fn = (;name="add" => "add"), args = [(;val=5 => 10), (;val=5 => 10)])
-        @test Functors.rfmap(pairnums, calldata, call) == expected
+        @test Functors.rfmap(=>, calldata, call) == expected
     end
 
     # based on https://github.com/FluxML/Flux.jl/issues/1284
@@ -165,7 +162,7 @@ end
         Functors.unfold(go, n)
     end
     
-    # @test nested(3) == 3 |> Literal |> Paren |> Paren |> Paren
+    @test nested(3) == 3 |> Literal |> Paren |> Paren |> Paren
 end
 
 @static if VERSION >= v"1.6"
