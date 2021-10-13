@@ -1,3 +1,9 @@
+# Ordinarily separate instances of mutable types would have distinct objectids
+# (or at least fail a === test), but String is an exception to both.
+# This function exists purely to handle that edge case.
+iscacheable(x) = ismutable(x)
+iscacheable(::String) = false
+
 ## Generalized folds (Catamorphisms)
 struct Fold{F,I,C}
     fn::F
@@ -12,13 +18,13 @@ end
 
 function _fold_helper(f, xs...)
     ys = map(project, xs)
+    # TODO are there times when we _should_ recurse despite a leaf?
     any(f.isleaf, ys) ? f.fn(ys...) : f.fn(fmap((xs′...) -> f(xs′...), ys...))
 end
 
-(f::Fold)(x) = isbits(x) ? get!(() -> _fold_helper(f, x), f.cache, x) : _fold_helper(f, x)
+(f::Fold)(x) = !iscacheable(x) ? get!(() -> _fold_helper(f, x), f.cache, x) : _fold_helper(f, x)
 function (f::Fold)(xs...) 
-    # fully immutable types can't be reliably tracked by objectid, so bail
-    isbits(xs) && _fold_helper(f, xs...)
+    all(iscacheable, xs) || _fold_helper(f, xs...)
     get!(() -> _fold_helper(f, xs...), f.cache, xs)
 end
 
