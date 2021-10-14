@@ -166,7 +166,7 @@ end
 end
 
 @static if VERSION >= v"1.6"
-        @testset "ComposedFunction" begin
+    @testset "ComposedFunction" begin
         struct Foo a; b end
         struct Bar c end
         @functor Foo
