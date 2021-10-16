@@ -36,7 +36,7 @@ Foo(1.0, [1.0, 2.0, 3.0])
 
 It works also with deeply-nested models:
 
-```julia-repl
+```julia
 julia> struct Bar
          x
        end
