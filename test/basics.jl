@@ -1,5 +1,3 @@
-using Functors, Test
-
 struct Foo
   x
   y
