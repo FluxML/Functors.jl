@@ -17,7 +17,7 @@ Functors.jl provides tools to express a powerful design pattern for dealing with
 
 Functors.jl provides `fmap` to make those things easy, acting as a 'map over parameters':
 
-```julia-repl
+```julia
 julia> using Functors
 
 julia> struct Foo
@@ -52,7 +52,7 @@ Bar(Foo(1.0, [1.0, 2.0, 3.0]))
 
 The workhorse of `fmap` is actually a lower level function, `functor`:
 
-```julia-repl
+```julia
 julia> xs, re = functor(Foo(1, [1, 2, 3]))
 ((x = 1, y = [1, 2, 3]), var"#21#22"())
 
@@ -64,7 +64,7 @@ Foo(1.0, [1.0, 2.0, 3.0])
 
 To include only certain fields, pass a tuple of field names to `@functor`:
 
-```julia-repl
+```julia
 julia> struct Baz
          x
          y
@@ -87,7 +87,7 @@ For a discussion regarding the need for a `cache` in the implementation of `fmap
 
 Use `exclude` for more fine-grained control over whether `fmap` descends into a particular value (the default is `exclude = Functors.isleaf`):
 
-```julia-repl
+```julia
 julia> using CUDA
 
 julia> x = ['a', 'b', 'c'];
