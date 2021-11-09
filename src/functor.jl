@@ -7,6 +7,10 @@ functor(::Type{<:NamedTuple}, x) = x, y -> y
 functor(::Type{<:AbstractArray}, x) = x, y -> y
 functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
 
+@static if VERSION >= v"1.6"
+  functor(::Type{<:Base.ComposedFunction}, x) = (outer = x.outer, inner = x.inner), y -> Base.ComposedFunction(y.outer, y.inner)
+end
+
 function makefunctor(m::Module, T, fs = fieldnames(T))
   yᵢ = 0
   escargs = map(fieldnames(T)) do f
@@ -20,13 +24,40 @@ function makefunctor(m::Module, T, fs = fieldnames(T))
 end
 
 function functorm(T, fs = nothing)
-  fs == nothing || isexpr(fs, :tuple) || error("@functor T (a, b)")
-  fs = fs == nothing ? [] : [:($(map(QuoteNode, fs.args)...),)]
+  fs === nothing || Meta.isexpr(fs, :tuple) || error("@functor T (a, b)")
+  fs = fs === nothing ? [] : [:($(map(QuoteNode, fs.args)...),)]
   :(makefunctor(@__MODULE__, $(esc(T)), $(fs...)))
 end
 
 macro functor(args...)
   functorm(args...)
+end
+
+function makeflexiblefunctor(m::Module, T, pfield)
+  pfield = QuoteNode(pfield)
+  @eval m begin
+    function $Functors.functor(::Type{<:$T}, x)
+      pfields = getproperty(x, $pfield)
+      function re(y)
+        all_args = map(fn -> getproperty(fn in pfields ? y : x, fn), fieldnames($T))
+        return $T(all_args...)
+      end
+      func = NamedTuple{pfields}(map(p -> getproperty(x, p), pfields))
+      return func, re
+    end
+
+  end
+
+end
+
+function flexiblefunctorm(T, pfield = :params)
+  pfield isa Symbol || error("@flexiblefunctor T param_field")
+  pfield = QuoteNode(pfield)
+  :(makeflexiblefunctor(@__MODULE__, $(esc(T)), $(esc(pfield))))
+end
+
+macro flexiblefunctor(args...)
+  flexiblefunctorm(args...)
 end
 
 """
@@ -137,7 +168,8 @@ fmapstructure(f, x; kwargs...) = fmap(f, x; walk = (f, x) -> map(f, children(x))
     fcollect(x; exclude = v -> false)
 
 Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref)
-and collecting the results into a flat array.
+and collecting the results into a flat array, ordered by a breadth-first
+traversal of `x`, respecting the iteration order of `children` calls.
 
 Doesn't recurse inside branches rooted at nodes `v`
 for which `exclude(v) == true`.
@@ -180,13 +212,17 @@ julia> fcollect(m, exclude = v -> Functors.isleaf(v))
  Bar([1, 2, 3])
 ```
 """
-function fcollect(x; cache = [], exclude = v -> false)
-  x in cache && return cache
-  if !exclude(x)
-    push!(cache, x)
-    foreach(y -> fcollect(y; cache = cache, exclude = exclude), children(x))
-  end
-  return cache
+function fcollect(x; output = [], cache = Base.IdSet(), exclude = v -> false)
+    # note: we don't have an `OrderedIdSet`, so we use an `IdSet` for the cache
+    # (to ensure we get exactly 1 copy of each distinct array), and a usual `Vector`
+    # for the results, to preserve traversal order (important downstream!).
+    x in cache && return output
+    if !exclude(x)
+      push!(cache, x)
+      push!(output, x)
+      foreach(y -> fcollect(y; cache=cache, output=output, exclude=exclude), children(x))
+    end
+    return output
 end
 
 # Allow gradients and other constructs that match the structure of the functor

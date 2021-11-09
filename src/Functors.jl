@@ -1,9 +1,8 @@
 module Functors
 
-using MacroTools
-
-export @functor, fmap, fmapstructure, fcollect
+export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect
 
 include("functor.jl")
+include("base.jl")
 
 end # module
