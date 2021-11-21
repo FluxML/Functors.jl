@@ -75,10 +75,29 @@ Equivalent to `functor(x)[1]`.
 """
 children(x) = functor(x)[1]
 
+function functor_tuple(f, x::Tuple, dx::Tuple)
+  map(x, dx) do x, x̄
+    _default_walk(f, x, x̄)
+  end
+end
+functor_tuple(f, x, dx) = f(x, dx)
+functor_tuple(f, x, ::Nothing) = x
+
+# @functor Chain
+# Chain -> func = (layers = (Dense,Dense),), gs -> (layers...)
+function _default_walk(f, x, dx)
+  func, re = functor(x)
+  map(func, dx) do x, x̄
+    # functor_tuple(f, x, x̄)
+    f(x, x̄)
+  end |> re
+end
+
 function _default_walk(f, x)
   func, re = functor(x)
   re(map(f, func))
 end
+_default_walk(f, ::Nothing, ::Nothing) = nothing
 
 """
     fmap(f, x; exclude = isleaf, walk = Functors._default_walk)
@@ -204,4 +223,12 @@ function fcollect(x; output = [], cache = Base.IdSet(), exclude = v -> false)
       foreach(y -> fcollect(y; cache=cache, output=output, exclude=exclude), children(x))
     end
     return output
+end
+
+# Allow gradients and other constructs that match the structure of the functor
+# to allow for `map` style computations and return a modified version of the struct.
+# This way we can use `fmap` to update the params with their gradients
+function fmap(f, x, dx...; cache = IdDict())
+  haskey(cache, x) && return cache[x]
+  cache[x] = isleaf(x) ? f(x, dx...) : _default_walk((x...) -> fmap(f, x..., cache = cache), x, dx...)
 end
