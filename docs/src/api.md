@@ -1,8 +1,15 @@
 ```@docs
-Functors.@functor
 Functors.fmap
+Functors.@functor
+```
+
+```@docs
+Functors.functor
 Functors.children
 Functors.isleaf
-Functors.fcollect
+```
+
+```@docs
 Functors.fmapstructure
+Functors.fcollect
 ```
