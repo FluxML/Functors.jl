@@ -1,10 +1,12 @@
 using Functors, Test
 using Zygote
 
-@testset "Functors.jl" begin
+@testset verbose=true "Functors.jl" begin
 
   include("basics.jl")
   include("base.jl")
+  include("vec.jl")
+
   include("update.jl")
 
   if VERSION < v"1.6" # || VERSION > v"1.7-"

@@ -286,7 +286,12 @@ julia> fmapstructure(println, m)
 (x = nothing, y = Any[nothing, (nothing, nothing), (x = nothing, y = nothing)])
 ```
 """
-fmapstructure(f, x; kwargs...) = fmap(f, x; walk = (f, x) -> map(f, children(x)), kwargs...)
+fmapstructure(f, x; kwargs...) = fmap(f, x; walk = _structure_walk, kwargs...)
+
+function _structure_walk(f, x)
+  func, _ = functor(x)
+  map(f, func)
+end
 
 """
     fcollect(x; exclude = v -> false)
