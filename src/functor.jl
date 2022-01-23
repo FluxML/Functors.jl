@@ -247,14 +247,30 @@ This function walks (maps) over `xs` calling the continuation `f'` to continue t
 julia> fmap(x -> 10x, m, walk=(f, x) -> x isa Bar ? x : Functors._default_walk(f, x))
 Foo(Bar([1, 2, 3]), (40, 50, Bar(Foo(6, 7))))
 ```
-"""
-function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict())
-  haskey(cache, x) && return cache[x]
-  y = exclude(x) ? f(x) : walk(x -> fmap(f, x, exclude = exclude, walk = walk, cache = cache), x)
-  cache[x] = y
 
+There are two more obscure keywords to describe:
+
+* `pointers = false` will disable the checking for arrays which aren't `===` but share the same
+  storage, such as `reshape`s. By default (`pointers = Set{UInt}`) these will give an error.
+
+* `prune = false` is the default, repeated nodes in the input are preserved. Chaning this to
+  `prune = nothing` will instead replace all but the first occurance with `nothing`.
+  (It is used to avoid double-counting the gradients of shared weights.)
+"""
+function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), pointers = Set{UInt}(), prune = false)
+  haskey(cache, x) && return prune === false ? cache[x] : prune
+  pointercheck(pointers, x)
+  y = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude, walk, cache, pointers, prune), x)
+  cache[x] = y
   return y
 end
+
+function pointercheck(seen::Set, x::DenseArray)
+  ptr = UInt(pointer(x))
+  ptr in seen && error("can't repeat arrays sharing the same pointer!")
+  push!(seen, ptr)
+end
+pointercheck(_, _) = nothing
 
 """
     fmapstructure(f, x; exclude = isleaf)

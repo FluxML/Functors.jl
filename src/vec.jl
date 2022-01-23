@@ -36,11 +36,15 @@ julia> gradient(v -> sum(abs2, v), fvec(m))  # no Functors involvement
 ([2.0, 4.0, 6.0, 8.0],)
 
 julia> gradient(m -> sum(abs2, fvec(m)), m)  # rrule for fvec
-((x = [2.0, 4.0], y = (x = [6.0, 8.0], y = (parent = [2.0, 4.0],))),)
+((x = [2.0, 4.0], y = (x = [6.0, 8.0], y = nothing)),)
 
 julia> fvec(ans) |> tuple
 ([2.0, 4.0, 6.0, 8.0],)
 ```
+
+It's important that the derivative for `fvec` prunes the gradient,
+because shared weights (like `twice`) may have independent gradients,
+and those gradients may be `====` to each other, and must still be accumulated.
 """
 function fvec(model; walk=_structure_walk, kw...)
     arrays = AbstractVector[]
@@ -109,7 +113,7 @@ julia> gradient([1, 2, 3, 4]) do v  # accumulates contributions to `twice`
 ([524.0, 928.0, 0.0, 0.0],)
 ```
 """
-function fcopy(model, flat::AbstractVector{T}; walk=Functors._default_walk) where {T}
+function fcopy(model, flat::AbstractVector{T}; walk=Functors._default_walk, prune=false) where {T}
     flength(model; walk=walk) == length(flat) || throw(DimensionMismatch("wrong length!"))
     i = 0
     function inner(x::AbstractArray)
@@ -120,7 +124,7 @@ function fcopy(model, flat::AbstractVector{T}; walk=Functors._default_walk) wher
     end
     inner(x::AbstractArray{<:Bool}) = x
     inner(x) = x
-    fmap(inner, model; walk=walk)
+    fmap(inner, model; walk=walk, prune=prune)
 end
 
 """
@@ -154,6 +158,7 @@ julia> @functor Foo
 julia> twice = [1,2];
 
 julia> m = Foo(twice, Foo([3,4], transpose(twice)))
+Foo([1, 2], Foo([3, 4], [1 2]))
 
 julia> Functors.flength(m)
 4
@@ -207,7 +212,7 @@ using ChainRulesCore
 
 # Functors.functor(t::Tangent) = ChainRulesCore.backing(t), identity
 
-_Tangent_walk(f, x) = Tangent{typeof(x)}(; _structure_walk(f, x)...)
+# Maybe these rules should pass on more keywords.
 
 function ChainRulesCore.rrule(::typeof(fcopy), model, flat::AbstractVector)
     function fcopy_pullback(dm)
@@ -218,17 +223,18 @@ function ChainRulesCore.rrule(::typeof(fcopy), model, flat::AbstractVector)
     fcopy(model, flat), fcopy_pullback
 end
 
-function ChainRulesCore.rrule(::typeof(fvec), model)
-    fvec_pullback(delta) = (NoTangent(), fcopy(model, float(delta); walk=_Tangent_walk))
+function ChainRulesCore.rrule(::typeof(fvec), model; walk=_structure_walk)
+    _Tangent_walk(f, x) = Tangent{typeof(x)}(; walk(f, x)...)
+    fvec_pullback(delta) = (NoTangent(), fcopy(model, float(delta); walk=_Tangent_walk, prune=ZeroTangent()))
     fvec(model), fvec_pullback
 end
 
-#=
-
-# Something like `Flux.destructure` is now a trivial combination of `fvec` and `fcopy`.
+# Something like `Flux.destructure` is now an almost trivial combination of `fvec` and `fcopy`?
 # Both `re` functions need to keep a whole copy of the model, not just the sizes & types.
 
-julia> destructure(model) = fvec(model), Base.Fix1(fcopy, model);
+#=
+
+julia> destructure(model) = fvec(model), delta -> fcopy(model, delta);
 
 julia> twice = [1,2];
 
@@ -246,7 +252,7 @@ julia> g2 = gradient(m) do m
            v, re = destructure(m)
            v[1] + sum(abs2, re(v).x .+ 10 .* re(v).y.y)
        end
-((x = [525.0, 928.0], y = (x = [0.0, 0.0], y = (parent = [525.0, 928.0],))),)
+((x = [525.0, 928.0], y = (x = [0.0, 0.0], y = nothing)),)
 
 julia> g1[1].y.y.parent == g1[1].x  # these are not tied, need to accumulate
 false
@@ -258,24 +264,30 @@ julia> Functors.faccumulate!(rand(4), m, g1[1])
    0.0
    0.0
 
-julia> g2[1].y.y.parent === g2[1].x  # but these are, accumulated during round-trip
-true
+julia> (g2[1].y.y, g2[1].x)  # now also not tied. This is where `prune` keyword is essential...
+(nothing, [525.0, 928.0])
 
-julia> Functors.faccumulate!(rand(4), m, g2[1])  # and this function doesn't check, wrong.
+julia> Functors.faccumulate!(rand(4), m, g2[1])  # ... because this function has no way to know not to add them.
 4-element Vector{Float64}:
- 1050.0
- 1856.0
-    0.0
-    0.0
+ 525.0
+ 928.0
+   0.0
+   0.0
 
-# So the walk isn't quite right yet. But checking `===` of the gradient components
-# (which would detect `g1[1].y.y.parent` here) will have false positives in general,
-# 
+# OK maybe that now works. The version of `fcopy` used in the gradient of `fvec` deliberately
+# omits some branches, because leaving the gradients just === isn't a clear sign: That will
+# happen accidentally, e.g. the `rrule` can return `Fill` etc. 
 
 julia> g3 = gradient(m -> sum(abs2, m.x + transpose(m.y.y)), m)
 ((x = [4, 8], y = (x = nothing, y = [4 8])),)
 
 julia> g3[1].x === g3[1].y.y.parent  # accidentally === due to rrule(+)
+true
+
+julia> g4 = gradient(m -> sum(m.x) + sum(transpose(m.y.y)), m)
+((x = Fill(1, 2), y = (x = nothing, y = [1 1])),)
+
+julia> g4[1].x === g4[1].y.y.parent  # immutable
 true
 
 =#

@@ -19,6 +19,6 @@ Functors.@functor Iterators.Zip
 
 using LinearAlgebra
 
-@functor Adjoint
-@functor Transpose
-@functor Diagonal
+functor(::Type{<:Adjoint}, x) = (parent = parent(x),), y -> adjoint(only(y))
+functor(::Type{<:Transpose}, x) = (parent = parent(x),), y -> transpose(only(y))
+# @functor Diagonal  # Diagonal(ZeroTangent()) # ERROR: MethodError: no method matching Diagonal(::ZeroTangent)
