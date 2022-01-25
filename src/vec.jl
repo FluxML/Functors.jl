@@ -2,8 +2,9 @@
 """
     fvec(obj)
 
-This combines all the arrays of numbers in `obj` into one vector,
-except for booleans. Differentiable.
+This creates one vector from all the arrays of numbers in `obj`,
+i.e. all leaf nodes for which `isnumeric(x) == true`.
+Omits arrays of booleans. Differentiable.
 
 # Examples
 ```jldoctest
@@ -17,6 +18,9 @@ julia> fvec((a=[1,2], b=3, c=[4,5], d=nothing))
 julia> struct Foo; x; y; end
 
 julia> @functor Foo
+
+julia> fvec(Foo(1,2))
+Float32[]
 
 julia> twice = [1,2];
 
@@ -48,12 +52,16 @@ and those gradients may be `====` to each other, and must still be accumulated.
 """
 function fvec(model; walk=_structure_walk, kw...)
     arrays = AbstractVector[]
-    inner(x::AbstractArray) = push!(arrays, vec(x))
-    inner(x::AbstractArray{<:Bool}) = nothing
-    inner(x) = nothing
-    fmap(inner, model; walk=walk, kw...)
-    flat = reduce(vcat, arrays)
+    fmap(model; walk=walk, kw...) do x
+        isnumeric(x) && push!(arrays, vec(x))
+        nothing
+    end
+    flat = isempty(arrays) ? Float32[] : reduce(vcat, arrays)
 end
+
+isnumeric(x::AbstractArray{<:Number}) = true
+isnumeric(x::AbstractArray{<:Bool}) = false
+isnumeric(x) = false
 
 """
     Functors.flength(obj)
@@ -61,12 +69,13 @@ end
 This computes `length(fvec(obj))` without creating the vector.
 """
 function flength(model; walk=_structure_walk, kw...)
-    len = 0
-    inner(x::AbstractArray) = len += length(x)
-    inner(x::AbstractArray{<:Bool}) = nothing
-    inner(x) = nothing
-    fmap(inner, model; walk=walk, kw...)
-    len
+    len = Ref(0)
+    fmap(model; walk=walk, kw...) do x
+        isnumeric(x) || return
+        len[] += length(x)
+        nothing
+    end
+    len[]
 end
 
 """
@@ -115,16 +124,13 @@ julia> gradient([1, 2, 3, 4]) do v  # accumulates contributions to `twice`
 """
 function fcopy(model, flat::AbstractVector{T}; walk=Functors._default_walk, prune=false) where {T}
     flength(model; walk=walk) == length(flat) || throw(DimensionMismatch("wrong length!"))
-    i = 0
-    function inner(x::AbstractArray)
-        y = reshape(flat[i .+ (1:length(x))], axes(x))
-        # @info "inner" x i y
-        i += length(x)
-        y
+    offset = Ref(0)
+    fmap(model; walk=walk, prune=prune) do x
+        isnumeric(x) || return x
+        y = reshape(flat[offset[] .+ (1:length(x))], axes(x))
+        offset[] += length(x)
+        return y
     end
-    inner(x::AbstractArray{<:Bool}) = x
-    inner(x) = x
-    fmap(inner, model; walk=walk, prune=prune)
 end
 
 """
@@ -171,13 +177,13 @@ julia> Functors.faccumulate!(rand(4), m, (x=[10,20], y=(x=[30,40], y=[100,200]')
   40.0
 ```
 """
-function faccumulate!(flat::AbstractVector, x, dx; ref::Ref=Ref(1), indices=IdDict())
+function faccumulate!(flat::AbstractVector, x, dx; offset::Ref=Ref(0), indices=IdDict())
     if !isleaf(x)
         # x is a container, so recurse inwards
         content, _ = functor(x)  # know x is functor-like, but dx may not be, e.g. Tangent
         for (key, val) in pairs(content)
             dxval = key in propertynames(dx) ? getproperty(dx, key) : nothing
-            faccumulate!(flat, val, dxval; ref, indices)
+            faccumulate!(flat, val, dxval; offset, indices)
         end
     elseif haskey(indices, x)
         # @info "repeat" x dx indices[x]
@@ -186,27 +192,24 @@ function faccumulate!(flat::AbstractVector, x, dx; ref::Ref=Ref(1), indices=IdDi
             # and we have a new gradient to accumulate.
             size(x) == size(dx) || throw("bad sizes!")
             ix = indices[x]::Int
-            view(flat, ix:ix+length(x)-1) .+= vec(dx)
+            view(flat, ix .+ (1:length(x))) .+= vec(dx)
         end
     elseif isnumeric(x)
-        # @info "new" x dx ref[]
+        # @info "new" x dx offset[]
         # x is a newly seen array
-        indices[x] = ref[]
+        indices[x] = offset[]
         if isnumeric(dx)
             size(x) == size(dx) || throw("bad sizes!")
-            copyto!(flat, ref[], dx, 1, length(x))
+            copyto!(flat, offset[]+1, dx, 1, length(x))
         else
             # there is no matching gradient, so write zeros
-            view(flat, ref[]:ref[]+length(x)-1) .= 0
+            ix = offset[]
+            view(flat, ix .+ (1:length(x))) .= 0
         end
-        ref[] += length(x)
+        offset[] += length(x)
     end
     flat
 end
-
-isnumeric(x::AbstractArray{<:Number}) = true
-isnumeric(x::AbstractArray{<:Bool}) = false
-isnumeric(x) = false
 
 using ChainRulesCore
 

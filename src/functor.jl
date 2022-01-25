@@ -2,7 +2,7 @@
     Functors.functor(x) = functor(typeof(x), x)
 
 Returns a tuple containing, first, a `NamedTuple` of the children of `x`
-(typically its fields), and second, a reconstruction funciton.
+(typically its fields), and second, a reconstruction function.
 This controls the behaviour of [`fmap`](@ref).
 
 Methods should be added to `functor(::Type{T}, x)` for custom types,
@@ -203,16 +203,17 @@ julia> fmap(println, (i = twice, ii = 34, iii = [5, 6], iv = (twice, 34), v = 34
 [1, 2]
 34
 [5, 6]
+34
 34.0
 (i = nothing, ii = nothing, iii = nothing, iv = (nothing, nothing), v = nothing)
 ```
 
-If the same node (same according to `===`) appears more than once,
-it will only be handled once, and only be transformed once with `f`.
+If the same node (same according to `===`, and not `isbits`) appears more than once,
+it will only be transformed once with `f`, or only recursively traversed once.
 Thus the result will also have this relationship.
 
 By default, `Tuple`s, `NamedTuple`s, and some other container-like types in Base have
-children to recurse into. Arrays of numbers do not.
+children to recurse into. `Array`s of numbers do not.
 To enable recursion into new types, you must provide a method of [`functor`](@ref),
 which can be done using the macro [`@functor`](@ref):
 
@@ -258,10 +259,14 @@ There are two more obscure keywords to describe:
   (It is used to avoid double-counting the gradients of shared weights.)
 """
 function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), pointers = Set{UInt}(), prune = false)
-  haskey(cache, x) && return prune === false ? cache[x] : prune
-  pointercheck(pointers, x)
+  if !isbits(x)
+    haskey(cache, x) && return prune === false ? cache[x] : prune
+    pointercheck(pointers, x)
+  end
   y = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude, walk, cache, pointers, prune), x)
-  cache[x] = y
+  if !isbits(x)
+    cache[x] = y
+  end
   return y
 end
 
