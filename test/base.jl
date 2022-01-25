@@ -34,7 +34,8 @@ end
 end
 
 @testset "Iterators" begin
-    # Iterators.repeated(([1,2,3], [4,5,6]), 4)
+    @test fmapstructure(x -> x./2, Iterators.repeated([1,2,3], 4)) == (xs = (x = [0.5, 1.0, 1.5],),)
+    @test fmap(float, Iterators.repeated(([1,2,3], [4,5,6]), 4)) isa Iterators.Take
 
     @test fmap(float, zip([1,2], [3,4])) isa Iterators.Zip
     @test first(fmap(float, zip([1,2], [3,4]))) === (1.0, 3.0)

@@ -254,7 +254,7 @@ There are two more obscure keywords to describe:
 * `pointers = false` will disable the checking for arrays which aren't `===` but share the same
   storage, such as `reshape`s. By default (`pointers = Set{UInt}`) these will give an error.
 
-* `prune = false` is the default, repeated nodes in the input are preserved. Chaning this to
+* `prune = false` is the default, repeated nodes in the input are preserved. Changing this to
   `prune = nothing` will instead replace all but the first occurance with `nothing`.
   (It is used to avoid double-counting the gradients of shared weights.)
 """
@@ -272,7 +272,9 @@ end
 
 function pointercheck(seen::Set, x::DenseArray)
   ptr = UInt(pointer(x))
-  ptr in seen && error("can't repeat arrays sharing the same pointer!")
+  ptr in seen && throw(ArgumentError(
+    """Functors.jl allows the same object to appear at several nodes, but not
+    `A !== B` sharing the same pointer, as created for example by `reshape`."""))
   push!(seen, ptr)
 end
 pointercheck(_, _) = nothing
@@ -284,27 +286,32 @@ Like [`fmap`](@ref), but doesn't preserve the type of custom structs.
 Instead, it returns a `NamedTuple` (or a `Tuple`, or an array),
 or a nested set of these.
 
-Useful for when the output must not contain custom structs.
+Useful for when the output must not contain custom structs,
+or as a Functors.jl version of `foreach` where its output will be discarded,
+but may not be accepted by the type constructors.
 
 # Examples
 ```jldoctest
-julia> struct Foo; x; y; end
+julia> struct FooVec; x::Vector; y::Vector; end
 
-julia> @functor Foo
+julia> @functor FooVec
 
-julia> m = Foo([1,2,3], [4, (5, 6), Foo(7, 8)]);
+julia> m = FooVec([1,2,3], [missing, (4, 5), FooVec([6, 7], Int[])]);
 
 julia> fmapstructure(x -> 2x, m)
-(x = [2, 4, 6], y = Any[8, (10, 12), (x = 14, y = 16)])
+(x = [2, 4, 6], y = Any[missing, (8, 10), (x = [12, 14], y = Int64[])])
 
-julia> fmapstructure(println, m)
+julia> fmapstructure(println, m; exclude=Functors.isnumeric)
 [1, 2, 3]
-4
-5
-6
-7
-8
-(x = nothing, y = Any[nothing, (nothing, nothing), (x = nothing, y = nothing)])
+[6, 7]
+Int64[]
+(x = nothing, y = Any[(), ((), ()), (x = nothing, y = nothing)])
+
+julia> try fmap(println, m; exclude=Functors.isnumeric) catch e typeof(e) end
+[1, 2, 3]
+[6, 7]
+Int64[]
+MethodError
 ```
 """
 fmapstructure(f, x; kwargs...) = fmap(f, x; walk = _structure_walk, kwargs...)
