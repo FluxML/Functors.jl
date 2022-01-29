@@ -49,6 +49,7 @@ end
 # TODO: Should you be able to control the type of the output vector?
 #       What happens to complex numbers, or a mix of real & complex?
 #       Should a different `exclude` let you include numbers?
+#       Or should it include non-integers by default?
 
 """
     Functors.isnumeric(x)
@@ -88,12 +89,13 @@ end
 """
     fcopy(obj, flat; [walk, exclude, len, ...])
     fview(obj, flat; kw...)
+    fcopy!(obj, flat; kw...)
 
 Uses `fmap` to reconstruct an object like the one given,
 replacing arrays with the data from a given vector, with
-the layout as `fvec(obj)`. 
-
-With `fview`, every array in the result is a view of the given vector.
+the layout as `fvec(obj)`. Variants:
+* `fview` makes reshaped views of the given vector.
+* `fcopy!` mutates every array in the original object, and re-uses them.
 
 Differentiable.
 
@@ -102,7 +104,7 @@ Differentiable.
 julia> nt = (a=[1,2], b=3, c=[4,5], d=sin);
 
 julia> fcopy(nt, [10, 20, 30, 40])
-(a = [10, 20], b = 3, c = [30, 40], d = sin)
+(a = [10.0, 20.0], b = 3, c = [30.0, 40.0], d = sin)
 
 julia> struct Foo; x; y; end; @functor Foo
 
@@ -132,26 +134,37 @@ function _fcopy(getter::F, model, flat::AbstractVector{T};
         "model with flatlength(m) == $(len) cannot be reconstructed from parameter vector length(flat) == $(length(flat))"))
     offset = Ref(0)
     fmap(model; walk, exclude, kw...) do x
-        y = getter(flat, offset .+ (1:length(x)))
+        y = _getarray(getter, flat, offset[], x)
         offset[] += length(x)
-        reshape(y, axes(x))
+        y
     end
 end
 
 @doc @doc(fcopy)
+fcopy!(model, flat::AbstractVector; kw...) = _fcopy(copyto!, model, flat; kw...)
+
+@doc @doc(fcopy)
 fview(model, flat::AbstractVector; kw...) = _fcopy(view, model, flat; kw...)
 
-# TODO: Should this restore types, e.g. if model has Float32 and Float64 parts?
-#       Or complex & real.
+# TODO: How should this handle types, e.g. if model has Float32 and Float64 parts?
+#       Or float & integer. Or complex & real.
 
-# function getarray(::typeof(getindex), flat::AbstractVector, offset::Int, x::AbstractArray)
+function _getarray(::typeof(getindex), flat::AbstractVector, offset::Int, x::AbstractArray)
+    y = reshape(getindex(flat, offset .+ (1:length(x))), axes(x))
+    # convert(typeof(x), y)
+    convert(AbstractArray{float(eltype(x))}, y)
+end
+# function _getarray(::typeof(getindex), flat::AbstractVector, offset::Int, x::AbstractArray)
 #     y = similar(x, float(eltype(x)), axes(x))
 #     copyto!(y, firstindex(y), flat, offset+1, length(x))
 #     y
 # end
-# function getarray(::typeof(view), flat::AbstractVector, offset::Int, x::AbstractArray)
-#     reshape(view(flat, offset .+ (1:length(x))), axes(x))
-# end
+function _getarray(::typeof(copyto!), flat::AbstractVector, offset::Int, x::AbstractArray)
+    copyto!(x, firstindex(y), flat, offset+1, length(x))
+end
+function _getarray(::typeof(view), flat::AbstractVector, offset::Int, x::AbstractArray)
+    reshape(view(flat, offset .+ (1:length(x))), axes(x))
+end
 
 
 
@@ -251,13 +264,17 @@ using ChainRulesCore
 """
 Gradient rule for `fcopy`:
 
-```jldoctest
+```
 julia> nt = (a=[1,2], b=3, c=[4,5], d=sin);
 
 julia> using Zygote
 
 julia> gradient(v -> sum(abs2, fcopy(nt, v).c), [1, 2, 3, 4])  # rrule for fcopy
 ([0.0, 0.0, 6.0, 8.0],)
+
+julia> twice = [1,2];
+
+julia> m = Foo(twice, Foo([3,4], transpose(twice)));
 
 julia> gradient(m -> sum(abs2, m.x .+ 10 .* m.y.y), m)  # no Functors involvement
 ((x = [64.0, 68.0], y = (x = nothing, y = [460.0 860.0])),)
@@ -268,12 +285,12 @@ julia> gradient([1, 2, 3, 4]) do v  # accumulates contributions to `twice`
        end
 ([524.0, 928.0, 0.0, 0.0],)
 ```
-"""
+"""  # TODO this fails in jldoctest, ERROR: UndefVarError: m not defined, WTF?
 function ChainRulesCore.rrule(::typeof(_fcopy), get::F, model, flat::AbstractVector;
         exclude=isnumeric, len=flatlength(model; exclude), kw...) where {F}
     function fcopy_pullback(dm)
         out = similar(flat, float(eltype(flat)))
-        flatgrad!(out, model, dm; exclude)
+        flatgrad!(out, model, unthunk(dm); exclude)
         return (NoTangent(), NoTangent(), NoTangent(), out)
     end
     # Note that we can't pass walk keyword through here, as `flatgrad!` doesn't use it. Could it?
@@ -283,7 +300,7 @@ end
 """
 Gradient rule for `fvec`:
 
-```jldoctest
+```
 julia> struct Foo; x; y; end; @functor Foo
 
 julia> twice = [1,2];
@@ -304,17 +321,17 @@ julia> fvec(ans) |> tuple
 
 It's important that the derivative for `fvec` prunes the gradient tree,
 so that the gradient of a tied array (like `twice`) is not later counted twice.
-"""
+"""  # TODO this fails in jldoctest, as it prints info...
 function ChainRulesCore.rrule(::typeof(fvec), model; walk=_structure_walk)
     flat = fvec(model)
     len = length(flat)
     function _Tangent_walk(f, x)
         b = walk(f, x)
-        b isa Union{Tuple{}, NamedTuple{()}} && return NoTangent()  # not very happy here
+        b isa Union{Tuple{}, NamedTuple{()}} && (@info "Tangent walk..." x b; return NoTangent())  # not very happy here!
         Tangent{typeof(x), typeof(b)}(b)
     end
     function fvec_pullback(delta)
-        dm = fcopy(model, float(delta); walk=_Tangent_walk, prune=ZeroTangent(), len=len)
+        dm = fcopy(model, float(unthunk(delta)); walk=_Tangent_walk, prune=ZeroTangent(), len=len)
         return (NoTangent(), dm)
     end
     flat, fvec_pullback

@@ -249,22 +249,26 @@ julia> fmap(x -> 10x, m, walk=(f, x) -> x isa Bar ? x : Functors._default_walk(f
 Foo(Bar([1, 2, 3]), (40, 50, Bar(Foo(6, 7))))
 ```
 
-There are two more obscure keywords to describe:
+There are a few more obscure keywords controlling how repeated nodes are handled:
+
+* `cache = false` will disable handling of repeated elements, and thus treat `x` as a tree.
+  The default is `cache = IdDict()`.
 
 * `pointers = false` will disable the checking for arrays which aren't `===` but share the same
-  storage, such as `reshape`s. By default (`pointers = Set{UInt}`) these will give an error.
+  storage, such as `reshape`s. By default (`pointers = Set{UInt}()`) these will give an error.
 
-* `prune = false` is the default, repeated nodes in the input are preserved. Changing this to
-  `prune = nothing` will instead replace all but the first occurance with `nothing`.
-  (It is used to avoid double-counting the gradients of shared weights.)
+* `prune = nothing` will replace all but the first occurance with `nothing` (or any other value 
+  except `false`). This is used to avoid double-counting the gradients of shared weights.
+  The default is `prune = false`, for which repeated nodes in the input are preserved.
 """
 function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), pointers = Set{UInt}(), prune = false)
-  if !isbits(x)
+  usecache = !isbits(x) && cache !== false
+  if usecache
     haskey(cache, x) && return prune === false ? cache[x] : prune
     pointercheck(pointers, x)
   end
   y = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude, walk, cache, pointers, prune), x)
-  if !isbits(x)
+  if usecache
     cache[x] = y
   end
   return y
