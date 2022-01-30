@@ -31,6 +31,26 @@ end
   end
 end
 
+@testset "Folds" begin
+  arrays = ntuple(i -> [i], 3)
+  model = Foo(
+    Foo(arrays[1], arrays[2]),
+    Foo(arrays[3], arrays[1])
+  )
+
+  total = Ref(0)
+  Functors.fmap(model, cache = true) do x
+    total[] += only(x)
+  end
+  @test total[] == 6
+
+  total = Ref(0)
+  Functors.fmap(model, cache = false) do x
+    total[] += only(x)
+  end
+  @test total[] == 7
+end
+
 @testset "Nested" begin
   model = Bar(Foo(1, [1, 2, 3]))
 

@@ -189,11 +189,11 @@ iscachesafe(x) = !isbits(x) && ismutable(x)
 iscachesafe(::Union{String,Symbol}) = false
 # For varargs
 iscachesafe(xs::Tuple) = all(iscachesafe, xs)
-Base.get!(f, c::Cache, x) = iscachesafe(x) ? get!(f, c.inner, x) : f(x)
+Base.get!(f, c::Cache, x) = iscachesafe(x) ? get!(f, c.inner, x) : f()
 
 # Passthrough used to disable caching (e.g. when passing `cache=false`)
 struct NoCache end
-Base.get!(f, ::NoCache, x) = f(x)
+Base.get!(f, ::NoCache, _) = f()
 
 # Encapsulates the self-recursive part of a recursive tree reduction (fold).
 # This allows calling functions to remove any self-calls or nested callback closures.
@@ -203,7 +203,9 @@ struct Fold{F,L,C,W}
   cache::C
   walk::W
 end
-(fld::Fold)(x) = get!(() -> fld.fn(fld.isleaf(x) ? x : fld.walk(fld, x)), fld.cache, x)
+(fld::Fold)(x) = get!(fld.cache, x) do 
+  fld.fn(fld.isleaf(x) ? x : fld.walk(fld, x))
+end
 
 # Convenience function for working with `Fold`
 function fold(f, x; isleaf = isleaf, cache = false, walk = _default_walk)
