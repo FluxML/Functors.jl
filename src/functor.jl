@@ -184,12 +184,12 @@ struct Cache{K,V}
 end
 Cache() = Cache(IdDict())
 
-iscachesafe(x) = !isbits(x) && ismutable(x)
+usecache(x) = !isbits(x) && ismutable(x)
 # Functionally immutable and observe value semantics, but still `ismutable` and not `isbits`
-iscachesafe(::Union{String,Symbol}) = false
+usecache(::Union{String,Symbol}) = false
 # For varargs
-iscachesafe(xs::Tuple) = all(iscachesafe, xs)
-Base.get!(f, c::Cache, x) = iscachesafe(x) ? get!(f, c.inner, x) : f()
+usecache(xs::Tuple) = all(usecache, xs)
+Base.get!(f, c::Cache, x) = usecache(x) ? get!(f, c.inner, x) : f()
 
 # Passthrough used to disable caching (e.g. when passing `cache=false`)
 struct NoCache end
@@ -301,8 +301,7 @@ Foo(Bar([1, 2, 3]), (40, 50, Bar(Foo(6, 7))))
 """
 function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict())
   return fold(x; cache, walk, isleaf = exclude) do node
-    !exclude(node) && return node
-    return f(node)
+    exclude(node) ? f(node) : node
   end
 end
 
