@@ -72,8 +72,8 @@ end
   m2 = 1
   m3 = Foo(m1, m2)
   m4 = Bar(m3)
-  @test all(fcollect(m4) .=== [m4, m3, m1, m2])
-  @test all(fcollect(m4, exclude = x -> x isa Array) .=== [m4, m3, m2])
+  @test all(fcollect(m4) .=== [m1, m2, m3, m4])
+  @test all(fcollect(m4, exclude = x -> x isa Array) .=== [m2, m3, m4])
   @test all(fcollect(m4, exclude = x -> x isa Foo) .=== [m4])
 
   m1 = [1, 2, 3]
@@ -81,12 +81,12 @@ end
   m0 = NoChildren(:a, :b)
   m3 = Foo(m2, m0)
   m4 = Bar(m3)
-  @test all(fcollect(m4) .=== [m4, m3, m2, m1, m0])
+  @test all(fcollect(m4) .=== [m1, m2, m0, m3, m4])
 
   m1 = [1, 2, 3]
   m2 = [1, 2, 3]
   m3 = Foo(m1, m2)
-  @test all(fcollect(m3) .=== [m3, m1, m2])
+  @test all(fcollect(m3) .=== [m1, m2, m3])
 end
 
 struct FFoo
@@ -143,8 +143,8 @@ end
   m2 = [1, 2, 3]
   m3 = FFoo(m1, m2, (:y, ))
   m4 = FBar(m3, (:x,))
-  @test all(fcollect(m4) .=== [m4, m3, m2])
-  @test all(fcollect(m4, exclude = x -> x isa Array) .=== [m4, m3])
+  @test all(fcollect(m4) .=== [m2, m3, m4])
+  @test all(fcollect(m4, exclude = x -> x isa Array) .=== [m3, m4])
   @test all(fcollect(m4, exclude = x -> x isa FFoo) .=== [m4])
 
   m0 = NoChildren(:a, :b)
@@ -152,5 +152,5 @@ end
   m2 = FBar(m1, ())
   m3 = FFoo(m2, m0, (:x, :y,))
   m4 = FBar(m3, (:x,))
-  @test all(fcollect(m4) .=== [m4, m3, m2, m0])
+  @test all(fcollect(m4) .=== [m2, m0, m3, m4])
 end
