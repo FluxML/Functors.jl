@@ -198,7 +198,6 @@ end
   end
 end
 
-@static if VERSION >= v"1.6" # Julia 1.0: LoadError: error compiling top-level scope: type definition not allowed inside a local scope
 @testset "old test update.jl" begin
   struct M{F,T,S}
     σ::F
@@ -222,7 +221,6 @@ end
   @test m̂.W ≈ fill(0.8f0, size(m.W))
   @test m̂.b ≈ fill(-0.2f0, size(m.b))
 end
-end  # VERSION
 
 ###
 ### FlexibleFunctors.jl

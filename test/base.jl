@@ -10,14 +10,12 @@
   @test re(p) isa Base.RefValue{Int}
 end
 
-@static if VERSION >= v"1.6"
-  @testset "ComposedFunction" begin
-    f1 = Foo(1.1, 2.2)
-    f2 = Bar(3.3)
-    @test Functors.functor(f1 ∘ f2)[1] == (outer = f1, inner = f2)
-    @test Functors.functor(f1 ∘ f2)[2]((outer = f1, inner = f2)) == f1 ∘ f2
-    @test fmap(x -> x + 10, f1 ∘ f2) == Foo(11.1, 12.2) ∘ Bar(13.3)
-  end
+@testset "ComposedFunction" begin
+  f1 = Foo(1.1, 2.2)
+  f2 = Bar(3.3)
+  @test Functors.functor(f1 ∘ f2)[1] == (outer = f1, inner = f2)
+  @test Functors.functor(f1 ∘ f2)[2]((outer = f1, inner = f2)) == f1 ∘ f2
+  @test fmap(x -> x + 10, f1 ∘ f2) == Foo(11.1, 12.2) ∘ Bar(13.3)
 end
 
 @testset "PermutedDimsArray" begin
