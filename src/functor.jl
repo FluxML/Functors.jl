@@ -34,6 +34,72 @@ macro functor(args...)
   functorm(args...)
 end
 
+isleaf(x) = children(x) === ()
+
+children(x) = functor(x)[1]
+
+function _default_walk(f, x)
+  func, re = functor(x)
+  re(map(f, func))
+end
+
+function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict())
+  haskey(cache, x) && return cache[x]
+  y = exclude(x) ? f(x) : walk(x -> fmap(f, x, exclude = exclude, walk = walk, cache = cache), x)
+  cache[x] = y
+
+  return y
+end
+
+###
+### Extras
+###
+
+fmapstructure(f, x; kwargs...) = fmap(f, x; walk = (f, x) -> map(f, children(x)), kwargs...)
+
+function fcollect(x; output = [], cache = Base.IdSet(), exclude = v -> false)
+    # note: we don't have an `OrderedIdSet`, so we use an `IdSet` for the cache
+    # (to ensure we get exactly 1 copy of each distinct array), and a usual `Vector`
+    # for the results, to preserve traversal order (important downstream!).
+    x in cache && return output
+    if !exclude(x)
+      push!(cache, x)
+      push!(output, x)
+      foreach(y -> fcollect(y; cache=cache, output=output, exclude=exclude), children(x))
+    end
+    return output
+end
+
+###
+### Vararg forms
+###
+
+function fmap(f, x, dx...; cache = IdDict())
+  haskey(cache, x) && return cache[x]
+  cache[x] = isleaf(x) ? f(x, dx...) : _default_walk((x...) -> fmap(f, x..., cache = cache), x, dx...)
+end
+
+function functor_tuple(f, x::Tuple, dx::Tuple)
+  map(x, dx) do x, x̄
+    _default_walk(f, x, x̄)
+  end
+end
+functor_tuple(f, x, dx) = f(x, dx)
+functor_tuple(f, x, ::Nothing) = x
+
+function _default_walk(f, x, dx)
+  func, re = functor(x)
+  map(func, dx) do x, x̄
+    # functor_tuple(f, x, x̄)
+    f(x, x̄)
+  end |> re
+end
+_default_walk(f, ::Nothing, ::Nothing) = nothing
+
+###
+### FlexibleFunctors.jl
+###
+
 function makeflexiblefunctor(m::Module, T, pfield)
   pfield = QuoteNode(pfield)
   @eval m begin
@@ -59,63 +125,4 @@ end
 
 macro flexiblefunctor(args...)
   flexiblefunctorm(args...)
-end
-
-isleaf(x) = children(x) === ()
-
-children(x) = functor(x)[1]
-
-function functor_tuple(f, x::Tuple, dx::Tuple)
-  map(x, dx) do x, x̄
-    _default_walk(f, x, x̄)
-  end
-end
-functor_tuple(f, x, dx) = f(x, dx)
-functor_tuple(f, x, ::Nothing) = x
-
-# @functor Chain
-# Chain -> func = (layers = (Dense,Dense),), gs -> (layers...)
-function _default_walk(f, x, dx)
-  func, re = functor(x)
-  map(func, dx) do x, x̄
-    # functor_tuple(f, x, x̄)
-    f(x, x̄)
-  end |> re
-end
-
-function _default_walk(f, x)
-  func, re = functor(x)
-  re(map(f, func))
-end
-_default_walk(f, ::Nothing, ::Nothing) = nothing
-
-function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict())
-  haskey(cache, x) && return cache[x]
-  y = exclude(x) ? f(x) : walk(x -> fmap(f, x, exclude = exclude, walk = walk, cache = cache), x)
-  cache[x] = y
-
-  return y
-end
-
-fmapstructure(f, x; kwargs...) = fmap(f, x; walk = (f, x) -> map(f, children(x)), kwargs...)
-
-function fcollect(x; output = [], cache = Base.IdSet(), exclude = v -> false)
-    # note: we don't have an `OrderedIdSet`, so we use an `IdSet` for the cache
-    # (to ensure we get exactly 1 copy of each distinct array), and a usual `Vector`
-    # for the results, to preserve traversal order (important downstream!).
-    x in cache && return output
-    if !exclude(x)
-      push!(cache, x)
-      push!(output, x)
-      foreach(y -> fcollect(y; cache=cache, output=output, exclude=exclude), children(x))
-    end
-    return output
-end
-
-# Allow gradients and other constructs that match the structure of the functor
-# to allow for `map` style computations and return a modified version of the struct.
-# This way we can use `fmap` to update the params with their gradients
-function fmap(f, x, dx...; cache = IdDict())
-  haskey(cache, x) && return cache[x]
-  cache[x] = isleaf(x) ? f(x, dx...) : _default_walk((x...) -> fmap(f, x..., cache = cache), x, dx...)
 end
