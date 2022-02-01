@@ -5,6 +5,12 @@ export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect
 include("functor.jl")
 include("base.jl")
 
+
+###
+### Docstrings for basic functionality
+###
+
+
 """
     Functors.functor(x) = functor(typeof(x), x)
 
@@ -178,6 +184,12 @@ Foo(Bar([1, 2, 3]), (40, 50, Bar(Foo(6, 7))))
 ```
 """
 fmap
+
+
+###
+### Extras
+###
+
 
 """
     fmapstructure(f, x; exclude = isleaf)
