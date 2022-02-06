@@ -43,12 +43,9 @@ function _default_walk(f, x)
   re(map(f, func))
 end
 
-function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict())
-  haskey(cache, x) && return cache[x]
-  y = exclude(x) ? f(x) : walk(x -> fmap(f, x, exclude = exclude, walk = walk, cache = cache), x)
-  cache[x] = y
-
-  return y
+function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = Base._InitialValue())
+  haskey(cache, x) && return prune === Base._InitialValue() ? cache[x] : prune
+  cache[x] = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude, walk, cache, prune), x)
 end
 
 ###
@@ -74,8 +71,8 @@ end
 ### Vararg forms
 ###
 
-function fmap(f, x, ys...; exclude = isleaf, walk = _default_biwalk, cache = IdDict(), prune = false)
-  haskey(cache, x) && return prune === false ? cache[x] : prune
+function fmap(f, x, ys...; exclude = isleaf, walk = _default_biwalk, cache = IdDict(), prune = Base._InitialValue())
+  haskey(cache, x) && return prune === Base._InitialValue() ? cache[x] : prune
   cache[x] = exclude(x) ? f(x, ys...) : walk((xy...,) -> fmap(f, xy...; exclude, walk, cache, prune), x, ys...)
 end
 
