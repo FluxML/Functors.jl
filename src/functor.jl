@@ -74,27 +74,16 @@ end
 ### Vararg forms
 ###
 
-function fmap(f, x, dx...; cache = IdDict())
-  haskey(cache, x) && return cache[x]
-  cache[x] = isleaf(x) ? f(x, dx...) : _default_walk((x...) -> fmap(f, x..., cache = cache), x, dx...)
+function fmap(f, x, ys...; exclude = isleaf, walk = _default_biwalk, cache = IdDict(), prune = false)
+  haskey(cache, x) && return prune === false ? cache[x] : prune
+  cache[x] = exclude(x) ? f(x, ys...) : walk((xy...,) -> fmap(f, xy...; exclude, walk, cache, prune), x, ys...)
 end
 
-function functor_tuple(f, x::Tuple, dx::Tuple)
-  map(x, dx) do x, x̄
-    _default_walk(f, x, x̄)
-  end
-end
-functor_tuple(f, x, dx) = f(x, dx)
-functor_tuple(f, x, ::Nothing) = x
-
-function _default_walk(f, x, dx)
+function _default_biwalk(f, x, y)
   func, re = functor(x)
-  map(func, dx) do x, x̄
-    # functor_tuple(f, x, x̄)
-    f(x, x̄)
-  end |> re
+  yfunc, _ = functor(typeof(x), y)
+  map((x, y) -> f(x, y), func, yfunc) |> re
 end
-_default_walk(f, ::Nothing, ::Nothing) = nothing
 
 ###
 ### FlexibleFunctors.jl
