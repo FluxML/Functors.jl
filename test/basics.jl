@@ -69,6 +69,12 @@ end
   @test m2f.x.x === m2f.y.x
   m2p = fmapstructure(identity, m2; prune = Bar(0))
   @test m2p == (x = (x = [1, 2, 3], y = 4), y = Bar(0))
+
+  # Repeated isbits types should not automatically be regarded as shared:
+  m3 = Foo(Foo(shared, 1:3), Foo(1:3, shared))
+  m3p = fmapstructure(identity, m3; prune = 0)
+  @test m3p.y.y == 0
+  @test_broken m3p.y.x == 1:3
 end
 
 ###
