@@ -81,11 +81,6 @@ end
 function _default_walk(f, x, ys...)
   func, re = functor(x)
   yfuncs = map(y -> functor(typeof(x), y)[1], ys)
-  for yf in yfuncs
-    nx = propertynames(func)
-    ny = propertynames(yf)
-    nx == ny || throw(ArgumentError("names of children must agree, got $nx != $ny"))
-  end
   re(map(f, func, yfuncs...))
 end
 
