@@ -182,6 +182,16 @@ This function walks (maps) over `xs` calling the continuation `f'` to continue t
 julia> fmap(x -> 10x, m, walk=(f, x) -> x isa Bar ? x : Functors._default_walk(f, x))
 Foo(Bar([1, 2, 3]), (40, 50, Bar(Foo(6, 7))))
 ```
+
+The behaviour when the same node appears twice can be altered by giving a value
+to the `prune` keyword, which is then used in place of all but the first:
+
+```jldoctest
+julia> twice = [1, 2];
+
+julia> fmap(float, (x = twice, y = [1,2], z = twice); prune = missing)
+(x = [1.0, 2.0], y = [1.0, 2.0], z = missing)
+```
 """
 fmap
 
