@@ -53,6 +53,24 @@ end
   @test (model′.x, model′.y, model′.z) == (1, 4, 3)
 end
 
+@testset "cache" begin
+  shared = [1,2,3]
+  m1 = Foo(shared, Foo([1,2,3], Foo(shared, [1,2,3])))
+  m1f = fmap(float, m1)
+  @test m1f.x === m1f.y.y.x
+  @test m1f.x !== m1f.y.x
+  m1p = fmapstructure(identity, m1; prune = nothing)
+  @test m1p == (x = [1, 2, 3], y = (x = [1, 2, 3], y = (x = nothing, y = [1, 2, 3])))
+
+  # A non-leaf node can also be repeated:
+  m2 = Foo(Foo(shared, 4), Foo(shared, 4))
+  @test m2.x === m2.y
+  m2f = fmap(float, m2)
+  @test m2f.x.x === m2f.y.x
+  m2p = fmapstructure(identity, m2; prune = Bar(0))
+  @test m2p == (x = (x = [1, 2, 3], y = 4), y = Bar(0))
+end
+
 ###
 ### Extras
 ###
@@ -91,7 +109,29 @@ end
 ###
 
 @testset "fmap(f, x, y)" begin
-  @test true  # TODO
+  m1 = (x = [1,2], y = 3)
+  n1 = (x = [4,5], y = 6)
+  @test fmap(+, m1, n1) == (x = [5, 7], y = 9)
+
+  # Reconstruction type comes from the first argument
+  foo1 = Foo([7,8], 9)
+  @test_broken fmap(+, m1, foo1) == (x = [8, 10], y = 12)  # https://github.com/FluxML/Functors.jl/issues/38
+  @test fmap(+, foo1, n1) isa Foo
+  @test fmap(+, foo1, n1).x == [11, 13]
+
+  # Mismatched trees should be an error
+  m2 = (x = [1,2], y = (a = [3,4], b = 5))
+  n2 = (x = [6,7], y = 8)
+  @test_throws ArgumentError fmap(first∘tuple, m2, n2)
+  @test_broken @test_throws ArgumentError fmap(first∘tuple, m2, n2)  # now (x = [6, 7], y = 8)
+
+  # The cache uses IDs from the first argument
+  shared = [1,2,3]
+  m3 = (x = shared, y = [4,5,6], z = shared)
+  n3 = (x = shared, y = shared, z = [7,8,9])
+  @test fmap(+, m3, n3) == (x = [2, 4, 6], y = [5, 7, 9], z = [2, 4, 6])
+  z3 = fmap(+, m3, n3)
+  @test z3.x === z3.z
 end
 
 @testset "old test update.jl" begin
