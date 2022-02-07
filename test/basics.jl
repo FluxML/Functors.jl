@@ -1,4 +1,6 @@
 
+using Functors: functor
+
 struct Foo; x; y; end
 @functor Foo
 
@@ -77,6 +79,38 @@ end
   @test_broken m3p.y.x == 1:3
 end
 
+@testset "functor(typeof(x), y) from @functor" begin
+  nt1, re1 = functor(Foo, (x=1, y=2, z=3))
+  @test nt1 == (x = 1, y = 2)
+  @test re1((x = 10, y = 20)) == Foo(10, 20)
+  re1((y = 22, x = 11)) # gives Foo(22, 11), is that a bug?
+
+  nt2, re2 = functor(Foo, (z=33, x=1, y=2))
+  @test nt2 == (x = 1, y = 2)
+  @test re2((x = 10, y = 20)) == Foo(10, 20)
+
+  @test_throws Exception functor(Foo, (z=33, x=1))  # type NamedTuple has no field y
+
+  nt3, re3 = functor(OneChild3, (x=1, y=2, z=3))
+  @test nt3 == (y = 2,)
+  @test re3((y = 20,)) == OneChild3(1, 20, 3)
+  re3(22) # gives OneChild3(1, 22, 3), is that a bug?
+end
+
+@testset "functor(typeof(x), y) for Base types" begin
+  nt11, re11 = functor(NamedTuple{(:x, :y)}, (x=1, y=2, z=3))
+  @test nt11 == (x = 1, y = 2)
+  @test re11((x = 10, y = 20)) == (x = 10, y = 20)
+  re11((y = 22, x = 11))
+  re11((11, 22))  # passes right through
+
+  nt12, re12 = functor(NamedTuple{(:x, :y)}, (z=33, x=1, y=2))
+  @test nt12 == (x = 1, y = 2)
+  @test re12((x = 10, y = 20)) == (x = 10, y = 20)
+
+  @test_throws Exception functor(NamedTuple{(:x, :y)}, (z=33, x=1))
+end
+
 ###
 ### Extras
 ###
@@ -128,7 +162,7 @@ end
   # Mismatched trees should be an error
   m2 = (x = [1,2], y = (a = [3,4], b = 5))
   n2 = (x = [6,7], y = 8)
-  @test_throws Exception fmap(first∘tuple, m2, n2)
+  @test_throws Exception fmap(first∘tuple, m2, n2)  # ERROR: type Int64 has no field a
   @test_throws Exception fmap(first∘tuple, m2, n2)
 
   # The cache uses IDs from the first argument
@@ -138,6 +172,17 @@ end
   @test fmap(+, m3, n3) == (x = [2, 4, 6], y = [5, 7, 9], z = [2, 4, 6])
   z3 = fmap(+, m3, n3)
   @test z3.x === z3.z
+
+  # Pruning of duplicates:
+  @test fmap(+, m3, n3; prune = nothing) == (x = [2,4,6], y = [5,7,9], z = nothing)
+
+  # More than two arguments:
+  z4 = fmap(+, m3, n3, m3, n3)
+  @test z4 == fmap(x -> 2x, z3)
+  @test z4.x === z4.z
+
+  @test fmap(+, foo1, m1, n1) isa Foo
+  @test fmap(.*, m1, foo1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
 end
 
 @testset "old test update.jl" begin
