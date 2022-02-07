@@ -43,8 +43,10 @@ function _default_walk(f, x)
   re(map(f, func))
 end
 
-function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = Base._InitialValue())
-  haskey(cache, x) && return prune === Base._InitialValue() ? cache[x] : prune
+const INIT = Base._InitialValue()  # sentinel value for keyword not supplied
+
+function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = INIT)
+  haskey(cache, x) && return prune === INIT ? cache[x] : prune
   cache[x] = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude, walk, cache, prune), x)
 end
 
@@ -71,15 +73,15 @@ end
 ### Vararg forms
 ###
 
-function fmap(f, x, ys...; exclude = isleaf, walk = _default_biwalk, cache = IdDict(), prune = Base._InitialValue())
-  haskey(cache, x) && return prune === Base._InitialValue() ? cache[x] : prune
+function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = INIT)
+  haskey(cache, x) && return prune === INIT ? cache[x] : prune
   cache[x] = exclude(x) ? f(x, ys...) : walk((xy...,) -> fmap(f, xy...; exclude, walk, cache, prune), x, ys...)
 end
 
-function _default_biwalk(f, x, y)
+function _default_walk(f, x, ys...)
   func, re = functor(x)
-  yfunc, _ = functor(typeof(x), y)
-  map((x, y) -> f(x, y), func, yfunc) |> re
+  yfuncs = map(y -> functor(typeof(x), y)[1], ys)
+  re(map(f, func, yfuncs...))
 end
 
 ###
@@ -98,9 +100,7 @@ function makeflexiblefunctor(m::Module, T, pfield)
       func = NamedTuple{pfields}(map(p -> getproperty(x, p), pfields))
       return func, re
     end
-
   end
-
 end
 
 function flexiblefunctorm(T, pfield = :params)
