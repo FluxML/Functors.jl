@@ -43,10 +43,10 @@ function _default_walk(f, x)
   re(map(f, func))
 end
 
-const INIT = Base._InitialValue()  # sentinel value for keyword not supplied
+struct NoKeyword end
 
-function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = INIT)
-  haskey(cache, x) && return prune === INIT ? cache[x] : prune
+function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
+  haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
   cache[x] = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude, walk, cache, prune), x)
 end
 
@@ -73,8 +73,8 @@ end
 ### Vararg forms
 ###
 
-function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = INIT)
-  haskey(cache, x) && return prune === INIT ? cache[x] : prune
+function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
+  haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
   cache[x] = exclude(x) ? f(x, ys...) : walk((xy...,) -> fmap(f, xy...; exclude, walk, cache, prune), x, ys...)
 end
 
