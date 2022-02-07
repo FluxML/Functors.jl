@@ -3,7 +3,7 @@ functor(T, x) = (), _ -> x
 functor(x) = functor(typeof(x), x)
 
 functor(::Type{<:Tuple}, x) = x, y -> y
-functor(::Type{<:NamedTuple}, x) = x, y -> y
+functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty(x, s), L)), identity
 
 functor(::Type{<:AbstractArray}, x) = x, y -> y
 functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x

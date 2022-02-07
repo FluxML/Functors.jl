@@ -115,15 +115,15 @@ end
 
   # Reconstruction type comes from the first argument
   foo1 = Foo([7,8], 9)
-  @test_broken fmap(+, m1, foo1) == (x = [8, 10], y = 12)  # https://github.com/FluxML/Functors.jl/issues/38
+  @test fmap(+, m1, foo1) == (x = [8, 10], y = 12)
   @test fmap(+, foo1, n1) isa Foo
   @test fmap(+, foo1, n1).x == [11, 13]
 
   # Mismatched trees should be an error
   m2 = (x = [1,2], y = (a = [3,4], b = 5))
   n2 = (x = [6,7], y = 8)
-  @test_throws ArgumentError fmap(first∘tuple, m2, n2)
-  @test_broken @test_throws ArgumentError fmap(first∘tuple, m2, n2)  # now (x = [6, 7], y = 8)
+  @test_throws Exception fmap(first∘tuple, m2, n2)
+  @test_throws Exception fmap(first∘tuple, m2, n2)
 
   # The cache uses IDs from the first argument
   shared = [1,2,3]
