@@ -1,25 +1,14 @@
-struct Foo
-  x
-  y
-end
+
+struct Foo; x; y; end
 @functor Foo
 
-struct Bar
-  x
-end
+struct Bar; x; end
 @functor Bar
 
-struct Baz
-  x
-  y
-  z
-end
-@functor Baz (y,)
+struct OneChild3; x; y; z; end
+@functor OneChild3 (y,)
 
-struct NoChildren 
-  x
-  y
-end
+struct NoChildren2; x; y; end
 
 @static if VERSION >= v"1.6"
   @testset "ComposedFunction" begin
@@ -30,6 +19,10 @@ end
     @test fmap(x -> x + 10, f1 ∘ f2) == Foo(11.1, 12.2) ∘ Bar(13.3)
   end
 end
+
+###
+### Basic functionality
+###
 
 @testset "Nested" begin
   model = Bar(Foo(1, [1, 2, 3]))
@@ -53,18 +46,22 @@ end
   @test fmap(f, x; exclude = x -> x isa AbstractArray) == x
 end
 
+@testset "Property list" begin
+  model = OneChild3(1, 2, 3)
+  model′ = fmap(x -> 2x, model)
+  
+  @test (model′.x, model′.y, model′.z) == (1, 4, 3)
+end
+
+###
+### Extras
+###
+
 @testset "Walk" begin
   model = Foo((0, Bar([1, 2, 3])), [4, 5])
 
   model′ = fmapstructure(identity, model)
   @test model′ == (; x=(0, (; x=[1, 2, 3])), y=[4, 5])
-end
-
-@testset "Property list" begin
-  model = Baz(1, 2, 3)
-  model′ = fmap(x -> 2x, model)
-  
-  @test (model′.x, model′.y, model′.z) == (1, 4, 3)
 end
 
 @testset "fcollect" begin
@@ -78,7 +75,7 @@ end
 
   m1 = [1, 2, 3]
   m2 = Bar(m1)
-  m0 = NoChildren(:a, :b)
+  m0 = NoChildren2(:a, :b)
   m3 = Foo(m2, m0)
   m4 = Bar(m3)
   @test all(fcollect(m4) .=== [m4, m3, m2, m1, m0])
@@ -88,6 +85,42 @@ end
   m3 = Foo(m1, m2)
   @test all(fcollect(m3) .=== [m3, m1, m2])
 end
+
+###
+### Vararg forms
+###
+
+@testset "fmap(f, x, y)" begin
+  @test true  # TODO
+end
+
+@testset "old test update.jl" begin
+  struct M{F,T,S}
+    σ::F
+    W::T
+    b::S
+  end
+
+  @functor M
+
+  (m::M)(x) = m.σ.(m.W * x .+ m.b)
+
+  m = M(identity, ones(Float32, 3, 4), zeros(Float32, 3))
+  x = ones(Float32, 4, 2)
+  m̄, _ = gradient((m,x) -> sum(m(x)), m, x)
+  m̂ = Functors.fmap(m, m̄) do x, y
+    isnothing(x) && return y
+    isnothing(y) && return x
+    x .- 0.1f0 .* y
+  end
+
+  @test m̂.W ≈ fill(0.8f0, size(m.W))
+  @test m̂.b ≈ fill(-0.2f0, size(m.b))
+end
+
+###
+### FlexibleFunctors.jl
+###
 
 struct FFoo
   x
@@ -102,13 +135,13 @@ struct FBar
 end
 @flexiblefunctor FBar p
 
-struct FBaz
+struct FOneChild4
   x
   y
   z
   p
 end
-@flexiblefunctor FBaz p
+@flexiblefunctor FOneChild4 p
 
 @testset "Flexible Nested" begin
   model = FBar(FFoo(1, [1, 2, 3], (:y, )), (:x,))
@@ -132,7 +165,7 @@ end
 end
 
 @testset "Flexible Property list" begin
-  model = FBaz(1, 2, 3, (:x, :z))
+  model = FOneChild4(1, 2, 3, (:x, :z))
   model′ = fmap(x -> 2x, model)
 
   @test (model′.x, model′.y, model′.z) == (2, 2, 6)
@@ -147,7 +180,7 @@ end
   @test all(fcollect(m4, exclude = x -> x isa Array) .=== [m4, m3])
   @test all(fcollect(m4, exclude = x -> x isa FFoo) .=== [m4])
 
-  m0 = NoChildren(:a, :b)
+  m0 = NoChildren2(:a, :b)
   m1 = [1, 2, 3]
   m2 = FBar(m1, ())
   m3 = FFoo(m2, m0, (:x, :y,))
