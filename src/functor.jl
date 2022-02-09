@@ -3,7 +3,7 @@ functor(T, x) = (), _ -> x
 functor(x) = functor(typeof(x), x)
 
 functor(::Type{<:Tuple}, x) = x, y -> y
-functor(::Type{<:NamedTuple}, x) = x, y -> y
+functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty(x, s), L)), identity
 
 functor(::Type{<:AbstractArray}, x) = x, y -> y
 functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
@@ -43,12 +43,11 @@ function _default_walk(f, x)
   re(map(f, func))
 end
 
-function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict())
-  haskey(cache, x) && return cache[x]
-  y = exclude(x) ? f(x) : walk(x -> fmap(f, x, exclude = exclude, walk = walk, cache = cache), x)
-  cache[x] = y
+struct NoKeyword end
 
-  return y
+function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
+  haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
+  cache[x] = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude=exclude, walk=walk, cache=cache, prune=prune), x)
 end
 
 ###
@@ -74,27 +73,16 @@ end
 ### Vararg forms
 ###
 
-function fmap(f, x, dx...; cache = IdDict())
-  haskey(cache, x) && return cache[x]
-  cache[x] = isleaf(x) ? f(x, dx...) : _default_walk((x...) -> fmap(f, x..., cache = cache), x, dx...)
+function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
+  haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
+  cache[x] = exclude(x) ? f(x, ys...) : walk((xy...,) -> fmap(f, xy...; exclude=exclude, walk=walk, cache=cache, prune=prune), x, ys...)
 end
 
-function functor_tuple(f, x::Tuple, dx::Tuple)
-  map(x, dx) do x, x̄
-    _default_walk(f, x, x̄)
-  end
-end
-functor_tuple(f, x, dx) = f(x, dx)
-functor_tuple(f, x, ::Nothing) = x
-
-function _default_walk(f, x, dx)
+function _default_walk(f, x, ys...)
   func, re = functor(x)
-  map(func, dx) do x, x̄
-    # functor_tuple(f, x, x̄)
-    f(x, x̄)
-  end |> re
+  yfuncs = map(y -> functor(typeof(x), y)[1], ys)
+  re(map(f, func, yfuncs...))
 end
-_default_walk(f, ::Nothing, ::Nothing) = nothing
 
 ###
 ### FlexibleFunctors.jl
@@ -112,9 +100,7 @@ function makeflexiblefunctor(m::Module, T, pfield)
       func = NamedTuple{pfields}(map(p -> getproperty(x, p), pfields))
       return func, re
     end
-
   end
-
 end
 
 function flexiblefunctorm(T, pfield = :params)
