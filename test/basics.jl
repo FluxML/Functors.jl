@@ -182,9 +182,12 @@ end
   @test z4.x === z4.z
 
   @test fmap(+, foo1, m1, n1) isa Foo
-  @test fmap(.*, m1, foo1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
+  @static if VERSION >= v"1.6" # fails on Julia 1.0
+    @test fmap(.*, m1, foo1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
+  end
 end
 
+@static if VERSION >= v"1.6" # Julia 1.0: LoadError: error compiling top-level scope: type definition not allowed inside a local scope
 @testset "old test update.jl" begin
   struct M{F,T,S}
     σ::F
@@ -208,6 +211,7 @@ end
   @test m̂.W ≈ fill(0.8f0, size(m.W))
   @test m̂.b ≈ fill(-0.2f0, size(m.b))
 end
+end  # VERSION
 
 ###
 ### FlexibleFunctors.jl

@@ -23,6 +23,7 @@ usually using the macro [@functor](@ref).
 """
 functor
 
+@static if VERSION >= v"1.5"  # var"@functor" doesn't work on 1.0, temporarily disable
 """
     @functor T
     @functor T (x,)
@@ -65,6 +66,7 @@ TwoThirds(Foo(10, 20), Foo(3, 4), 560)
 ```
 """
 var"@functor"
+end  # VERSION
 
 """
     Functors.isleaf(x)

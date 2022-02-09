@@ -47,7 +47,7 @@ struct NoKeyword end
 
 function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
   haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
-  cache[x] = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude, walk, cache, prune), x)
+  cache[x] = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude=exclude, walk=walk, cache=cache, prune=prune), x)
 end
 
 ###
@@ -75,7 +75,7 @@ end
 
 function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
   haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
-  cache[x] = exclude(x) ? f(x, ys...) : walk((xy...,) -> fmap(f, xy...; exclude, walk, cache, prune), x, ys...)
+  cache[x] = exclude(x) ? f(x, ys...) : walk((xy...,) -> fmap(f, xy...; exclude=exclude, walk=walk, cache=cache, prune=prune), x, ys...)
 end
 
 function _default_walk(f, x, ys...)
