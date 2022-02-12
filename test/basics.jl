@@ -1,5 +1,5 @@
 
-using Functors: functor
+using Functors: functor, usecache
 
 struct Foo; x; y; end
 @functor Foo
@@ -68,7 +68,23 @@ end
   m3 = Foo(Foo(shared, 1:3), Foo(1:3, shared))
   m3p = fmapstructure(identity, m3; prune = 0)
   @test m3p.y.y == 0
-  @test_broken m3p.y.x == 1:3
+  @test m3p.y.x == 1:3
+
+  # All-isbits trees need not create a cache at all:
+  @test isbits(fmap(float, (x=1, y=(2, 3), z=4:5)))
+  @test_skip 0 == @allocated fmap(float, (x=1, y=(2, 3), z=4:5))
+
+  @testset "usecache" begin
+    @test usecache([1,2])
+    @test usecache(Ref(3))
+
+    @test !usecache(4.0)
+    @test !usecache((5, 6.0))
+    @test !usecache((a = 2pi, b = missing))
+
+    @test usecache(Bar([1,2]))
+    @test !usecache(Bar((3,4)))
+  end
 end
 
 @testset "functor(typeof(x), y) from @functor" begin
