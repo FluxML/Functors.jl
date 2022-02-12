@@ -43,11 +43,15 @@ function _default_walk(f, x)
   re(map(f, func))
 end
 
+usecache(x) = !isbits(x)
+
 struct NoKeyword end
 
-function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
-  haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
-  cache[x] = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude=exclude, walk=walk, cache=cache, prune=prune), x)
+function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = usecache(x) ? IdDict() : nothing, prune = NoKeyword())
+  usecache(x) && haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
+  xnew = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude=exclude, walk=walk, cache=cache, prune=prune), x)
+  usecache(x) && setindex!(cache, xnew, x)
+  return xnew
 end
 
 ###
@@ -74,8 +78,10 @@ end
 ###
 
 function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
-  haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
-  cache[x] = exclude(x) ? f(x, ys...) : walk((xy...,) -> fmap(f, xy...; exclude=exclude, walk=walk, cache=cache, prune=prune), x, ys...)
+  usecache(x) && haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
+  xnew = exclude(x) ? f(x, ys...) : walk((xy...,) -> fmap(f, xy...; exclude=exclude, walk=walk, cache=cache, prune=prune), x, ys...)
+  usecache(x) && setindex!(cache, xnew, x)
+  return xnew
 end
 
 function _default_walk(f, x, ys...)
