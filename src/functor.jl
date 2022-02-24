@@ -43,25 +43,11 @@ function _default_walk(f, x)
   re(map(f, func))
 end
 
-usecache(x) = !isbits(x)
-usecache(x::Union{String, Symbol}) = false
-
 struct NoKeyword end
 
-function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = usecache(x) ? IdDict() : nothing, prune = NoKeyword())
-  if exclude(x)
-    if usecache(x)
-      if haskey(cache, x)
-        prune isa NoKeyword ? cache[x] : prune
-      else
-        cache[x] = f(x)
-      end
-    else
-      f(x)
-    end
-  else
-    walk(x -> fmap(f, x; exclude = exclude, walk = walk, cache = cache, prune = prune), x)
-  end
+function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
+  haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
+  cache[x] = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude=exclude, walk=walk, cache=cache, prune=prune), x)
 end
 
 ###
@@ -87,20 +73,9 @@ end
 ### Vararg forms
 ###
 
-function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = usecache(x) ? IdDict() : nothing, prune = NoKeyword())
-  if exclude(x)
-    if usecache(x)
-      if haskey(cache, x)
-        prune isa NoKeyword ? cache[x] : prune
-      else
-        cache[x] = f(x, ys...)
-      end
-    else
-      f(x, ys...)
-    end
-  else
-    walk((xy...,) -> fmap(f, xy...; exclude = exclude, walk = walk, cache = cache, prune = prune), x, ys...)
-  end
+function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
+  haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
+  cache[x] = exclude(x) ? f(x, ys...) : walk((xy...,) -> fmap(f, xy...; exclude=exclude, walk=walk, cache=cache, prune=prune), x, ys...)
 end
 
 function _default_walk(f, x, ys...)

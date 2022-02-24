@@ -138,15 +138,13 @@ julia> fmap(println, (i = twice, ii = 34, iii = [5, 6], iv = (twice, 34), v = 34
 [1, 2]
 34
 [5, 6]
-34
 34.0
 (i = nothing, ii = nothing, iii = nothing, iv = (nothing, nothing), v = nothing)
 ```
 
-If the same object appears more than once, it will only be handled once, and only be 
-transformed once with `f`. Thus the result will also have this relationship.
-Here "same" means `===` for non-`isbits` types. The same number (e.g. `34 === 34`) at
-different nodes is taken to be a coincidence, and `f` applies twice.
+If the same node (same according to `===`) appears more than once,
+it will only be handled once, and only be transformed once with `f`.
+Thus the result will also have this relationship.
 
 By default, `Tuple`s, `NamedTuple`s, and some other container-like types in Base have
 children to recurse into. Arrays of numbers do not.

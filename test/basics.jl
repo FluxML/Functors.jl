@@ -1,5 +1,5 @@
 
-using Functors: functor, usecache
+using Functors: functor
 
 struct Foo; x; y; end
 @functor Foo
@@ -56,38 +56,19 @@ end
   m1p = fmapstructure(identity, m1; prune = nothing)
   @test m1p == (x = [1, 2, 3], y = (x = [1, 2, 3], y = (x = nothing, y = [1, 2, 3])))
 
-  # The cache applies only to leaf nodes, so that "4" is not shared:
+  # A non-leaf node can also be repeated:
   m2 = Foo(Foo(shared, 4), Foo(shared, 4))
   @test m2.x === m2.y
   m2f = fmap(float, m2)
   @test m2f.x.x === m2f.y.x
   m2p = fmapstructure(identity, m2; prune = Bar(0))
-  @test m2p == (x = (x = [1, 2, 3], y = 4), y = (x = Bar{Int64}(0), y = 4))
+  @test m2p == (x = (x = [1, 2, 3], y = 4), y = Bar(0))
 
   # Repeated isbits types should not automatically be regarded as shared:
   m3 = Foo(Foo(shared, 1:3), Foo(1:3, shared))
   m3p = fmapstructure(identity, m3; prune = 0)
   @test m3p.y.y == 0
-  @test m3p.y.x == 1:3
-
-  # All-isbits trees need not create a cache at all:
-  @test isbits(fmap(float, (x=1, y=(2, 3), z=4:5)))
-  @test_skip 0 == @allocated fmap(float, (x=1, y=(2, 3), z=4:5))
-
-  @testset "usecache" begin
-    # Leaf types:
-    @test usecache([1,2])
-    @test !usecache(4.0)
-    @test usecache(NoChild([1,2]))
-    @test !usecache(NoChild((3,4)))
-
-    # Not leaf by default, but `exclude` can change that:
-    @test usecache(Ref(3))
-    @test !usecache((5, 6.0))
-    @test !usecache((a = 2pi, b = missing))
-
-    @test usecache((x = [1,2,3], y = 4))
-  end
+  @test_broken m3p.y.x == 1:3
 end
 
 @testset "functor(typeof(x), y) from @functor" begin
