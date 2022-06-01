@@ -30,47 +30,6 @@ function functorm(T, fs = nothing)
   :(makefunctor(@__MODULE__, $(esc(T)), $(fs...)))
 end
 
-"""
-    @functor T
-    @functor T (x,)
-
-Adds methods to [`functor`](@ref) allowing recursion into objects of type `T`,
-and reconstruction. Assumes that `T` has a constructor accepting all of its fields,
-which is true unless you have provided an inner constructor which does not.
-
-By default all fields of `T` are considered [`children`](@ref); 
-this can be restricted be restructed by providing a tuple of field names.
-
-# Examples
-```jldoctest
-julia> struct Foo; x; y; end
-
-julia> @functor Foo
-
-julia> Functors.children(Foo(1,2))
-(x = 1, y = 2)
-
-julia> _, re = Functors.functor(Foo(1,2));
-
-julia> re((10, 20))
-Foo(10, 20)
-
-julia> struct TwoThirds a; b; c; end
-
-julia> @functor TwoThirds (a, c)
-
-julia> ch2, re3 = Functors.functor(TwoThirds(10,20,30));
-
-julia> ch2
-(a = 10, c = 30)
-
-julia> re3(("ten", "thirty"))
-TwoThirds("ten", 20, "thirty")
-
-julia> fmap(x -> 10x, TwoThirds(Foo(1,2), Foo(3,4), 56))
-TwoThirds(Foo(10, 20), Foo(3, 4), 560)
-```
-"""
 macro functor(args...)
   functorm(args...)
 end

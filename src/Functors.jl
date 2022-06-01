@@ -24,7 +24,7 @@ usually using the macro [`@functor`](@ref).
 functor
 
 @static if VERSION >= v"1.5"  # var"@functor" doesn't work on 1.0, temporarily disable
-"""
+@doc """
     @functor T
     @functor T (x,)
 
