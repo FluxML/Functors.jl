@@ -3,10 +3,11 @@ using Documenter, Functors
 DocMeta.setdocmeta!(Functors, :DocTestSetup, :(using Functors); recursive = true)
 
 makedocs(modules = [Functors],
-         doctest = VERSION == v"1.6",
+         doctest = false,
          sitename = "Functors.jl",
          pages = ["Home" => "index.md",
                   "API" => "api.md"],
+         strict = [:cross_references, :missing_docs],
          format = Documenter.HTML(
              analytics = "UA-36890222-9",
              assets = ["assets/flux.css"],

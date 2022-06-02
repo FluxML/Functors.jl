@@ -19,12 +19,12 @@ Returns a tuple containing, first, a `NamedTuple` of the children of `x`
 This controls the behaviour of [`fmap`](@ref).
 
 Methods should be added to `functor(::Type{T}, x)` for custom types,
-usually using the macro [@functor](@ref).
+usually using the macro [`@functor`](@ref).
 """
 functor
 
 @static if VERSION >= v"1.5"  # var"@functor" doesn't work on 1.0, temporarily disable
-"""
+@doc """
     @functor T
     @functor T (x,)
 
@@ -32,7 +32,7 @@ Adds methods to [`functor`](@ref) allowing recursion into objects of type `T`,
 and reconstruction. Assumes that `T` has a constructor accepting all of its fields,
 which is true unless you have provided an inner constructor which does not.
 
-By default all fields of `T` are considered [children](@ref); 
+By default all fields of `T` are considered [`children`](@ref); 
 this can be restricted be restructed by providing a tuple of field names.
 
 # Examples
