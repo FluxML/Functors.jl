@@ -4,7 +4,7 @@ using Functors: functor
 struct Foo; x; y; end
 @functor Foo
 
-struct Bar; x; end
+struct Bar{T}; x::T; end
 @functor Bar
 
 struct OneChild3; x; y; z; end
@@ -12,15 +12,7 @@ struct OneChild3; x; y; z; end
 
 struct NoChildren2; x; y; end
 
-@static if VERSION >= v"1.6"
-  @testset "ComposedFunction" begin
-    f1 = Foo(1.1, 2.2)
-    f2 = Bar(3.3)
-    @test Functors.functor(f1 ∘ f2)[1] == (outer = f1, inner = f2)
-    @test Functors.functor(f1 ∘ f2)[2]((outer = f1, inner = f2)) == f1 ∘ f2
-    @test fmap(x -> x + 10, f1 ∘ f2) == Foo(11.1, 12.2) ∘ Bar(13.3)
-  end
-end
+struct NoChild{T}; x::T; end
 
 ###
 ### Basic functionality
@@ -187,7 +179,6 @@ end
   end
 end
 
-@static if VERSION >= v"1.6" # Julia 1.0: LoadError: error compiling top-level scope: type definition not allowed inside a local scope
 @testset "old test update.jl" begin
   struct M{F,T,S}
     σ::F
@@ -211,7 +202,6 @@ end
   @test m̂.W ≈ fill(0.8f0, size(m.W))
   @test m̂.b ≈ fill(-0.2f0, size(m.b))
 end
-end  # VERSION
 
 ###
 ### FlexibleFunctors.jl

@@ -8,10 +8,6 @@ functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty
 functor(::Type{<:AbstractArray}, x) = x, y -> y
 functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
 
-@static if VERSION >= v"1.6"
-  functor(::Type{<:Base.ComposedFunction}, x) = (outer = x.outer, inner = x.inner), y -> Base.ComposedFunction(y.outer, y.inner)
-end
-
 function makefunctor(m::Module, T, fs = fieldnames(T))
   yᵢ = 0
   escargs = map(fieldnames(T)) do f

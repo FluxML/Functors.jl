@@ -1,5 +1,6 @@
 using Functors, Test
 using Zygote
+using LinearAlgebra
 
 @testset "Functors.jl" begin
 
