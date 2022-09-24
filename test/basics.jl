@@ -48,7 +48,7 @@ end
   @test (model′.x, model′.y, model′.z) == (1, 4, 3)
 end
 
-@testset "cache" begin
+@testset "Sharing" begin
   shared = [1,2,3]
   m1 = Foo(shared, Foo([1,2,3], Foo(shared, [1,2,3])))
   m1f = fmap(float, m1)
@@ -56,8 +56,10 @@ end
   @test m1f.x !== m1f.y.x
   m1p = fmapstructure(identity, m1; prune = nothing)
   @test m1p == (x = [1, 2, 3], y = (x = [1, 2, 3], y = (x = nothing, y = [1, 2, 3])))
+  m1no = fmap(float, m1; cache = nothing)  # disable the cache by hand
+  @test m1no.x !== m1no.y.y.x
 
-  # The cache applies only to leaf nodes, so that "4" is not shared:
+  # Here "4" is not shared, because Foo isn't leaf:
   m2 = Foo(Foo(shared, 4), Foo(shared, 4))
   @test m2.x === m2.y
   m2f = fmap(float, m2)
@@ -72,22 +74,39 @@ end
   @test m3p.y.x == 1:3
 
   # All-isbits trees need not create a cache at all:
-  @test isbits(fmap(float, (x=1, y=(2, 3), z=4:5)))
-  @test_skip 0 == @allocated fmap(float, (x=1, y=(2, 3), z=4:5))
+  m4 = (x=1, y=(2, 3), z=4:5)
+  @test isbits(fmap(float, m4))
+  @test_skip 0 == @allocated fmap(float, m4)  # true, but fails in tests
+  
+  # Shared mutable containers are preserved, even if all children are isbits:
+  ref = Ref(1)
+  m5 = (x = ref, y = ref, z = Ref(1))
+  m5f = fmap(x -> x/2, m5)
+  @test m5f.x === m5f.y
+  @test m5f.x !== m5f.z
 
   @testset "usecache" begin
+    d = IdDict()
+
     # Leaf types:
-    @test usecache([1,2])
-    @test !usecache(4.0)
-    @test usecache(NoChild([1,2]))
-    @test !usecache(NoChild((3,4)))
+    @test usecache(d, [1,2])
+    @test !usecache(d, 4.0)
+    @test usecache(d, NoChild([1,2]))
+    @test !usecache(d, NoChild((3,4)))
 
-    # Not leaf by default, but `exclude` can change that:
-    @test usecache(Ref(3))
-    @test !usecache((5, 6.0))
-    @test !usecache((a = 2pi, b = missing))
+    # Not leaf:
+    @test usecache(d, Ref(3))  # mutable container
+    @test !usecache(d, (5, 6.0))
+    @test !usecache(d, (a = 2pi, b = missing))
 
-    @test usecache((x = [1,2,3], y = 4))
+    @test !usecache(d, (5, [6.0]'))  # contains mutable
+    @test !usecache(d, (x = [1,2,3], y = 4))
+    
+    usecache(d, OneChild3([1,2], 3, nothing))  # mutable isn't a child, do we care?
+    
+    # No dictionary:
+    @test !usecache(nothing, [1,2])
+    @test !usecache(nothing, 3)
   end
 end
 

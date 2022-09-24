@@ -5,7 +5,6 @@ export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect
 include("functor.jl")
 include("base.jl")
 
-
 ###
 ### Docstrings for basic functionality
 ###
@@ -132,7 +131,7 @@ Any[23, (45,), (x = 6//7, y = ())]
 [8, 9]
 (a = nothing, b = nothing, c = nothing)
 
-julia> twice = [1, 2];
+julia> twice = [1, 2];  # println only acts once on this
 
 julia> fmap(println, (i = twice, ii = 34, iii = [5, 6], iv = (twice, 34), v = 34.0))
 [1, 2]
@@ -143,10 +142,10 @@ julia> fmap(println, (i = twice, ii = 34, iii = [5, 6], iv = (twice, 34), v = 34
 (i = nothing, ii = nothing, iii = nothing, iv = (nothing, nothing), v = nothing)
 ```
 
-If the same object appears more than once, it will only be handled once, and only be 
-transformed once with `f`. Thus the result will also have this relationship.
-Here "same" means `===` for non-`isbits` types. The same number (e.g. `34 === 34`) at
-different nodes is taken to be a coincidence, and `f` applies twice.
+Mutable objects which appear more than once are only handled once (by caching `f(x)` in an `IdDict`).
+Thus the relationship `x.i === x.iv[1]` will be preserved.
+An immutable object which appears twice is not stored in the cache, thus `f(34)` will be called twice,
+and the results will agree only if `f` is pure.
 
 By default, `Tuple`s, `NamedTuple`s, and some other container-like types in Base have
 children to recurse into. Arrays of numbers do not.

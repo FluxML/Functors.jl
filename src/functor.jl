@@ -39,26 +39,39 @@ function _default_walk(f, x)
   re(map(f, func))
 end
 
-usecache(x) = !isbits(x)
-usecache(x::Union{String, Symbol}) = false
+usecache(::AbstractDict, x) = isleaf(x) ? anymutable(x) : ismutable(x)
+usecache(::Nothing, x) = false
+
+# function _anymutable(x::T) where {T}
+#   ismutable(x) && return true
+#   fs = fieldnames(T)
+#   isempty(fs) && return false
+#   return any(f -> anymutable(getfield(x, f)), fs)
+# end
+@generated function anymutable(x::T) where {T}
+  ismutabletype(T) && return true
+  fs = fieldnames(T)
+  isempty(fs) && return false
+  subs =  [:(anymutable(getfield(x, $f))) for f in QuoteNode.(fs)]
+  return :(|($(subs...)))
+end
 
 struct NoKeyword end
 
-function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = usecache(x) ? IdDict() : nothing, prune = NoKeyword())
-  if exclude(x)
-    if usecache(x)
-      if haskey(cache, x)
-        prune isa NoKeyword ? cache[x] : prune
-      else
-        cache[x] = f(x)
-      end
-    else
-      f(x)
-    end
-  else
-    walk(x -> fmap(f, x; exclude = exclude, walk = walk, cache = cache, prune = prune), x)
+function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = anymutable(x) ? IdDict() : nothing, prune = NoKeyword())
+  if usecache(cache, x) && haskey(cache, x)
+    return prune isa NoKeyword ? cache[x] : prune
   end
-end
+  ret = if exclude(x)
+    f(x)
+  else
+    walk(x -> fmap(f, x; exclude, walk, cache, prune), x)
+  end
+  if usecache(cache, x)
+    cache[x] = ret
+  end
+  ret
+end  
 
 ###
 ### Extras
@@ -83,20 +96,19 @@ end
 ### Vararg forms
 ###
 
-function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = usecache(x) ? IdDict() : nothing, prune = NoKeyword())
-  if exclude(x)
-    if usecache(x)
-      if haskey(cache, x)
-        prune isa NoKeyword ? cache[x] : prune
-      else
-        cache[x] = f(x, ys...)
-      end
-    else
-      f(x, ys...)
-    end
-  else
-    walk((xy...,) -> fmap(f, xy...; exclude = exclude, walk = walk, cache = cache, prune = prune), x, ys...)
+function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = anymutable(x) ? IdDict() : nothing, prune = NoKeyword())
+  if usecache(cache, x) && haskey(cache, x)
+    return prune isa NoKeyword ? cache[x] : prune
   end
+  ret = if exclude(x)
+    f(x, ys...)
+  else
+    walk((xy...,) -> fmap(f, xy...; exclude, walk, cache, prune), x, ys...)
+  end
+  if usecache(cache, x)
+    cache[x] = ret
+  end
+  ret
 end
 
 function _default_walk(f, x, ys...)
@@ -132,4 +144,17 @@ end
 
 macro flexiblefunctor(args...)
   flexiblefunctorm(args...)
+end
+
+###
+### Compat
+###
+
+if VERSION < v"1.7"
+  # Copied verbatim from Base, except omitting the macro:
+  function ismutabletype(@nospecialize t)
+      # @_total_meta  
+      t = unwrap_unionall(t)
+      return isa(t, DataType) && t.name.flags & 0x2 == 0x2
+  end
 end
