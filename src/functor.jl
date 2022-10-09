@@ -53,7 +53,7 @@ usecache(::Nothing, x) = false
   fs = fieldnames(T)
   isempty(fs) && return false
   subs =  [:(anymutable(getfield(x, $f))) for f in QuoteNode.(fs)]
-  return :(|($(subs...)))
+  return :(|($(subs...))::Bool)
 end
 
 struct NoKeyword end
