@@ -143,13 +143,7 @@ end
 ###
 
 if VERSION < v"1.7"
-  # # Copied verbatim from Base, except omitting the macro:
-  # function ismutabletype(@nospecialize t)
-  #     # @_total_meta
-  #     t = Base.unwrap_unionall(t)
-  #     return isa(t, DataType) && t.name.flags & 0x2 == 0x2
-  # end
-  
-  # That doesn't work, but this does:
+  # Function in 1.7 checks t.name.flags & 0x2 == 0x2,
+  # but for 1.6 this seems to work instead:
   ismutabletype(@nospecialize t) = t.mutable
 end
