@@ -2,10 +2,10 @@
 functor(T, x) = (), _ -> x
 functor(x) = functor(typeof(x), x)
 
-functor(::Type{<:Tuple}, x) = x, y -> y
+functor(::Type{<:Tuple}, x) = x, identity
 functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty(x, s), L)), identity
 
-functor(::Type{<:AbstractArray}, x) = x, y -> y
+functor(::Type{<:AbstractArray}, x) = x, identity
 functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
@@ -42,18 +42,10 @@ end
 usecache(::AbstractDict, x) = isleaf(x) ? anymutable(x) : ismutable(x)
 usecache(::Nothing, x) = false
 
-# function _anymutable(x::T) where {T}
-#   ismutable(x) && return true
-#   fs = fieldnames(T)
-#   isempty(fs) && return false
-#   return any(f -> anymutable(getfield(x, f)), fs)
-# end
 @generated function anymutable(x::T) where {T}
   ismutabletype(T) && return true
-  fs = fieldnames(T)
-  isempty(fs) && return false
-  subs =  [:(anymutable(getfield(x, $f))) for f in QuoteNode.(fs)]
-  return :(|($(subs...))::Bool)
+  subs =  [:(anymutable(getfield(x, $f))) for f in QuoteNode.(fieldnames(T))]
+  return Expr(:(||), subs...)
 end
 
 struct NoKeyword end
