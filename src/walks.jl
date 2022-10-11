@@ -27,6 +27,11 @@ Attempting to wrap an existing `AbstractWalk` is a no-op (i.e. it is not wrapped
 """
 struct AnonymousWalk{F} <: AbstractWalk
   walk::F
+
+  function AnonymousWalk(walk::F) where F
+    Base.depwarn("Wrapping a custom walk function as an `AnonymousWalk`. Future versions will only support custom walks that explicitly subtyle `AbstractWalk`.", :AnonymousWalk)
+    return new{F}(walk)
+  end
 end
 # do not wrap an AbstractWalk
 AnonymousWalk(walk::AbstractWalk) = walk
