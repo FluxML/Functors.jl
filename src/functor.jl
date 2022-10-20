@@ -2,10 +2,10 @@
 functor(T, x) = (), _ -> x
 functor(x) = functor(typeof(x), x)
 
-functor(::Type{<:Tuple}, x) = x, y -> y
+functor(::Type{<:Tuple}, x) = x, identity
 functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty(x, s), L)), identity
 
-functor(::Type{<:AbstractArray}, x) = x, y -> y
+functor(::Type{<:AbstractArray}, x) = x, identity
 functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
@@ -39,12 +39,31 @@ function _default_walk(f, x)
   re(map(f, func))
 end
 
+usecache(::AbstractDict, x) = isleaf(x) ? anymutable(x) : ismutable(x)
+usecache(::Nothing, x) = false
+
+@generated function anymutable(x::T) where {T}
+  ismutabletype(T) && return true
+  subs =  [:(anymutable(getfield(x, $f))) for f in QuoteNode.(fieldnames(T))]
+  return Expr(:(||), subs...)
+end
+
 struct NoKeyword end
 
-function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
-  haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
-  cache[x] = exclude(x) ? f(x) : walk(x -> fmap(f, x; exclude=exclude, walk=walk, cache=cache, prune=prune), x)
-end
+function fmap(f, x; exclude = isleaf, walk = _default_walk, cache = anymutable(x) ? IdDict() : nothing, prune = NoKeyword())
+  if usecache(cache, x) && haskey(cache, x)
+    return prune isa NoKeyword ? cache[x] : prune
+  end
+  ret = if exclude(x)
+    f(x)
+  else
+    walk(x -> fmap(f, x; exclude, walk, cache, prune), x)
+  end
+  if usecache(cache, x)
+    cache[x] = ret
+  end
+  ret
+end  
 
 ###
 ### Extras
@@ -69,9 +88,19 @@ end
 ### Vararg forms
 ###
 
-function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = IdDict(), prune = NoKeyword())
-  haskey(cache, x) && return prune isa NoKeyword ? cache[x] : prune
-  cache[x] = exclude(x) ? f(x, ys...) : walk((xy...,) -> fmap(f, xy...; exclude=exclude, walk=walk, cache=cache, prune=prune), x, ys...)
+function fmap(f, x, ys...; exclude = isleaf, walk = _default_walk, cache = anymutable(x) ? IdDict() : nothing, prune = NoKeyword())
+  if usecache(cache, x) && haskey(cache, x)
+    return prune isa NoKeyword ? cache[x] : prune
+  end
+  ret = if exclude(x)
+    f(x, ys...)
+  else
+    walk((xy...,) -> fmap(f, xy...; exclude, walk, cache, prune), x, ys...)
+  end
+  if usecache(cache, x)
+    cache[x] = ret
+  end
+  ret
 end
 
 function _default_walk(f, x, ys...)
@@ -107,4 +136,14 @@ end
 
 macro flexiblefunctor(args...)
   flexiblefunctorm(args...)
+end
+
+###
+### Compat
+###
+
+if VERSION < v"1.7"
+  # Function in 1.7 checks t.name.flags & 0x2 == 0x2,
+  # but for 1.6 this seems to work instead:
+  ismutabletype(@nospecialize t) = t.mutable
 end
