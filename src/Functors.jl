@@ -3,6 +3,8 @@ module Functors
 export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect
 
 include("functor.jl")
+include("walks.jl")
+include("maps.jl")
 include("base.jl")
 
 ###
