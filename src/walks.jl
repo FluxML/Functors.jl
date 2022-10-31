@@ -88,6 +88,15 @@ end
 
 struct NoKeyword end
 
+usecache(::AbstractDict, x) = isleaf(x) ? anymutable(x) : ismutable(x)
+usecache(::Nothing, x) = false
+
+@generated function anymutable(x::T) where {T}
+  ismutabletype(T) && return true
+  subs =  [:(anymutable(getfield(x, $f))) for f in QuoteNode.(fieldnames(T))]
+  return Expr(:(||), subs...)
+end
+
 """
     CachedWalk(walk[; prune])
 
@@ -109,11 +118,15 @@ CachedWalk(walk; prune = NoKeyword(), cache = IdDict()) =
   CachedWalk(walk, prune, cache)
 
 function (walk::CachedWalk)(recurse, x, ys...)
-  if haskey(walk.cache, x)
+  should_cache = usecache(walk.cache, x)
+  if should_cache && haskey(walk.cache, x)
     return walk.prune isa NoKeyword ? walk.cache[x] : walk.prune
   else
-    walk.cache[x] = walk.walk(recurse, x, ys...)
-    return walk.cache[x]
+    ret = walk.walk(recurse, x, ys...)
+    if should_cache
+      walk.cache[x] = ret
+    end
+    return ret
   end
 end
 
