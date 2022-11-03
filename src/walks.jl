@@ -88,7 +88,8 @@ end
 
 struct NoKeyword end
 
-usecache(::AbstractDict, x) = isleaf(x) ? anymutable(x) : ismutable(x)
+usecache(::Union{AbstractDict, AbstractSet}, x) =
+  isleaf(x) ? anymutable(x) : ismutable(x)
 usecache(::Nothing, x) = false
 
 @generated function anymutable(x::T) where {T}
@@ -149,9 +150,11 @@ CollectWalk() = CollectWalk(Base.IdSet(), Any[])
 # (to ensure we get exactly 1 copy of each distinct array), and a usual `Vector`
 # for the results, to preserve traversal order (important downstream!).
 function (walk::CollectWalk)(recurse, x)
-  x in walk.cache && return walk.output
+  if usecache(walk.cache, x) && (x in walk.cache)
+    return walk.output
+  end
   # to exclude, we wrap this walk in ExcludeWalk
-  push!(walk.cache, x)
+  usecache(walk.cache, x) && push!(walk.cache, x)
   push!(walk.output, x)
   map(recurse, children(x))
 

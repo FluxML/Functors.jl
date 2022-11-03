@@ -85,9 +85,7 @@ end
   @test m5f.x === m5f.y
   @test m5f.x !== m5f.z
 
-  @testset "usecache" begin
-    d = IdDict()
-
+  @testset "usecache ($d)" for d in [IdDict(), Base.IdSet()]
     # Leaf types:
     @test usecache(d, [1,2])
     @test !usecache(d, 4.0)
@@ -101,9 +99,9 @@ end
 
     @test !usecache(d, (5, [6.0]'))  # contains mutable
     @test !usecache(d, (x = [1,2,3], y = 4))
-    
+
     usecache(d, OneChild3([1,2], 3, nothing))  # mutable isn't a child, do we care?
-    
+
     # No dictionary:
     @test !usecache(nothing, [1,2])
     @test !usecache(nothing, 3)
@@ -173,6 +171,14 @@ end
   m2 = [1, 2, 3]
   m3 = Foo(m1, m2)
   @test all(fcollect(m3) .=== [m3, m1, m2])
+
+  m1 = [1, 2, 3]
+  m2 = SVector{length(m1)}(m1)
+  m2′ = SVector{length(m1)}(m1)
+  m3 = Foo(m1, m1)
+  m4 = Foo(m2, m2′)
+  @test all(fcollect(m3) .=== [m3, m1])
+  @test all(fcollect(m4) .=== [m4, m2, m2′])
 end
 
 ###
