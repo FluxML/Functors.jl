@@ -3,6 +3,8 @@ module Functors
 export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect
 
 include("functor.jl")
+include("walks.jl")
+include("maps.jl")
 include("base.jl")
 
 ###
@@ -102,7 +104,8 @@ Equivalent to `functor(x)[1]`.
 children
 
 """
-    fmap(f, x; exclude = Functors.isleaf, walk = Functors._default_walk)
+    fmap(f, x, ys...; exclude = Functors.isleaf, walk = Functors.DefaultWalk()[, prune])
+    fmap(walk, f, x, ys...)
 
 A structure and type preserving `map`.
 
@@ -176,12 +179,23 @@ Foo("Bar([1, 2, 3])", (4, 5, "Bar(Foo(6, 7))"))
 To recurse into custom types without reconstructing them afterwards,
 use [`fmapstructure`](@ref).
 
-For advanced customization of the traversal behaviour, pass a custom `walk` function of the form `(f', xs) -> ...`.
-This function walks (maps) over `xs` calling the continuation `f'` to continue traversal.
+For advanced customization of the traversal behaviour,
+pass a custom `walk` function that subtypes [`Functors.AbstractWalk`](ref).
+The form `fmap(walk, f, x, ys...)` can be called for custom walks.
+The simpler form `fmap(f, x, ys...; walk = mywalk)` will wrap `mywalk` in
+[`ExcludeWalk`](@ref) then [`CachedWalk`](@ref).
 
 ```jldoctest withfoo
-julia> fmap(x -> 10x, m, walk=(f, x) -> x isa Bar ? x : Functors._default_walk(f, x))
-Foo(Bar([1, 2, 3]), (40, 50, Bar(Foo(6, 7))))
+julia> struct MyWalk <: Functors.AbstractWalk end
+
+julia> (::MyWalk)(recurse, x) = x isa Bar ? "hello" :
+                                            Functors.DefaultWalk()(recurse, x)
+
+julia> fmap(x -> 10x, m; walk = MyWalk())
+Foo("hello", (40, 50, "hello"))
+
+julia> fmap(MyWalk(), x -> 10x, m)
+Foo("hello", (4, 5, "hello"))
 ```
 
 The behaviour when the same node appears twice can be altered by giving a value
