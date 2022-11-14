@@ -49,7 +49,7 @@ _PermutedDimsArray(bc::Broadcast.Broadcasted, iperm) = _PermutedDimsArray(Broadc
 ###
 
 @functor Iterators.Accumulate
-@functor Iterators.Count
+# Count
 @functor Iterators.Cycle
 @functor Iterators.Drop
 @functor Iterators.DropWhile
