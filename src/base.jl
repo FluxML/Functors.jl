@@ -1,7 +1,14 @@
 
 @functor Base.RefValue
 
+@functor Base.Pair
+
+@functor Base.Generator  # aka Iterators.map
+
 functor(::Type{<:Base.ComposedFunction}, x) = (outer = x.outer, inner = x.inner), y -> Base.ComposedFunction(y.outer, y.inner)
+
+@functor Base.Fix1
+@functor Base.Fix2
 
 ###
 ### Array wrappers
@@ -36,3 +43,26 @@ end
 _PermutedDimsArray(x, iperm) = PermutedDimsArray(x, iperm)
 _PermutedDimsArray(x::NamedTuple{(:parent,)}, iperm) = x.parent
 _PermutedDimsArray(bc::Broadcast.Broadcasted, iperm) = _PermutedDimsArray(Broadcast.materialize(bc), iperm)
+
+###
+### Iterators
+###
+
+@functor Iterators.Accumulate
+# Count
+@functor Iterators.Cycle
+@functor Iterators.Drop
+@functor Iterators.DropWhile
+@functor Iterators.Enumerate
+@functor Iterators.Filter
+@functor Iterators.Flatten
+# IterationCutShort
+@functor Iterators.PartitionIterator
+@functor Iterators.ProductIterator
+@functor Iterators.Repeated
+@functor Iterators.Rest
+@functor Iterators.Reverse
+# Stateful
+@functor Iterators.Take
+@functor Iterators.TakeWhile
+@functor Iterators.Zip
