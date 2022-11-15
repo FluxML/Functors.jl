@@ -1,19 +1,19 @@
 
-functor(T, x) = (), _ -> x
+functor(T, x) = (), Returns(x)
 functor(x) = functor(typeof(x), x)
 
 functor(::Type{<:Tuple}, x) = x, identity
-functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty(x, s), L)), identity
+functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getfield(x, s), L)), identity
 
 functor(::Type{<:AbstractArray}, x) = x, identity
-functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
+functor(::Type{<:AbstractArray{<:Number}}, x) = (), Returns(x)
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
   yᵢ = 0
   escargs = map(fieldnames(T)) do f
     f in fs ? :(y[$(yᵢ += 1)]) : :(x.$f)
   end
-  escfs = [:($f=x.$f) for f in fs]
+  escfs = [:($f = getfield(x, $(QuoteNode(f)))) for f in fs]
 
   @eval m begin
     $Functors.functor(::Type{<:$T}, x) = ($(escfs...),), y -> $T($(escargs...))
@@ -71,4 +71,21 @@ if VERSION < v"1.7"
   # Function in 1.7 checks t.name.flags & 0x2 == 0x2,
   # but for 1.6 this seems to work instead:
   ismutabletype(@nospecialize t) = t.mutable
+end
+
+# https://github.com/JuliaLang/julia/pull/39794
+if VERSION < v"1.7.0-DEV.793"
+    struct Returns{V} <: Function
+        value::V
+        Returns{V}(value) where {V} = new{V}(value)
+        Returns(value) = new{Core.Typeof(value)}(value)
+    end
+
+    (obj::Returns)(args...; kw...) = obj.value
+    function Base.show(io::IO, obj::Returns)
+        show(io, typeof(obj))
+        print(io, "(")
+        show(io, obj.value)
+        print(io, ")")
+    end
 end
