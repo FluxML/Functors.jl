@@ -16,7 +16,7 @@ function makefunctor(m::Module, T, fs = fieldnames(T))
   escfs = [:($f = getfield(x, $(QuoteNode(f)))) for f in fs]
 
   @eval m begin
-    $Functors.functor(::Type{<:$T}, x) = ($(escfs...),), y -> $T($(escargs...))
+    $Functors.functor(::Type{<:$T}, x) = (;$(escfs...)), y -> $T($(escargs...))
   end
 end
 
@@ -30,7 +30,7 @@ macro functor(args...)
   functorm(args...)
 end
 
-isleaf(x) = children(x) === ()
+isleaf(@nospecialize(x)) = children(x) === ()
 
 children(x) = functor(x)[1]
 

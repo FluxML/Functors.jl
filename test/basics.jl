@@ -19,6 +19,15 @@ struct NoChild{T}; x::T; end
 ### Basic functionality
 ###
 
+@testset "Children and Leaves" begin
+  no_children = NoChildren2(1, 2)
+  has_children = Foo(1, 2)
+  @test Functors.isleaf(no_children)
+  @test !Functors.isleaf(has_children)
+  @test Functors.children(no_children) == ()
+  @test Functors.children(has_children) == (x=1, y=2)
+end
+
 @testset "Nested" begin
   model = Bar(Foo(1, [1, 2, 3]))
 
@@ -44,7 +53,7 @@ end
 @testset "Property list" begin
   model = OneChild3(1, 2, 3)
   model′ = fmap(x -> 2x, model)
-  
+
   @test (model′.x, model′.y, model′.z) == (1, 4, 3)
 end
 
@@ -77,7 +86,7 @@ end
   m4 = (x=1, y=(2, 3), z=4:5)
   @test isbits(fmap(float, m4))
   @test_skip 0 == @allocated fmap(float, m4)  # true, but fails in tests
-  
+
   # Shared mutable containers are preserved, even if all children are isbits:
   ref = Ref(1)
   m5 = (x = ref, y = ref, z = Ref(1))
