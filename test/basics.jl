@@ -2,18 +2,17 @@
 using Functors: functor, usecache
 
 struct Foo; x; y; end
-@functor Foo
 
 struct Bar{T}; x::T; end
-@functor Bar
 
 struct OneChild3; x; y; z; end
 @functor OneChild3 (y,)
 
 struct NoChildren2; x; y; end
+@functor NoChildren2 ()
 
 struct NoChild{T}; x::T; end
-
+@functor NoChild ()
 
 ###
 ### Basic functionality

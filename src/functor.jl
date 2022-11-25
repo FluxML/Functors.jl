@@ -11,7 +11,18 @@ macro leaf(T)
   :($Functors.functor(::Type{<:$(esc(T))}, x) = ($Functors.NoChildren(), _ -> x))
 end
 
-@leaf Any # every type is a leaf by default
+# @leaf Any # every type is a leaf by default
+
+function functor(T, x)
+  names = fieldnames(T)
+  if isempty(names)
+    return (), _ -> x
+  end
+  
+  vals = ntuple(i -> getfield(x, names[i]), length(names))
+  return NamedTuple{names}(vals), y -> T(y...)
+end
+
 functor(x) = functor(typeof(x), x)
 
 functor(::Type{<:Tuple}, x) = x, identity
@@ -22,14 +33,20 @@ functor(::Type{<:AbstractArray}, x) = x, identity
 @leaf AbstractArray{<:Number}
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
-  yᵢ = 0
-  escargs = map(fieldnames(T)) do f
-    f in fs ? :(y[$(yᵢ += 1)]) : :(x.$f)
-  end
-  escfs = [:($f=x.$f) for f in fs]
-
-  @eval m begin
-    $Functors.functor(::Type{<:$T}, x) = (;$(escfs...)), y -> $T($(escargs...))
+  if isempty(fs)
+    @eval m begin
+      $Functors.functor(::Type{<:$T}, x) = (), _ -> x
+    end
+  else
+    yᵢ = 0
+    escargs = map(fieldnames(T)) do f
+      f in fs ? :(y[$(yᵢ += 1)]) : :(x.$f)
+    end
+    escfs = [:($f=x.$f) for f in fs]
+    
+    @eval m begin
+      $Functors.functor(::Type{<:$T}, x) = (;$(escfs...)), y -> $T($(escargs...))
+    end
   end
 end
 
