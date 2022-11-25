@@ -1,3 +1,7 @@
+_map(f, x...) = map(f, x...)
+_map(f, x::Dict) = Dict(k => f(v) for (k, v) in x)
+
+
 """
     AbstractWalk
 
@@ -53,7 +57,7 @@ struct DefaultWalk <: AbstractWalk end
 function (::DefaultWalk)(recurse, x, ys...)
   func, re = functor(x)
   yfuncs = map(y -> functor(typeof(x), y)[1], ys)
-  re(map(recurse, func, yfuncs...))
+  re(_map(recurse, func, yfuncs...))
 end
 
 """
@@ -66,7 +70,7 @@ See [`fmapstructure`](@ref) for more information.
 """
 struct StructuralWalk <: AbstractWalk end
 
-(::StructuralWalk)(recurse, x) = map(recurse, children(x))
+(::StructuralWalk)(recurse, x) = _map(recurse, children(x))
 
 """
     ExcludeWalk(walk, fn, exclude)
@@ -156,7 +160,7 @@ function (walk::CollectWalk)(recurse, x)
   # to exclude, we wrap this walk in ExcludeWalk
   usecache(walk.cache, x) && push!(walk.cache, x)
   push!(walk.output, x)
-  map(recurse, children(x))
+  _map(recurse, children(x))
 
   return walk.output
 end

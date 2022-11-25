@@ -326,3 +326,16 @@ end
   m4 = FBar(m3, (:x,))
   @test all(fcollect(m4) .=== [m4, m3, m2, m0])
 end
+
+@testset "Dict" begin
+  d = Dict(:a => 1, :b => 2)
+  
+  @test Functors.children(d) == d
+  # @test collect(Functors.children(d)) == [1, 2]
+  @test fmap(x -> x + 1, d) == Dict(:a => 2, :b => 3)
+
+  d = Dict(:a => 1, :b => Dict("a" => 5, "b" => 6, "c" => 7))  
+  @test Functors.children(d) == d
+  # @test collect(Functors.children(d)) == [1, 2]
+  @test fmap(x -> x + 1, d) == Dict(:a => 2, :b => Dict("a" => 6, "b" => 7, "c" => 8))
+end
