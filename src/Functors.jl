@@ -71,6 +71,7 @@ var"@functor"
     Functors.isleaf(x)
 
 Return true if `x` has no [`children`](@ref) according to [`functor`](@ref).
+Corresponding to `isempty(children(x)) == true`.
 
 # Examples
 ```jldoctest
