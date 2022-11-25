@@ -25,8 +25,6 @@ julia> struct Foo
          y
        end
 
-julia> @functor Foo
-
 julia> model = Foo(1, [1, 2, 3])
 Foo(1, [1, 2, 3])
 
@@ -40,8 +38,6 @@ It works also with deeply-nested models:
 julia> struct Bar
          x
        end
-
-julia> @functor Bar
 
 julia> model = Bar(Foo(1, [1, 2, 3]))
 Bar(Foo(1, [1, 2, 3]))

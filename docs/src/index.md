@@ -8,9 +8,9 @@ For large models it can be cumbersome or inefficient to work with parameters as 
 
 ## Basic Usage and Implementation
 
-When one marks a structure as [`@functor`](@ref) it means that Functors.jl is allowed to look into the fields of the instances of the struct and modify them. This is achieved through [`Functors.fmap`](@ref).
+By default, julia types are marked as [`@functor`](@ref)s, meaning that Functors.jl is allowed to look into the fields of the instances of the struct and modify them. This is achieved through [`Functors.fmap`](@ref).
 
-The workhorse of fmap is actually a lower level function, functor:
+The workhorse of `fmap` is actually a lower level function, functor:
 
 ```julia-repl
 julia> using Functors
@@ -19,8 +19,6 @@ julia> struct Foo
          x
          y
        end
-
-julia> @functor Foo
 
 julia> foo = Foo(1, [1, 2, 3]) # notice all the elements are integers
 
@@ -50,12 +48,17 @@ julia> fmap(float, model)
 Baz(1.0, 2)
 ```
 
-Any field not in the list will be passed through as-is during reconstruction. This is done by invoking the default constructor, so structs that define custom inner constructors are expected to provide one that acts like the default.
+Any field not in the list will be passed through as-is during reconstruction. This is done by invoking the default constructor accepting all fields as arguments, so structs that define custom inner constructors are expected to provide one that acts like the default. 
+
+The use of `@functor` with no fields argument as in `@functor Baz` is equivalent to `@functor Baz fieldnames(Baz)`
+and also equivalent to avoiding `@functor` altogether.
+
+Using [`@leaf`](@ref) instead of [`@functor`](@ref) will prevent the fields of a struct from being traversed. 
+
+!!! warning "Change to opt-out behaviour in v0.5"
+    Previous releases of functors, up to v0.4, used an opt-in behaviour where structs were not functors unless marked with `@functor`. This was changed in v0.5 to an opt-out behaviour where structs are functors unless marked with `@leaf`.
 
 ## Appropriate Use
-
-!!! warning "Not everything should be a functor!"
-    Due to its generic nature it is very attractive to mark several structures as [`@functor`](@ref) when it may not be quite safe to do so.
 
 Typically, since any function `f` is applied to the leaves of the tree, but it is possible for some functions to require dispatching on the specific type of the fields causing some methods to be missed entirely.
 

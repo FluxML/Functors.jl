@@ -4,9 +4,8 @@ using LinearAlgebra
 using StaticArrays
 
 @testset "Functors.jl" begin
-
   include("basics.jl")
   include("base.jl")
   include("keypath.jl")
-
+  include("flexiblefunctors.jl")
 end

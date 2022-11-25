@@ -3,6 +3,7 @@ module Functors
 export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, fleaves,
        fmap_with_path, fmapstructure_with_path,
        KeyPath, getkeypath, haskeypath, setkeypath!
+using ConstructionBase: constructorof
 
 include("functor.jl")
 include("keypath.jl")
@@ -42,8 +43,6 @@ this can be restricted be restructed by providing a tuple of field names.
 ```jldoctest
 julia> struct Foo; x; y; end
 
-julia> @functor Foo
-
 julia> Functors.children(Foo(1,2))
 (x = 1, y = 2)
 
@@ -51,6 +50,8 @@ julia> _, re = Functors.functor(Foo(1,2));
 
 julia> re((10, 20))
 Foo(10, 20)
+
+julia> @functor Foo # same as before, nothing changes
 
 julia> struct TwoThirds a; b; c; end
 

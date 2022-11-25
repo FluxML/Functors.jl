@@ -11,7 +11,19 @@ macro leaf(T)
   :($Functors.functor(::Type{<:$(esc(T))}, x) = ($Functors.NoChildren(), _ -> x))
 end
 
-@leaf Any # every type is a leaf by default
+# @leaf Any # every type is a leaf by default
+
+# Default functor
+function functor(T, x)
+  names = fieldnames(T)
+  if isempty(names)
+    return NoChildren(), _ -> x
+  end
+  S = constructorof(T) # remove parameters from parametric types and support anonymous functions
+  vals = ntuple(i -> getfield(x, names[i]), length(names))
+  return NamedTuple{names}(vals), y -> S(y...)
+end
+
 functor(x) = functor(typeof(x), x)
 
 functor(::Type{<:Tuple}, x) = x, identity
@@ -30,7 +42,7 @@ function makefunctor(m::Module, T, fs = fieldnames(T))
     f in fs ? :(y[$(Meta.quot(f))]) : :(x.$f)
   end
   escfs = [:($f=x.$f) for f in fs]
-
+  
   @eval m begin
     function $Functors.functor(::Type{<:$T}, x)
       reconstruct(y) = $T($(escargs...))
