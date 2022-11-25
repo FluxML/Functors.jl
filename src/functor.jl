@@ -30,7 +30,7 @@ macro functor(args...)
   functorm(args...)
 end
 
-isleaf(@nospecialize(x)) = children(x) === ()
+isleaf(@nospecialize(x)) = isempty(children(x))
 
 children(x) = functor(x)[1]
 

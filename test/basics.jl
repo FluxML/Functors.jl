@@ -149,6 +149,14 @@ end
   @test_throws Exception functor(NamedTuple{(:x, :y)}, (z=33, x=1))
 end
 
+@testset "empty children" begin
+  struct EmptyChildren; a; b; end
+  @functor EmptyChildren ()
+  x = EmptyChildren(1, 2)
+  @test children(x) === (;)
+  @test isleaf(x)
+end
+
 ###
 ### Extras
 ###

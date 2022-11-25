@@ -84,7 +84,7 @@ julia> Functors.isleaf(["five", [6, 7]])
 false
 
 julia> Functors.isleaf([])
-false
+true
 
 julia> Functors.isleaf((8, 9))
 false
