@@ -18,9 +18,9 @@ function functor(T, x)
   if isempty(names)
     return (), _ -> x
   end
-  
+  S = T.name.wrapper # remove parameters from parametric types
   vals = ntuple(i -> getfield(x, names[i]), length(names))
-  return NamedTuple{names}(vals), y -> T(y...)
+  return NamedTuple{names}(vals), y -> S(y...)
 end
 
 functor(x) = functor(typeof(x), x)
