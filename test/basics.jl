@@ -153,8 +153,8 @@ end
   struct EmptyChildren; a; b; end
   @functor EmptyChildren ()
   x = EmptyChildren(1, 2)
-  @test children(x) === (;)
-  @test isleaf(x)
+  @test Functors.children(x) === (;)
+  @test Functors.isleaf(x)
 end
 
 ###
