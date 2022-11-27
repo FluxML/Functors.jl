@@ -33,20 +33,14 @@ functor(::Type{<:AbstractArray}, x) = x, identity
 @leaf AbstractArray{<:Number}
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
-  if isempty(fs)
-    @eval m begin
-      $Functors.functor(::Type{<:$T}, x) = (), _ -> x
-    end
-  else
-    yᵢ = 0
-    escargs = map(fieldnames(T)) do f
-      f in fs ? :(y[$(yᵢ += 1)]) : :(x.$f)
-    end
-    escfs = [:($f=x.$f) for f in fs]
-    
-    @eval m begin
-      $Functors.functor(::Type{<:$T}, x) = (;$(escfs...)), y -> $T($(escargs...))
-    end
+  yᵢ = 0
+  escargs = map(fieldnames(T)) do f
+    f in fs ? :(y[$(yᵢ += 1)]) : :(x.$f)
+  end
+  escfs = [:($f=x.$f) for f in fs]
+  
+  @eval m begin
+    $Functors.functor(::Type{<:$T}, x) = (;$(escfs...)), y -> $T($(escargs...))
   end
 end
 
