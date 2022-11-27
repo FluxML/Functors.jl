@@ -336,4 +336,14 @@ end
   d = Dict(:a => 1, :b => Dict("a" => 5, "b" => 6, "c" => 7))  
   @test Functors.children(d) == d
   @test fmap(x -> x + 1, d) == Dict(:a => 2, :b => Dict("a" => 6, "b" => 7, "c" => 8))
+
+  @testset "fmap(+, x, y)" begin
+    m1 = Dict("x" => [1,2], "y" => 3)
+    n1 = Dict("x" => [4,5], "y" => 6)
+    @test fmap(+, m1, n1) == Dict("x" => [5, 7], "y" => 9)
+    
+    m1 = Dict(:x => [1,2], :y => 3)
+    n1 = (x = [4,5], y = 6)
+    @test fmap(+, m1, n1) == Dict(:x => [5, 7], :y => 9)
+  end
 end

@@ -1,6 +1,8 @@
 _map(f, x...) = map(f, x...)
-_map(f, x::Dict) = Dict(k => f(v) for (k, v) in x)
+_map(f, x::Dict, ys...) = Dict(k => f(v, (y[k] for y in ys)...) for (k, v) in x)
 
+_values(x) = x
+_values(x::Dict) = values(x)
 
 """
     AbstractWalk
@@ -26,7 +28,7 @@ abstract type AbstractWalk end
     AnonymousWalk(walk_fn)
 
 Wrap a `walk_fn` so that `AnonymousWalk(walk_fn) isa AbstractWalk`.
-This type only exists for backwards compatability and should be directly used.
+This type only exists for backwards compatability and should not be directly used.
 Attempting to wrap an existing `AbstractWalk` is a no-op (i.e. it is not wrapped).
 """
 struct AnonymousWalk{F} <: AbstractWalk
