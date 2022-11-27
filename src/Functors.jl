@@ -111,8 +111,8 @@ A structure and type preserving `map`.
 
 By default it transforms every leaf node (identified by `exclude`, default [`isleaf`](@ref))
 by applying `f`, and otherwise traverses `x` recursively using [`functor`](@ref).
-Optionally, it may also be associated with obejcts `ys` with the same tree structure.
-In that case, `f` is applied to the corresponding leaff nodes in `x` and `ys`.
+Optionally, it may also be associated with objects `ys` with the same tree structure.
+In that case, `f` is applied to the corresponding leaf nodes in `x` and `ys`.
 
 # Examples
 ```jldoctest
