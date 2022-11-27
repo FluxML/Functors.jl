@@ -18,7 +18,7 @@ function functor(T, x)
   if isempty(names)
     return (), _ -> x
   end
-  S = T.name.wrapper # remove parameters from parametric types
+  S = constructorof(T) # remove parameters from parametric types and support anonymous functions
   vals = ntuple(i -> getfield(x, names[i]), length(names))
   return NamedTuple{names}(vals), y -> S(y...)
 end

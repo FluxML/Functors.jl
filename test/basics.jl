@@ -148,6 +148,17 @@ end
   @test_throws Exception functor(NamedTuple{(:x, :y)}, (z=33, x=1))
 end
 
+@testset "anonymous functions" begin  
+  model = let W = rand(2,2), b = ones(2)
+    x -> tanh.(W*x .+ b)
+  end
+  newmodel = fmap(zero, model)
+  @test newmodel isa Function
+  @test newmodel([1,2]) == [0,0]
+  @test newmodel.W == [0 0; 0 0]
+  @test newmodel.b == [0, 0]  
+end
+
 ###
 ### Extras
 ###

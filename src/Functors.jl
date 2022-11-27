@@ -1,5 +1,6 @@
 module Functors
 
+using ConstructionBase: constructorof
 export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect
 
 include("functor.jl")
