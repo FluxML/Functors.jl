@@ -345,5 +345,10 @@ end
     m1 = Dict(:x => [1,2], :y => 3)
     n1 = (x = [4,5], y = 6)
     @test fmap(+, m1, n1) == Dict(:x => [5, 7], :y => 9)
+
+    # extra keys in m1 are ignored
+    m1 = Dict("x" => [1,2], "y" => Dict(:a => 3, :b => 4))
+    n1 = Dict("x" => [4,5], "y" => Dict(:a => 0.1, :b => 0.2, :c => 5), "z" => Dict(:a => 5))
+    @test fmap(+, m1, n1) == Dict("x" => [5, 7], "y" => Dict(:a=>3.1, :b=>4.2))
   end
 end

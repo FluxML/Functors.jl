@@ -148,9 +148,9 @@ julia> fmap(println, (i = twice, ii = 34, iii = [5, 6], iv = (twice, 34), v = 34
 
 julia> d1 = Dict("x" => [1,2], "y" => 3);
 
-julia> d2 = Dict("x" => [4,5], "y" => 6);
+julia> d2 = Dict("x" => [4,5], "y" => 6, "z" => "an_extra_value");
 
-julia> fmap(+, d1, d2) == Dict("x" => [5, 7], "y" => 9)
+julia> fmap(+, d1, d2) == Dict("x" => [5, 7], "y" => 9) # Note that "z" is ignored
 true
 ```
 
