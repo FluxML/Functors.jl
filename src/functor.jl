@@ -1,5 +1,5 @@
 
-functor(T, x) = (), _ -> x
+@leaf Any
 functor(x) = functor(typeof(x), x)
 
 functor(::Type{<:Tuple}, x) = x, identity
@@ -7,7 +7,7 @@ functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty
 functor(::Type{<:Dict}, x) = Dict(k => x[k] for k in keys(x)), identity
 
 functor(::Type{<:AbstractArray}, x) = x, identity
-functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
+@leaf AbstractArray{<:Number}
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
   yᵢ = 0
@@ -31,7 +31,20 @@ macro functor(args...)
   functorm(args...)
 end
 
-isleaf(@nospecialize(x)) = children(x) === ()
+
+const NoChildren = Tuple{}
+
+function makeleaf(m::Module, T)
+  @eval m begin
+    $Functors.functor(::Type{<:$T}, x) = $Functors.NoChildren(), _ -> x
+  end
+end
+
+macro leaf(T)
+  :(makeleaf(@__MODULE__, $(esc(T))))
+end
+
+isleaf(@nospecialize(x)) = children(x) === NoChildren()
 
 children(x) = functor(x)[1]
 

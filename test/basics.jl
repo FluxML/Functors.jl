@@ -24,7 +24,7 @@ struct NoChild{T}; x::T; end
   has_children = Foo(1, 2)
   @test Functors.isleaf(no_children)
   @test !Functors.isleaf(has_children)
-  @test Functors.children(no_children) == ()
+  @test Functors.children(no_children) === Functors.NoChildren()
   @test Functors.children(has_children) == (x=1, y=2)
 end
 
@@ -351,4 +351,15 @@ end
     n1 = Dict("x" => [4,5], "y" => Dict(:a => 0.1, :b => 0.2, :c => 5), "z" => Dict(:a => 5))
     @test fmap(+, m1, n1) == Dict("x" => [5, 7], "y" => Dict(:a=>3.1, :b=>4.2))
   end
+end
+
+@testset "@leaf" begin
+  struct A; x; end
+  @functor A
+  a = A(1)
+  @test Functors.children(a) === (x = 1,)
+  @leaf A
+  children, re = Functors.functor(a)
+  @test children == Functors.NoChildren() 
+  @test re(children) === a
 end
