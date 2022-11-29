@@ -1,6 +1,7 @@
 ```@docs
 Functors.fmap
 Functors.@functor
+Functors.@leaf
 ```
 
 ```@docs
