@@ -1,5 +1,18 @@
+function functor end
 
-@leaf Any
+const NoChildren = Tuple{}
+
+function makeleaf(m::Module, T)
+  @eval m begin
+    $Functors.functor(::Type{<:$T}, x) = $Functors.NoChildren(), _ -> x
+  end
+end
+
+macro leaf(T)
+  :(makeleaf(@__MODULE__, $(esc(T))))
+end
+
+@leaf Any # every type is a leaf by default
 functor(x) = functor(typeof(x), x)
 
 functor(::Type{<:Tuple}, x) = x, identity
@@ -29,19 +42,6 @@ end
 
 macro functor(args...)
   functorm(args...)
-end
-
-
-const NoChildren = Tuple{}
-
-function makeleaf(m::Module, T)
-  @eval m begin
-    $Functors.functor(::Type{<:$T}, x) = $Functors.NoChildren(), _ -> x
-  end
-end
-
-macro leaf(T)
-  :(makeleaf(@__MODULE__, $(esc(T))))
 end
 
 isleaf(@nospecialize(x)) = children(x) === NoChildren()
