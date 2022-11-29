@@ -4,6 +4,7 @@ functor(x) = functor(typeof(x), x)
 
 functor(::Type{<:Tuple}, x) = x, identity
 functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty(x, s), L)), identity
+functor(::Type{<:Dict}, x) = Dict(k => x[k] for k in keys(x)), identity
 
 functor(::Type{<:AbstractArray}, x) = x, identity
 functor(::Type{<:AbstractArray{<:Number}}, x) = (), _ -> x
