@@ -8,6 +8,11 @@ function makeleaf(m::Module, T)
   end
 end
 
+"""
+    @leaf T
+
+Define [`functor`](@ref) for the type `T` so that  `isleaf(x::T) == true`.
+"""
 macro leaf(T)
   :(makeleaf(@__MODULE__, $(esc(T))))
 end

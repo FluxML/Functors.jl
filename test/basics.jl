@@ -358,7 +358,7 @@ end
   @functor A
   a = A(1)
   @test Functors.children(a) === (x = 1,)
-  @leaf A
+  Functors.@leaf A
   children, re = Functors.functor(a)
   @test children == Functors.NoChildren() 
   @test re(children) === a
