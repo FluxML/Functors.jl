@@ -282,26 +282,26 @@ julia> struct Bar; x; end
 
 julia> @functor Bar
 
-julia> struct NoChildren; x; y; end
+julia> struct TypeWithNoChildren; x; y; end
 
-julia> m = Foo(Bar([1,2,3]), NoChildren(:a, :b))
-Foo(Bar([1, 2, 3]), NoChildren(:a, :b))
+julia> m = Foo(Bar([1,2,3]), TypeWithNoChildren(:a, :b))
+Foo(Bar([1, 2, 3]), TypeWithNoChildren(:a, :b))
 
 julia> fcollect(m)
 4-element Vector{Any}:
- Foo(Bar([1, 2, 3]), NoChildren(:a, :b))
+ Foo(Bar([1, 2, 3]), TypeWithNoChildren(:a, :b))
  Bar([1, 2, 3])
  [1, 2, 3]
- NoChildren(:a, :b)
+ TypeWithNoChildren(:a, :b)
 
 julia> fcollect(m, exclude = v -> v isa Bar)
 2-element Vector{Any}:
- Foo(Bar([1, 2, 3]), NoChildren(:a, :b))
- NoChildren(:a, :b)
+ Foo(Bar([1, 2, 3]), TypeWithNoChildren(:a, :b))
+ TypeWithNoChildren(:a, :b)
 
 julia> fcollect(m, exclude = v -> Functors.isleaf(v))
 2-element Vector{Any}:
- Foo(Bar([1, 2, 3]), NoChildren(:a, :b))
+ Foo(Bar([1, 2, 3]), TypeWithNoChildren(:a, :b))
  Bar([1, 2, 3])
 ```
 """
