@@ -2,19 +2,13 @@ function functor end
 
 const NoChildren = Tuple{}
 
-function makeleaf(m::Module, T)
-  @eval m begin
-    $Functors.functor(::Type{<:$T}, x) = $Functors.NoChildren(), _ -> x
-  end
-end
-
 """
     @leaf T
 
 Define [`functor`](@ref) for the type `T` so that  `isleaf(x::T) == true`.
 """
 macro leaf(T)
-  :(makeleaf(@__MODULE__, $(esc(T))))
+  :($Functors.functor(::Type{<:$(esc(T))}, x) = ($Functors.NoChildren(), _ -> x))
 end
 
 @leaf Any # every type is a leaf by default
