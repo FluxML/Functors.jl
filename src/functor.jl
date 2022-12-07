@@ -13,10 +13,11 @@ end
 
 # @leaf Any # every type is a leaf by default
 
+# Default functor
 function functor(T, x)
   names = fieldnames(T)
   if isempty(names)
-    return (), _ -> x
+    return NoChildren(), _ -> x
   end
   S = constructorof(T) # remove parameters from parametric types and support anonymous functions
   vals = ntuple(i -> getfield(x, names[i]), length(names))
