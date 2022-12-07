@@ -9,7 +9,7 @@ using StaticArrays
   include("base.jl")
   include("flexiblefunctors.jl")
 
-  # if VERSION < v"1.6" # || VERSION > v"1.7-"
+  # if VERSION >= v"1.7"
   #   @warn "skipping doctests, on Julia $VERSION"
   # else
   #   using Documenter

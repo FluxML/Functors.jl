@@ -61,7 +61,7 @@ struct FFoo
     @test all(fcollect(m4, exclude = x -> x isa Array) .=== [m4, m3])
     @test all(fcollect(m4, exclude = x -> x isa FFoo) .=== [m4])
   
-    m0 = NoChildren2(:a, :b)
+    m0 = NoChild2(:a, :b)
     m1 = [1, 2, 3]
     m2 = FBar(m1, ())
     m3 = FFoo(m2, m0, (:x, :y,))

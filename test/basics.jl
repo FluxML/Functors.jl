@@ -8,22 +8,25 @@ struct Bar{T}; x::T; end
 struct OneChild3; x; y; z; end
 @functor OneChild3 (y,)
 
-struct NoChildren2; x; y; end
-@functor NoChildren2 ()
+struct NoChild2; x; y; end
+@functor NoChild2 ()
 
-struct NoChild{T}; x::T; end
-@functor NoChild ()
+struct NoChild1{T}; x::T; end
+@functor NoChild1 ()
+
+struct LeafType{T}; x::T; end
+@leaf LeafType
 
 ###
 ### Basic functionality
 ###
 
-@testset "Children and Leaves" begin
-  no_children = NoChildren2(1, 2)
+@testset "NoChild is not a leaf" begin
+  no_children = NoChild2(1, 2)
   has_children = Foo(1, 2)
-  @test Functors.isleaf(no_children)
+  @test !Functors.isleaf(no_children)
   @test !Functors.isleaf(has_children)
-  @test Functors.children(no_children) === Functors.NoChildren()
+  @test Functors.children(no_children) === (;)
   @test Functors.children(has_children) == (x=1, y=2)
 end
 
@@ -97,8 +100,8 @@ end
     # Leaf types:
     @test usecache(d, [1,2])
     @test !usecache(d, 4.0)
-    @test usecache(d, NoChild([1,2]))
-    @test !usecache(d, NoChild((3,4)))
+    @test usecache(d, LeafType([1,2]))
+    @test !usecache(d, LeafType((3,4)))
 
     # Not leaf:
     @test usecache(d, Ref(3))  # mutable container
@@ -181,7 +184,7 @@ end
 
   m1 = [1, 2, 3]
   m2 = Bar(m1)
-  m0 = NoChildren2(:a, :b)
+  m0 = NoChild2(:a, :b)
   m3 = Foo(m2, m0)
   m4 = Bar(m3)
   @test all(fcollect(m4) .=== [m4, m3, m2, m1, m0])
@@ -238,9 +241,7 @@ end
   @test z4.x === z4.z
 
   @test fmap(+, foo1, m1, n1) isa Foo
-  @static if VERSION >= v"1.6" # fails on Julia 1.0
-    @test fmap(.*, m1, foo1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
-  end
+  @test fmap(.*, m1, foo1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
 end
 
 @testset "old test update.jl" begin
@@ -303,11 +304,7 @@ end
 end
 
 @testset "@leaf" begin
-  struct A; x; end
-  @functor A
-  a = A(1)
-  @test Functors.children(a) === (x = 1,)
-  Functors.@leaf A
+  a = LeafType(1)
   children, re = Functors.functor(a)
   @test children == Functors.NoChildren() 
   @test re(children) === a
