@@ -35,7 +35,7 @@ struct AnonymousWalk{F} <: AbstractWalk
   walk::F
 
   function AnonymousWalk(walk::F) where F
-    Base.depwarn("Wrapping a custom walk function as an `AnonymousWalk`. Future versions will only support custom walks that explicitly subtyle `AbstractWalk`.", :AnonymousWalk)
+    Base.depwarn("Wrapping a custom walk function as an `AnonymousWalk`. Future versions will only support custom walks that explicitly subtype `AbstractWalk`.", :AnonymousWalk)
     return new{F}(walk)
   end
 end
