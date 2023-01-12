@@ -18,6 +18,7 @@ Functors.ExcludeWalk
 Functors.CachedWalk
 Functors.CollectWalk
 Functors.AnonymousWalk
+Functors.IterateWalk
 ```
 
 ```@docs

@@ -166,3 +166,40 @@ function (walk::CollectWalk)(recurse, x)
 
   return walk.output
 end
+
+"""
+    IterateWalk()
+
+A walk that recurses into a node `x` via [`Functors.children`](@ref),
+and concatenates the iterators of all children via
+[`Iterators.flatten`](https://docs.julialang.org/en/v1/base/iterators/#Base.Iterators.flatten).
+The resulting iterator is returned.
+
+When used with [`fmap`](@ref), the provided function `f` should
+return an iterator. For example, to iterate through
+every scalar value:
+```jldoctest
+julia> x = [(1, 2, 3), 4, [5, 6, (7, 8)]];
+
+julia> make_iterator(x) = x isa AbstractVector ? x : (x,);
+
+julia> iter = fmap(make_iterator, x; walk=Functors.IterateWalk(), cache=nothing);
+
+julia> collect(iter)
+8-element Vector{Int64}:
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+```
+"""
+struct IterateWalk <: AbstractWalk end
+
+function (walk::IterateWalk)(recurse, x)
+  func, _ = functor(x)
+  return Iterators.flatten(_map(recurse, func))
+end
