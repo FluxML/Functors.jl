@@ -171,7 +171,7 @@ end
     IterateWalk()
 
 A walk that walks all the [`Functors.children`](@ref) of trees `(x, ys...)` 
-and concatenates the iterators of all children via
+and concatenates the iterators of the children via
 [`Iterators.flatten`](https://docs.julialang.org/en/v1/base/iterators/#Base.Iterators.flatten).
 The resulting iterator is returned.
 
