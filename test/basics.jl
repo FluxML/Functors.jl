@@ -363,3 +363,18 @@ end
   @test children == Functors.NoChildren() 
   @test re(children) === a
 end
+
+@testset "IterateWalk" begin
+    x = ([1, 2, 3], 4, (5, 6, [7, 8]));
+    make_iterator(x) = x isa AbstractVector ? x.^2 : (x^2,);
+    iter = fmap(make_iterator, x; walk=Functors.IterateWalk(), cache=nothing);
+    @test iter isa Iterators.Flatten
+    @test collect(iter) == [1, 2, 3, 4, 5, 6, 7, 8].^2
+
+    # Test iteration of multiple trees together
+    y = ([8, 7, 6], 5, (4, 3, [2, 1]));
+    make_zipped_iterator(x, y) = zip(make_iterator(x), make_iterator(y));
+    zipped_iter = fmap(make_zipped_iterator, x, y; walk=Functors.IterateWalk(), cache=nothing);
+    @test zipped_iter isa Iterators.Flatten
+    @test collect(zipped_iter) == collect(Iterators.zip([1, 2, 3, 4, 5, 6, 7, 8].^2, [8, 7, 6, 5, 4, 3, 2, 1].^2))
+end

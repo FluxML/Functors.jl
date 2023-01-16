@@ -166,3 +166,60 @@ function (walk::CollectWalk)(recurse, x)
 
   return walk.output
 end
+
+"""
+    IterateWalk()
+
+A walk that walks all the [`Functors.children`](@ref) of trees `(x, ys...)` 
+and concatenates the iterators of the children via
+[`Iterators.flatten`](https://docs.julialang.org/en/v1/base/iterators/#Base.Iterators.flatten).
+The resulting iterator is returned.
+
+When used with [`fmap`](@ref), the provided function `f` should
+return an iterator. For example, to iterate through
+the square of every scalar value:
+```jldoctest iterate
+julia> x = ([1, 2, 3], 4, (5, 6, [7, 8]));
+
+julia> make_iterator(x) = x isa AbstractVector ? x.^2 : (x^2,);
+
+julia> iter = fmap(make_iterator, x; walk=Functors.IterateWalk(), cache=nothing);
+
+julia> collect(iter)
+8-element Vector{Int64}:
+  1
+  4
+  9
+ 16
+ 25
+ 36
+ 49
+ 64
+```
+We can also simultaneously iterate through multiple functors:
+```@jldoctest iterate
+julia> y = ([8, 7, 6], 5, (4, 3, [2, 1]));
+
+julia> make_zipped_iterator(x, y) = zip(make_iterator(x), make_iterator(y));
+
+julia> zipped_iter = fmap(make_zipped_iterator, x, y; walk=Functors.IterateWalk(), cache=nothing);
+
+julia> collect(zipped_iter)
+8-element Vector{Tuple{Int64, Int64}}:
+ (1, 64)
+ (4, 49)
+ (9, 36)
+ (16, 25)
+ (25, 16)
+ (36, 9)
+ (49, 4)
+ (64, 1)
+```
+"""
+struct IterateWalk <: AbstractWalk end
+
+function (walk::IterateWalk)(recurse, x, ys...)
+  func, _ = functor(x)
+  yfuncs = map(y -> functor(typeof(x), y)[1], ys)
+  return Iterators.flatten(_map(recurse, func, yfuncs...))
+end
