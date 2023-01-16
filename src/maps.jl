@@ -4,7 +4,7 @@ the below version of fmap, which takes a user-specified
 walk. Since this function is public API, the f argument
 has been left in the signature until a (likely breaking)
 decision can be made in the future about how to clean up
-this API.
+this API (issue #62).
 =#
 function fmap(walk::AbstractWalk, f, x, ys...)
   #=
