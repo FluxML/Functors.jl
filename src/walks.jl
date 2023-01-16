@@ -206,7 +206,6 @@ julia> zipped_iter = fmap(make_zipped_iterator, x, y; walk=Functors.IterateWalk(
 
 julia> collect(zipped_iter)
 8-element Vector{Tuple{Int64, Int64}}:
-8-element Vector{Tuple{Int64, Int64}}:
  (1, 64)
  (4, 49)
  (9, 36)
