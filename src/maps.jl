@@ -1,3 +1,11 @@
+#=
+Note that the argument f is not actually used in 
+the below version of fmap, which takes a user-specified
+walk. Since this function is public API, the f argument
+has been left in the signature until a (likely breaking)
+decision can be made in the future about how to clean up
+this API.
+=#
 function fmap(walk::AbstractWalk, f, x, ys...)
   #=
   The below construct avoids a performance penalty
