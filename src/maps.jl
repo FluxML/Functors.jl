@@ -1,17 +1,8 @@
-#=
-Note that the argument f is not actually used in 
-the below version of fmap, which takes a user-specified
-walk. Since this function is public API, the f argument
-has been left in the signature until a (likely breaking)
-decision can be made in the future about how to clean up
-this API (issue #62).
-=#
+# Note that the argument f is not actually used in this method.
+# See issue #62 for a discussion on how best to remove it.
 function fmap(walk::AbstractWalk, f, x, ys...)
-  #=
-  The below construct avoids a performance penalty
-  for recursive constructs in an anonymous function.
-  See Julia issue #47760 and Functors.jl issue #59.
-  =#
+  # This avoids a performance penalty for recursive constructs in an anonymous function.
+  # See Julia issue #47760 and Functors.jl issue #59.
   recurse(xs...) = walk(var"#self#", xs...)
   walk(recurse, x, ys...)
 end
