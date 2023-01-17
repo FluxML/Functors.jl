@@ -1,4 +1,11 @@
-fmap(walk::AbstractWalk, f, x, ys...) = walk((xs...) -> fmap(walk, f, xs...), x, ys...)
+# Note that the argument f is not actually used in this method.
+# See issue #62 for a discussion on how best to remove it.
+function fmap(walk::AbstractWalk, f, x, ys...)
+  # This avoids a performance penalty for recursive constructs in an anonymous function.
+  # See Julia issue #47760 and Functors.jl issue #59.
+  recurse(xs...) = walk(var"#self#", xs...)
+  walk(recurse, x, ys...)
+end
 
 function fmap(f, x, ys...; exclude = isleaf,
                            walk = DefaultWalk(),
