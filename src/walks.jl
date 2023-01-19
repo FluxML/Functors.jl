@@ -12,17 +12,22 @@ A walk subtyping `AbstractWalk` must satisfy the walk function interface:
 ```julia
 struct MyWalk <: AbstractWalk end
 
-function (::MyWalk)(recurse, x, ys...)
+function (::MyWalk)(outer_walk::AbstractWalk, x, ys...)
   # implement this
 end
 ```
 The walk function is called on a node `x` in a Functors tree.
 It may also be passed associated nodes `ys...` in other Functors trees.
 The walk function recurses further into `(x, ys...)` by calling
-`recurse` on the child nodes.
+`outer_walk` on the child nodes.
 The choice of which nodes to recurse and in what order is custom to the walk.
+By default, `outer_walk` it set to the walk being called,
+i.e. `(walk::AbstractWalk)(x, ys...) = walk(walk, x, ys...)`,
+but in general it allows for greater flexibility (e.g. nesting walks in one another).
 """
 abstract type AbstractWalk end
+
+(walk::AbstractWalk)(x, ys...) = walk(walk, x, ys...)
 
 """
     AnonymousWalk(walk_fn)
@@ -42,7 +47,7 @@ end
 # do not wrap an AbstractWalk
 AnonymousWalk(walk::AbstractWalk) = walk
 
-(walk::AnonymousWalk)(recurse, x, ys...) = walk.walk(recurse, x, ys...)
+(walk::AnonymousWalk)(outer_walk::AbstractWalk, x, ys...) = walk.walk(outer_walk, x, ys...)
 
 """
     DefaultWalk()
@@ -56,10 +61,10 @@ See [`fmap`](@ref) for more information.
 """
 struct DefaultWalk <: AbstractWalk end
 
-function (::DefaultWalk)(recurse, x, ys...)
+function (::DefaultWalk)(outer_walk::AbstractWalk, x, ys...)
   func, re = functor(x)
   yfuncs = map(y -> functor(typeof(x), y)[1], ys)
-  re(_map(recurse, func, yfuncs...))
+  re(_map(outer_walk, func, yfuncs...))
 end
 
 """
@@ -72,7 +77,7 @@ See [`fmapstructure`](@ref) for more information.
 """
 struct StructuralWalk <: AbstractWalk end
 
-(::StructuralWalk)(recurse, x) = _map(recurse, children(x))
+(::StructuralWalk)(outer_walk::AbstractWalk, x) = _map(outer_walk, children(x))
 
 """
     ExcludeWalk(walk, fn, exclude)
@@ -89,8 +94,8 @@ struct ExcludeWalk{T, F, G} <: AbstractWalk
   exclude::G
 end
 
-(walk::ExcludeWalk)(recurse, x, ys...) =
-  walk.exclude(x) ? walk.fn(x, ys...) : walk.walk(recurse, x, ys...)
+(walk::ExcludeWalk)(outer_walk::AbstractWalk, x, ys...) =
+  walk.exclude(x) ? walk.fn(x, ys...) : walk.walk(outer_walk, x, ys...)
 
 struct NoKeyword end
 
@@ -124,12 +129,12 @@ end
 CachedWalk(walk; prune = NoKeyword(), cache = IdDict()) =
   CachedWalk(walk, prune, cache)
 
-function (walk::CachedWalk)(recurse, x, ys...)
+function (walk::CachedWalk)(outer_walk::AbstractWalk, x, ys...)
   should_cache = usecache(walk.cache, x)
   if should_cache && haskey(walk.cache, x)
     return walk.prune isa NoKeyword ? walk.cache[x] : walk.prune
   else
-    ret = walk.walk(recurse, x, ys...)
+    ret = walk.walk(outer_walk, x, ys...)
     if should_cache
       walk.cache[x] = ret
     end
@@ -155,14 +160,14 @@ CollectWalk() = CollectWalk(Base.IdSet(), Any[])
 # note: we don't have an `OrderedIdSet`, so we use an `IdSet` for the cache
 # (to ensure we get exactly 1 copy of each distinct array), and a usual `Vector`
 # for the results, to preserve traversal order (important downstream!).
-function (walk::CollectWalk)(recurse, x)
+function (walk::CollectWalk)(outer_walk::AbstractWalk, x)
   if usecache(walk.cache, x) && (x in walk.cache)
     return walk.output
   end
   # to exclude, we wrap this walk in ExcludeWalk
   usecache(walk.cache, x) && push!(walk.cache, x)
   push!(walk.output, x)
-  _map(recurse, children(x))
+  _map(outer_walk, children(x))
 
   return walk.output
 end
@@ -218,8 +223,8 @@ julia> collect(zipped_iter)
 """
 struct IterateWalk <: AbstractWalk end
 
-function (walk::IterateWalk)(recurse, x, ys...)
+function (walk::IterateWalk)(outer_walk::AbstractWalk, x, ys...)
   func, _ = functor(x)
   yfuncs = map(y -> functor(typeof(x), y)[1], ys)
-  return Iterators.flatten(_map(recurse, func, yfuncs...))
+  return Iterators.flatten(_map(outer_walk, func, yfuncs...))
 end

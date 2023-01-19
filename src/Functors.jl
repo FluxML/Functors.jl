@@ -105,7 +105,6 @@ children
 
 """
     fmap(f, x, ys...; exclude = Functors.isleaf, walk = Functors.DefaultWalk()[, prune])
-    fmap(walk, f, x, ys...)
 
 A structure and type preserving `map`.
 
@@ -202,9 +201,6 @@ julia> (::MyWalk)(recurse, x) = x isa Bar ? "hello" :
 
 julia> fmap(x -> 10x, m; walk = MyWalk())
 Foo("hello", (40, 50, "hello"))
-
-julia> fmap(MyWalk(), x -> 10x, m)
-Foo("hello", (4, 5, "hello"))
 ```
 
 The behaviour when the same node appears twice can be altered by giving a value
