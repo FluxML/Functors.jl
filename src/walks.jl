@@ -25,6 +25,19 @@ The choice of which nodes to recurse and in what order is custom to the walk.
 abstract type AbstractWalk end
 
 """
+    runwalk(walk, x, ys...)
+Run a `walk` that recurses on itself, starting at a node `x` in a Functors tree,
+as well as optional associated nodes `ys...` in other Functors trees.
+Any custom `walk` function that subtypes [`Functors.AbstractWalk`](@ref) is permitted.
+"""
+function runwalk(walk::AbstractWalk, x, ys...)
+  # This avoids a performance penalty for recursive constructs in an anonymous function.
+  # See Julia issue #47760 and Functors.jl issue #59.
+  recurse(xs...) = walk(var"#self#", xs...)
+  walk(recurse, x, ys...)
+end
+
+"""
     AnonymousWalk(walk_fn)
 
 Wrap a `walk_fn` so that `AnonymousWalk(walk_fn) isa AbstractWalk`.
