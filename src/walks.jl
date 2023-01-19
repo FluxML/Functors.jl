@@ -24,6 +24,8 @@ The choice of which nodes to recurse and in what order is custom to the walk.
 """
 abstract type AbstractWalk end
 
+runwalk(walk, x, ys...) = walk(walk, x, ys...)
+
 """
     AnonymousWalk(walk_fn)
 
@@ -59,7 +61,7 @@ struct DefaultWalk <: AbstractWalk end
 function (::DefaultWalk)(recurse, x, ys...)
   func, re = functor(x)
   yfuncs = map(y -> functor(typeof(x), y)[1], ys)
-  re(_map(recurse, func, yfuncs...))
+  re(_map((xs...) -> runwalk(recurse, xs...), func, yfuncs...))
 end
 
 """
@@ -72,7 +74,7 @@ See [`fmapstructure`](@ref) for more information.
 """
 struct StructuralWalk <: AbstractWalk end
 
-(::StructuralWalk)(recurse, x) = _map(recurse, children(x))
+(::StructuralWalk)(recurse, x) = _map((xs...) -> runwalk(recurse, xs...), children(x))
 
 """
     ExcludeWalk(walk, fn, exclude)
@@ -162,7 +164,7 @@ function (walk::CollectWalk)(recurse, x)
   # to exclude, we wrap this walk in ExcludeWalk
   usecache(walk.cache, x) && push!(walk.cache, x)
   push!(walk.output, x)
-  _map(recurse, children(x))
+  _map((xs...) -> runwalk(recurse, xs...), children(x))
 
   return walk.output
 end
@@ -221,5 +223,5 @@ struct IterateWalk <: AbstractWalk end
 function (walk::IterateWalk)(recurse, x, ys...)
   func, _ = functor(x)
   yfuncs = map(y -> functor(typeof(x), y)[1], ys)
-  return Iterators.flatten(_map(recurse, func, yfuncs...))
+  return Iterators.flatten(_map((xs...) -> runwalk(recurse, xs...), func, yfuncs...))
 end
