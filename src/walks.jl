@@ -10,9 +10,9 @@ _values(x::Dict) = values(x)
 Any walk for use with [`fmap`](@ref) should inherit from this type.
 A walk subtyping `AbstractWalk` must satisfy the walk function interface:
 ```julia
-struct MyWalk <: AbstractWalk end
+struct MyWalk <: Functors.AbstractWalk end
 
-function (::MyWalk)(outer_walk::AbstractWalk, x, ys...)
+function (::MyWalk)(outer_walk::Functors.AbstractWalk, x, ys...)
   # implement this
 end
 ```

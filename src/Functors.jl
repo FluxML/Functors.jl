@@ -188,16 +188,16 @@ To recurse into custom types without reconstructing them afterwards,
 use [`fmapstructure`](@ref).
 
 For advanced customization of the traversal behaviour,
-pass a custom `walk` function that subtypes [`Functors.AbstractWalk`](ref).
-The form `fmap(walk, f, x, ys...)` can be called for custom walks.
-The simpler form `fmap(f, x, ys...; walk = mywalk)` will wrap `mywalk` in
+pass a custom `mywalk` that subtypes [`Functors.AbstractWalk`](ref).
+An application of `fmap(f, x, ys...; walk = mywalk)` will wrap `mywalk` in
 [`ExcludeWalk`](@ref) then [`CachedWalk`](@ref).
 
 ```jldoctest withfoo
 julia> struct MyWalk <: Functors.AbstractWalk end
 
-julia> (::MyWalk)(recurse, x) = x isa Bar ? "hello" :
-                                            Functors.DefaultWalk()(recurse, x)
+julia> function (::MyWalk)(outer_walk::Functors.AbstractWalk, x)
+            x isa Bar ? "hello" : Functors.DefaultWalk()(outer_walk, x)
+       end
 
 julia> fmap(x -> 10x, m; walk = MyWalk())
 Foo("hello", (40, 50, "hello"))
