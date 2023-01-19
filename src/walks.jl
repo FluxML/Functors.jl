@@ -23,7 +23,9 @@ The walk function recurses further into `(x, ys...)` by calling
 The choice of which nodes to recurse and in what order is custom to the walk.
 By default, `outer_walk` it set to the walk being called,
 i.e. `(walk::AbstractWalk)(x, ys...) = walk(walk, x, ys...)`,
-but in general it allows for greater flexibility (e.g. nesting walks in one another).
+but in general it allows for greater flexibility when nesting walks in one another.
+!!! warning "Don't forget the type annotation!"
+    When defining your own custom walk, the type annotation of `Functors.AbstractWalk` on `outer_walk` is necessary for correct dispatch.
 """
 abstract type AbstractWalk end
 
