@@ -18,12 +18,19 @@ end
 ```
 The walk function is called on a node `x` in a Functors tree.
 It may also be passed associated nodes `ys...` in other Functors trees.
-The walk function recurses further into `(x, ys...)` by calling
-`recurse` on the child nodes.
+The walk function recurses further into `(x, ys...)` by calling `runwalk(recurse, ...)`
+on the child nodes, where `recurse` is itself a [`Functors.AbstractWalk`].
 The choice of which nodes to recurse and in what order is custom to the walk.
 """
 abstract type AbstractWalk end
 
+"""
+    runwalk(walk, x, ys...)
+
+Run a `walk` that recurses on itself, starting at a node `x` in a Functors tree,
+as well as optional associated nodes `ys...` in other Functors trees.
+Any custom `walk` function that subtypes [`Functors.AbstractWalk`](@ref) is permitted.
+"""
 runwalk(walk, x, ys...) = walk(walk, x, ys...)
 
 """
