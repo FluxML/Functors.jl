@@ -5,8 +5,7 @@
 
 @functor Base.Generator  # aka Iterators.map
 
-functor(::Type{<:Base.ComposedFunction}, x) = (outer = x.outer, inner = x.inner), y -> Base.ComposedFunction(y.outer, y.inner)
-
+@functor Base.ComposedFunction
 @functor Base.Fix1
 @functor Base.Fix2
 @functor Base.Broadcast.BroadcastFunction
