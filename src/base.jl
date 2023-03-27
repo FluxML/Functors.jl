@@ -9,6 +9,7 @@ functor(::Type{<:Base.ComposedFunction}, x) = (outer = x.outer, inner = x.inner)
 
 @functor Base.Fix1
 @functor Base.Fix2
+@functor Base.Broadcast.BroadcastFunction
 
 ###
 ### Array wrappers

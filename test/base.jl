@@ -42,6 +42,14 @@ end
     @test fmap(sqrt, Base.Fix2(/, 4); exclude)(10) == 5.0
 end
 
+@testset "BroadcastFunction" begin
+  f = Bar(3.3)
+  bf = Base.Broadcast.BroadcastFunction(f)
+  @test Functors.functor(bf)[1] == (f = f,)
+  @test Functors.functor(bf)[2]((f = f,)) == bf
+  @test fmap(x -> x + 10, bf) == Base.Broadcast.BroadcastFunction(Bar(13.3))
+end
+
 @testset "LinearAlgebra containers" begin
   @test fmapstructure(identity, [1,2,3]') == (parent = [1, 2, 3],)
   @test fmapstructure(identity, transpose([1,2,3])) == (parent = [1, 2, 3],)
