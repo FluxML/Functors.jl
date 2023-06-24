@@ -378,3 +378,7 @@ end
     @test zipped_iter isa Iterators.Flatten
     @test collect(zipped_iter) == collect(Iterators.zip([1, 2, 3, 4, 5, 6, 7, 8].^2, [8, 7, 6, 5, 4, 3, 2, 1].^2))
 end
+
+@testset "Deprecated first-arg walk API to fmap" begin
+  @test (@test_deprecated fmap(Functors.DefaultWalk(), nothing, (1, 2, 3))) == (1, 2, 3)
+end

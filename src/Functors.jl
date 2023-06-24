@@ -1,6 +1,6 @@
 module Functors
 
-export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect
+export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute
 
 include("functor.jl")
 include("walks.jl")
@@ -105,7 +105,6 @@ children
 
 """
     fmap(f, x, ys...; exclude = Functors.isleaf, walk = Functors.DefaultWalk()[, prune])
-    fmap(walk, f, x, ys...)
 
 A structure and type preserving `map`.
 
@@ -190,10 +189,10 @@ use [`fmapstructure`](@ref).
 
 For advanced customization of the traversal behaviour,
 pass a custom `walk` function that subtypes [`Functors.AbstractWalk`](ref).
-The form `fmap(walk, f, x, ys...)` can be called for custom walks.
-The simpler form `fmap(f, x, ys...; walk = mywalk)` will wrap `mywalk` in
+The call `fmap(f, x, ys...; walk = mywalk)` will wrap `mywalk` in
 [`ExcludeWalk`](@ref) then [`CachedWalk`](@ref).
-
+Here, [`ExcludeWalk`](@ref) is responsible for applying `f` at excluded nodes.
+For a low-level interface for executing a user-constructed walk, see [`execute`](@ref).
 ```jldoctest withfoo
 julia> struct MyWalk <: Functors.AbstractWalk end
 
@@ -202,9 +201,6 @@ julia> (::MyWalk)(recurse, x) = x isa Bar ? "hello" :
 
 julia> fmap(x -> 10x, m; walk = MyWalk())
 Foo("hello", (40, 50, "hello"))
-
-julia> fmap(MyWalk(), x -> 10x, m)
-Foo("hello", (4, 5, "hello"))
 ```
 
 The behaviour when the same node appears twice can be altered by giving a value
