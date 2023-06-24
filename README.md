@@ -104,3 +104,6 @@ julia> fmap(cu, x; exclude = x -> CUDA.isbitstype(eltype(x)))
  'b': ASCII/Unicode U+0062 (category Ll: Letter, lowercase)
  'c': ASCII/Unicode U+0063 (category Ll: Letter, lowercase)
 ```
+
+## Related Packages
+- [StructWalk.jl](https://github.com/chengchingwen/StructWalk.jl)
