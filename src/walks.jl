@@ -26,6 +26,7 @@ abstract type AbstractWalk end
 
 """
     execute(walk, x, ys...)
+
 Execute a `walk` that recursively calls itself, starting at a node `x` in a Functors tree,
 as well as optional associated nodes `ys...` in other Functors trees.
 Any custom `walk` function that subtypes [`Functors.AbstractWalk`](@ref) is permitted.
