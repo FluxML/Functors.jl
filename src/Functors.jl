@@ -1,6 +1,6 @@
 module Functors
 
-export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, runwalk
+export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute
 
 include("functor.jl")
 include("walks.jl")
@@ -192,7 +192,7 @@ pass a custom `walk` function that subtypes [`Functors.AbstractWalk`](ref).
 The call `fmap(f, x, ys...; walk = mywalk)` will wrap `mywalk` in
 [`ExcludeWalk`](@ref) then [`CachedWalk`](@ref).
 Here, [`ExcludeWalk`](@ref) is responsible for applying `f` at excluded nodes.
-For a barebones interface that gives the user full control of the walk, see [`runwalk`](@ref).
+For a low-level interface for executing a user-constructed walk, see [`execute`](@ref).
 ```jldoctest withfoo
 julia> struct MyWalk <: Functors.AbstractWalk end
 

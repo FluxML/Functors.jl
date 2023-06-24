@@ -12,7 +12,7 @@ Functors.isleaf
 
 ```@docs
 Functors.AbstractWalk
-Functors.runwalk
+Functors.execute
 Functors.DefaultWalk
 Functors.StructuralWalk
 Functors.ExcludeWalk
