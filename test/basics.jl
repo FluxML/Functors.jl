@@ -14,6 +14,9 @@ struct NoChildren2; x; y; end
 
 struct NoChild{T}; x::T; end
 
+struct WrongOrder; x; y; z; end
+@functor WrongOrder (z, x)
+
 
 ###
 ### Basic functionality
@@ -53,8 +56,11 @@ end
 @testset "Property list" begin
   model = OneChild3(1, 2, 3)
   model′ = fmap(x -> 2x, model)
-
   @test (model′.x, model′.y, model′.z) == (1, 4, 3)
+
+  model = WrongOrder(1, 2, 3)
+  model′ = fmap(x -> 2x, model)
+  @test (model′.x, model′.y, model′.z) == (2, 2, 6)
 end
 
 @testset "Sharing" begin
