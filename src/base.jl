@@ -10,6 +10,8 @@
 @functor Base.Fix2
 @functor Base.Broadcast.BroadcastFunction
 
+@functor Base.Returns
+
 ###
 ### Array wrappers
 ###
