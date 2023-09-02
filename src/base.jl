@@ -10,6 +10,10 @@
 @functor Base.Fix2
 @functor Base.Broadcast.BroadcastFunction
 
+@static if VERSION >= v"1.7"
+  @functor Base.Returns
+end
+
 ###
 ### Array wrappers
 ###
