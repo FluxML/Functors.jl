@@ -50,7 +50,7 @@ end
   @test fmap(x -> x + 10, bf) == Base.Broadcast.BroadcastFunction(Bar(13.3))
 end
 
-@testset "Returns" begin
+VERSION >= v"1.7" && @testset "Returns" begin
   ret = Returns([0, pi, 2pi])
   @test Functors.functor(ret)[1] == (value = [0, pi, 2pi],)
   @test Functors.functor(ret)[2]((value = 1:3,)) === Returns(1:3)
