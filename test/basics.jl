@@ -123,6 +123,10 @@ end
   end
 end
 
+@testset "Self-referencing types" begin
+    @test fmap(identity, Base.ImmutableDict(:a => 42)) == Base.ImmutableDict(:a => 42)
+end
+
 @testset "functor(typeof(x), y) from @functor" begin
   nt1, re1 = functor(Foo, (x=1, y=2, z=3))
   @test nt1 == (x = 1, y = 2)

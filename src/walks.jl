@@ -114,7 +114,8 @@ usecache(::Nothing, x) = false
 
 @generated function anymutable(x::T) where {T}
   ismutabletype(T) && return true
-  subs =  [:(anymutable(getfield(x, $f))) for f in QuoteNode.(fieldnames(T))]
+  fns = QuoteNode.(filter(n -> fieldtype(T, n) != T, fieldnames(T)))
+  subs =  [:(anymutable(getfield(x, $f))) for f in fns]
   return Expr(:(||), subs...)
 end
 
