@@ -7,7 +7,6 @@ makedocs(modules = [Functors],
          sitename = "Functors.jl",
          pages = ["Home" => "index.md",
                   "API" => "api.md"],
-         strict = [:cross_references, :missing_docs],
          format = Documenter.HTML(
              analytics = "UA-36890222-9",
              assets = ["assets/flux.css"],
