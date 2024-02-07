@@ -188,7 +188,7 @@ To recurse into custom types without reconstructing them afterwards,
 use [`fmapstructure`](@ref).
 
 For advanced customization of the traversal behaviour,
-pass a custom `walk` function that subtypes [`Functors.AbstractWalk`](ref).
+pass a custom `walk` function that subtypes [`Functors.AbstractWalk`](@ref).
 The call `fmap(f, x, ys...; walk = mywalk)` will wrap `mywalk` in
 [`ExcludeWalk`](@ref) then [`CachedWalk`](@ref).
 Here, [`ExcludeWalk`](@ref) is responsible for applying `f` at excluded nodes.
