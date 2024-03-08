@@ -12,6 +12,7 @@ function fmap(f, x, ys...; exclude = isleaf,
 end
 
 fmapstructure(f, x; kwargs...) = fmap(f, x; walk = StructuralWalk(), kwargs...)
+fmapstructure(x; kwargs...) = fmapstructure(identity, x; kwargs...)
 
 fcollect(x; exclude = v -> false) =
   execute(ExcludeWalk(CollectWalk(), _ -> nothing, exclude), x)
