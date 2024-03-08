@@ -1,8 +1,23 @@
-_map(f, x...) = map(f, x...)
+function _map(f, x, ys...)
+  check_lenghts(x, ys...) || error("all arguments must have at least the same length of the firs one")
+  map(f, x, ys...)
+end
+
+function check_lenghts(x, ys...)
+  n = length(x)
+  return all(y -> length(y) >= n, ys)
+end
+
 _map(f, x::Dict, ys...) = Dict(k => f(v, (y[k] for y in ys)...) for (k, v) in x)
 
 _values(x) = x
 _values(x::Dict) = values(x)
+
+_keys(x::Dict) = Dict(k => k for k in keys(x))
+_keys(x::Tuple) = (keys(x)...,)
+_keys(x::AbstractArray) = collect(keys(x))
+_keys(x::NamedTuple{Ks}) where Ks = NamedTuple{Ks}(Ks)
+
 
 """
     AbstractWalk
@@ -76,6 +91,16 @@ function (::DefaultWalk)(recurse, x, ys...)
   re(_map(recurse, func, yfuncs...))
 end
 
+struct DefaultWalkWithPath <: AbstractWalk end
+
+function (::DefaultWalkWithPath)(recurse, kp::KeyPath, x, ys...)
+  x_children, re = functor(x)
+  kps = _map(c -> KeyPath(kp, c), _keys(x_children)) # use _keys and _map to preserve x_children type
+  ys_children = map(children, ys)
+  re(_map(recurse, kps, x_children, ys_children...))
+end
+
+
 """
     StructuralWalk()
 
@@ -86,7 +111,20 @@ See [`fmapstructure`](@ref) for more information.
 """
 struct StructuralWalk <: AbstractWalk end
 
-(::StructuralWalk)(recurse, x) = _map(recurse, children(x))
+function (::StructuralWalk)(recurse, x, ys...)
+  x_children = children(x)
+  ys_children = map(children, ys)
+  return _map(recurse, x_children, ys_children...)
+end
+
+struct StructuralWalkWithPath <: AbstractWalk end
+
+function (::StructuralWalkWithPath)(recurse, kp::KeyPath, x, ys...)
+  x_children = children(x)
+  kps = _map(c -> KeyPath(kp, c), _keys(x_children)) # use _keys and _map to preserve x_children type
+  ys_children = map(children, ys)
+  return _map(recurse, kps, x_children, ys_children...)
+end
 
 """
     ExcludeWalk(walk, fn, exclude)
@@ -105,6 +143,16 @@ end
 
 (walk::ExcludeWalk)(recurse, x, ys...) =
   walk.exclude(x) ? walk.fn(x, ys...) : walk.walk(recurse, x, ys...)
+
+struct ExcludeWalkWithKeyPath{T, F, G} <: AbstractWalk
+  walk::T
+  fn::F
+  exclude::G
+end
+
+(walk::ExcludeWalkWithKeyPath)(recurse, kp::KeyPath, x, ys...) =
+  walk.exclude(kp, x) ? walk.fn(kp, x, ys...) : walk.walk(recurse, kp, x, ys...)
+  
 
 struct NoKeyword end
 
@@ -145,6 +193,28 @@ function (walk::CachedWalk)(recurse, x, ys...)
     return walk.prune isa NoKeyword ? walk.cache[x] : walk.prune
   else
     ret = walk.walk(recurse, x, ys...)
+    if should_cache
+      walk.cache[x] = ret
+    end
+    return ret
+  end
+end
+
+struct CachedWalkWithPath{T, S} <: AbstractWalk
+  walk::T
+  prune::S
+  cache::IdDict{Any, Any}
+end
+
+CachedWalkWithPath(walk; prune = NoKeyword(), cache = IdDict()) =
+  CachedWalkWithPath(walk, prune, cache)
+
+function (walk::CachedWalkWithPath)(recurse, kp::KeyPath, x, ys...)
+  should_cache = usecache(walk.cache, x)
+  if should_cache && haskey(walk.cache, x)
+    return walk.prune isa NoKeyword ? walk.cache[x] : walk.prune
+  else
+    ret = walk.walk(recurse, kp, x, ys...)
     if should_cache
       walk.cache[x] = ret
     end
