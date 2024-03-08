@@ -234,7 +234,17 @@ julia> collect(zipped_iter)
 struct IterateWalk <: AbstractWalk end
 
 function (walk::IterateWalk)(recurse, x, ys...)
-  func, _ = functor(x)
-  yfuncs = map(y -> functor(typeof(x), y)[1], ys)
-  return Iterators.flatten(_map(recurse, func, yfuncs...))
+  x_children = children(x)
+  ys_children = map(children, ys)
+  return Iterators.flatten(_map(recurse, x_children, ys_children...))
 end
+
+struct FlattenWalk <: AbstractWalk end
+
+function (walk::FlattenWalk)(recurse, x, ys...)
+  x_children = _values(children(x))
+  ys_children = map(children, ys)
+  res = _map(recurse, x_children, ys_children...)
+  return reduce(vcat, _values(res))
+end
+
