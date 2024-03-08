@@ -4,6 +4,11 @@ _map(f, x::Dict, ys...) = Dict(k => f(v, (y[k] for y in ys)...) for (k, v) in x)
 _values(x) = x
 _values(x::Dict) = values(x)
 
+_keys(x::Dict) = Dict(k => k for k in keys(x))
+_keys(x::Tuple) = (keys(x)...,)
+_keys(x::AbstractArray) = collect(x)
+_keys(x::NamedTuple{Ks}) where Ks = NamedTuple{Ks}(Ks)
+
 """
     AbstractWalk
 
@@ -76,6 +81,16 @@ function (::DefaultWalk)(recurse, x, ys...)
   re(_map(recurse, func, yfuncs...))
 end
 
+struct DefaultWalkWithKeyPath <: AbstractWalk end
+
+function (::DefaultWalkWithKeyPath)(recurse, kp::KeyPath, x, ys...)
+  x_children, re = functor(x)
+  kps = _map(c -> KeyPath(kp, c), _keys(x_children)) # use _keys and _map to preserve x_children type
+  ys_children = map(children, ys)
+  re(_map(recurse, kps, x_children, ys_children...))
+end
+
+
 """
     StructuralWalk()
 
@@ -105,6 +120,16 @@ end
 
 (walk::ExcludeWalk)(recurse, x, ys...) =
   walk.exclude(x) ? walk.fn(x, ys...) : walk.walk(recurse, x, ys...)
+
+struct ExcludeWalkWithKeyPath{T, F, G} <: AbstractWalk
+  walk::T
+  fn::F
+  exclude::G
+end
+
+(walk::ExcludeWalkWithKeyPath)(recurse, kp::KeyPath, x, ys...) =
+  walk.exclude(kp, x) ? walk.fn(kp, x, ys...) : walk.walk(recurse, kp, x, ys...)
+  
 
 struct NoKeyword end
 
