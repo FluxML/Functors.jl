@@ -26,3 +26,7 @@ Functors.IterateWalk
 Functors.fmapstructure
 Functors.fcollect
 ```
+
+```@docs
+Functors.KeyPath
+```
