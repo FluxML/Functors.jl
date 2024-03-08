@@ -1,7 +1,7 @@
 module Functors
 
 export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, 
-       KeyPath, fmap_with_keypath
+       KeyPath, fmap_with_path
 
 include("functor.jl")
 include("walks.jl")
@@ -307,7 +307,7 @@ fcollect
 
 
 """"
-    fmap_with_keypath(f, x, ys...; exclude = Functors.isleaf, walk = Functors.DefaultWalkWithKeyPath())
+    fmap_with_path(f, x, ys...; exclude = isleaf, walk = DefaultWalkWithPath())
 
 Like [`fmap`](@ref), but also passes a `KeyPath` to `f` for each node in the
 recursion. The `KeyPath` is a tuple of the indices used to reach the current
@@ -325,10 +325,10 @@ julia> x = ([1, 2, 3], 4, (a=5, b=Dict("A"=>6, "B"=>7), c=Dict("C"=>8, "D"=>9)))
 
 julia> fexclude(kp, x) = kp == KeyPath(3, :c) || Functors.isleaf(x)
 
-julia> fmap_with_keypath((kp, x) -> x isa Dict ? nothing : x.^2, x; exclude = fexclude)
+julia> fmap_with_path((kp, x) -> x isa Dict ? nothing : x.^2, x; exclude = fexclude)
 ([1, 4, 9], 16, (a = 25, b = Dict("B" => 49, "A" => 36), c = nothing))
 ```
 """
-fmap_with_keypath
+fmap_with_path
 
 end # module

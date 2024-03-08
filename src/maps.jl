@@ -12,7 +12,7 @@ function fmap(f, x, ys...; exclude = isleaf,
 end
 
 """"
-    fmap_with_keypath(f, x, ys...; exclude = Functors.isleaf, walk = Functors.DefaultWalkWithKeyPath())
+    fmap_with_path(f, x, ys...; exclude = Functors.isleaf, walk = Functors.DefaultWalkWithPath())
 
 Like [`fmap`](@ref), but also passes a `KeyPath` to `f` for each node in the
 recursion. The `KeyPath` is a tuple of the indices used to reach the current
@@ -23,15 +23,15 @@ from the root of the recursion.
 # Examples
 
 ```jldoctest
-julia> fmap_with_keypath((x, kp) -> (x, kp), (1, (2, 3)))
+julia> fmap_with_path((x, kp) -> (x, kp), (1, (2, 3)))
 (1, ())
 (2, (1,))
 (3, (2,))
 ```
 """
-function fmap_with_keypath(f, x, ys...; 
+function fmap_with_path(f, x, ys...; 
                 exclude = isleaf,
-                walk = DefaultWalkWithKeyPath())
+                walk = DefaultWalkWithPath())
   
   _walk = ExcludeWalkWithKeyPath(walk, f, exclude)
   return execute(_walk, KeyPath(), x, ys...)
