@@ -1,11 +1,13 @@
 module Functors
 
-export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute
+export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, 
+       KeyPath
 
 include("functor.jl")
 include("walks.jl")
 include("maps.jl")
 include("base.jl")
+include("keypath.jl")
 
 ###
 ### Docstrings for basic functionality
