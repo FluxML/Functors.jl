@@ -115,6 +115,8 @@ by applying `f`, and otherwise traverses `x` recursively using [`functor`](@ref)
 Optionally, it may also be associated with objects `ys` with the same tree structure.
 In that case, `f` is applied to the corresponding leaf nodes in `x` and `ys`.
 
+See also [`fmap_with_path`](@ref) and [`fmapstructure`](@ref).
+
 # Examples
 ```jldoctest
 julia> fmap(string, (x=1, y=(2, 3)))
@@ -224,13 +226,15 @@ fmap
 
 
 """
-    fmapstructure(f, x; exclude = isleaf)
+    fmapstructure(f, x, ys...; [exclude, prune])
 
 Like [`fmap`](@ref), but doesn't preserve the type of custom structs.
 Instead, it returns a `NamedTuple` (or a `Tuple`, or an array),
 or a nested set of these.
 
 Useful for when the output must not contain custom structs.
+
+See also [`fmap`](@ref) and [`fmapstructure_with_path`](@ref).
 
 # Examples
 ```jldoctest
@@ -307,7 +311,7 @@ fcollect
 
 
 """"
-    fmap_with_path(f, x, ys...; exclude = isleaf, walk = DefaultWalkWithPath())
+    fmap_with_path(f, x, ys...; exclude = isleaf, walk = DefaultWalkWithPath(), [prune])
 
 Like [`fmap`](@ref), but also passes a `KeyPath` to `f` for each node in the
 recursion. The `KeyPath` is a tuple of the indices used to reach the current
@@ -315,8 +319,13 @@ node from the root of the recursion. The `KeyPath` is constructed by the
 `walk` function, and can be used to reconstruct the path to the current node
 from the root of the recursion.
 
-`f` should accept two arguments: the value of the current node, and the associated `KeyPath`.
-`exclude` also receives the `KeyPath` as its first argument.
+`f` has to accept two arguments: the value of the current node and the associated `KeyPath`.
+
+`exclude` also receives the `KeyPath` as its first argument and a node as its second.
+It should return `true` if the recursion should not continue on its children and `f` applied to it.
+
+`prune` is used to control the behaviour when the same node appears twice, see [`fmap`](@ref)
+for more information.
 
 # Examples
 
@@ -332,11 +341,13 @@ julia> fmap_with_path((kp, x) -> x isa Dict ? nothing : x.^2, x; exclude = fexcl
 fmap_with_path
 
 """
-    fmapstructure_with_path(f, x; exclude = isleaf)
+    fmapstructure_with_path(f, x, ys...; [exclude, prune])
 
 Like [`fmap_with_path`](@ref), but doesn't preserve the type of custom structs.
-Instead, it returns a `NamedTuple`, a `Tuple`, an array, a dict, 
+Instead, it returns a named tuple, a tuple, an array, a dict, 
 or a nested set of these.
+
+See also [`fmapstructure`](@ref).
 """
 fmapstructure_with_path
 

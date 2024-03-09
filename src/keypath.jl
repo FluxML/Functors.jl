@@ -1,4 +1,4 @@
-KeyT = Union{Symbol, String, Int}
+KeyT = Union{Symbol, AbstractString, Integer}
 
 """
     KeyPath(keys...)

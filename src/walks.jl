@@ -186,6 +186,28 @@ function (walk::CachedWalk)(recurse, x, ys...)
   end
 end
 
+struct CachedWalkWithPath{T, S} <: AbstractWalk
+  walk::T
+  prune::S
+  cache::IdDict{Any, Any}
+end
+
+CachedWalkWithPath(walk; prune = NoKeyword(), cache = IdDict()) =
+  CachedWalkWithPath(walk, prune, cache)
+
+function (walk::CachedWalkWithPath)(recurse, kp::KeyPath, x, ys...)
+  should_cache = usecache(walk.cache, x)
+  if should_cache && haskey(walk.cache, x)
+    return walk.prune isa NoKeyword ? walk.cache[x] : walk.prune
+  else
+    ret = walk.walk(recurse, kp, x, ys...)
+    if should_cache
+      walk.cache[x] = ret
+    end
+    return ret
+  end
+end
+
 """
     CollectWalk()
 
