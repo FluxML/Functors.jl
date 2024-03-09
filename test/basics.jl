@@ -244,6 +244,37 @@ end
   @test fmap(.*, m1, foo1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
 end
 
+
+@testset "fmapstructure(f, x, y)" begin
+  m1 = Foo([1,2], 3)
+  n1 = Foo([4,5], 6)
+  @test fmapstructure(+, m1, n1) == (x = [5, 7], y = 9)
+
+  # Mismatched trees should be an error
+  m2 = (x = [1,2], y = (a = [3,4], b = 5))
+  n2 = (x = [6,7], y = 8)
+  @test_throws Exception fmapstructure(first∘tuple, m2, n2)
+
+  # The cache uses IDs from the first argument
+  shared = [1,2,3]
+  m3 = (x = shared, y = [4,5,6], z = shared)
+  n3 = (x = shared, y = shared, z = [7,8,9])
+  @test fmapstructure(+, m3, n3) == (x = [2, 4, 6], y = [5, 7, 9], z = [2, 4, 6])
+  z3 = fmapstructure(+, m3, n3)
+  @test z3.x === z3.z
+
+  # Pruning of duplicates:
+  @test fmapstructure(+, m3, n3; prune = nothing) == (x = [2,4,6], y = [5,7,9], z = nothing)
+
+  # More than two arguments:
+  z4 = fmapstructure(+, m3, n3, m3, n3)
+  @test z4 == fmapstructure(x -> 2x, z3)
+  @test z4.x === z4.z
+
+  foo1 = Foo([7,8], 9)
+  @test fmapstructure(.*, foo1, m1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
+end
+
 @testset "old test update.jl" begin
   struct M{F,T,S}
     σ::F
@@ -443,7 +474,7 @@ end
     # Mismatched trees should be an error
     m2 = (x = [1,2], y = (a = [3,4], b = 5))
     n2 = (x = [6,7], y = 8)
-    @test_broken fmap_with_path((kp, x, y) -> x, m2, n2) isa Exception  # ERROR: type Int64 has no field a
+    @test_throws Exception fmap_with_path((kp, x, y) -> x, m2, n2)
 
     # The cache uses IDs from the first argument
     shared = [1,2,3]
@@ -496,42 +527,12 @@ end
   end
 
   
-  # @testset "fmap(f, x, y)" begin
-  #   m1 = (x = [1,2], y = 3)
-  #   n1 = (x = [4,5], y = 6)
-  #   @test fmap(+, m1, n1) == (x = [5, 7], y = 9)
+  @testset "fmapstructure_with_path(f, x, y)" begin
+    m1 = (x = [1,2], y = 3)
+    n1 = (x = [4,5], y = 6)
+    @test fmapstructure_with_path((kp, x, y) -> x + y, m1, n1) == (x = [5, 7], y = 9)
 
-  #   # Reconstruction type comes from the first argument
-  #   foo1 = Foo([7,8], 9)
-  #   @test fmap(+, m1, foo1) == (x = [8, 10], y = 12)
-  #   @test fmap(+, foo1, n1) isa Foo
-  #   @test fmap(+, foo1, n1).x == [11, 13]
-
-  #   # Mismatched trees should be an error
-  #   m2 = (x = [1,2], y = (a = [3,4], b = 5))
-  #   n2 = (x = [6,7], y = 8)
-  #   @test_throws Exception fmap(first∘tuple, m2, n2)  # ERROR: type Int64 has no field a
-  #   @test_throws Exception fmap(first∘tuple, m2, n2)
-
-  #   # The cache uses IDs from the first argument
-  #   shared = [1,2,3]
-  #   m3 = (x = shared, y = [4,5,6], z = shared)
-  #   n3 = (x = shared, y = shared, z = [7,8,9])
-  #   @test fmap(+, m3, n3) == (x = [2, 4, 6], y = [5, 7, 9], z = [2, 4, 6])
-  #   z3 = fmap(+, m3, n3)
-  #   @test z3.x === z3.z
-
-  #   # Pruning of duplicates:
-  #   @test fmap(+, m3, n3; prune = nothing) == (x = [2,4,6], y = [5,7,9], z = nothing)
-
-  #   # More than two arguments:
-  #   z4 = fmap(+, m3, n3, m3, n3)
-  #   @test z4 == fmap(x -> 2x, z3)
-  #   @test z4.x === z4.z
-
-  #   @test fmap(+, foo1, m1, n1) isa Foo
-  #   @static if VERSION >= v"1.6" # fails on Julia 1.0
-  #     @test fmap(.*, m1, foo1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
-  #   end
-  # end
+    foo1 = Foo([7,8], 9)
+    @test fmapstructure_with_path((kp, x, y) -> x + y, foo1, m1) == (x = [8, 10], y = 12)
+  end
 end 

@@ -1,4 +1,13 @@
-_map(f, x...) = map(f, x...)
+function _map(f, x, ys...)
+  check_lenghts(x, ys...) || error("all arguments must have at least the same length of the firs one")
+  map(f, x, ys...)
+end
+
+function check_lenghts(x, ys...)
+  n = length(x)
+  return all(y -> length(y) >= n, ys)
+end
+
 _map(f, x::Dict, ys...) = Dict(k => f(v, (y[k] for y in ys)...) for (k, v) in x)
 
 _values(x) = x
@@ -8,6 +17,7 @@ _keys(x::Dict) = Dict(k => k for k in keys(x))
 _keys(x::Tuple) = (keys(x)...,)
 _keys(x::AbstractArray) = collect(keys(x))
 _keys(x::NamedTuple{Ks}) where Ks = NamedTuple{Ks}(Ks)
+
 
 """
     AbstractWalk
@@ -101,7 +111,11 @@ See [`fmapstructure`](@ref) for more information.
 """
 struct StructuralWalk <: AbstractWalk end
 
-(::StructuralWalk)(recurse, x) = _map(recurse, children(x))
+function (::StructuralWalk)(recurse, x, ys...)
+  x_children = children(x)
+  ys_children = map(children, ys)
+  return _map(recurse, x_children, ys_children...)
+end
 
 struct StructuralWalkWithPath <: AbstractWalk end
 
