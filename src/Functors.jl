@@ -1,6 +1,6 @@
 module Functors
 
-export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, fflatten
+export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, fleaves
 
 include("functor.jl")
 include("walks.jl")
@@ -306,7 +306,7 @@ fcollect
 
 
 """
-    fflatten(x; exclude = isleaf)
+    fleaves(x; exclude = isleaf)
 
 Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref)
 and collecting the leaves into a flat array, 
@@ -328,11 +328,11 @@ julia> struct TypeWithNoChildren; x; y; end
 
 julia> m = (a=Bar([1,2,3]), b=TypeWithNoChildren(4, 5))
 
-julia> fflatten(m)
+julia> fleaves(m)
 2-element Vector{Any}:
  [1, 2, 3]
  TypeWithNoChildren(:a, :b)
 """
-fflatten
+fleaves
 
 end # module
