@@ -15,4 +15,25 @@
 
     kp0 = KeyPath()
     @test (kp0...,) === ()
+
+    @testset "getkeypath" begin
+        x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]))
+        @test getkeypath(x, KeyPath(:a)) == 3
+        @test getkeypath(x, KeyPath(:b, :c)) == 4
+        @test getkeypath(x, KeyPath(:b, "d", 2)) == 6
+   
+        @testset "@functor defines keypath indexing" begin
+            struct Tkp
+                a
+                b
+                c
+            end
+            @functor Tkp
+                
+            x = Tkp(3, Tkp(4, 5, 6), (7, 8))
+            kp = KeyPath(:b, :b, 1)
+            @test x[kp] == getkeypath(x, kp)
+            @test x[KeyPath(:c, :2)] == 8
+        end
+    end
 end

@@ -1,3 +1,5 @@
+using Base: tail
+
 KeyT = Union{Symbol, AbstractString, Integer}
 
 """
@@ -33,6 +35,7 @@ Base.getindex(kp::KeyPath, i::Int) = kp.keys[i]
 Base.length(kp::KeyPath) = length(kp.keys)
 Base.iterate(kp::KeyPath, state=1) = iterate(kp.keys, state)
 Base.:(==)(kp1::KeyPath, kp2::KeyPath) = kp1.keys == kp2.keys
+Base.tail(kp::KeyPath) = KeyPath(Base.tail(kp.keys))
 
 function Base.show(io::IO, kp::KeyPath)
     compat = get(io, :compact, false)
@@ -45,3 +48,15 @@ end
 
 keypathstr(kp::KeyPath) = join(kp.keys, ".")
 
+_getkey(x, k::Integer) = x[k]
+_getkey(x, k::Symbol) = getfield(x, k)
+_getkey(x::AbstractDict, k::Symbol) = x[k]
+_getkey(x, k::AbstractString) = x[k]
+
+function getkeypath(x, kp::KeyPath)
+    if isempty(kp)
+        return x
+    else
+        return getkeypath(_getkey(x, first(kp)), tail(kp))
+    end
+end
