@@ -51,7 +51,6 @@ macro functor(args...)
 end
 
 isleaf(@nospecialize(x)) = children(x) === NoChildren()
-isleaf(::KeyPath, @nospecialize(x)) = isleaf(x)
 
 children(x) = functor(x)[1]
 

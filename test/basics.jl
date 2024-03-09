@@ -392,3 +392,12 @@ end
 @testset "Deprecated first-arg walk API to fmap" begin
   @test (@test_deprecated fmap(Functors.DefaultWalk(), nothing, (1, 2, 3))) == (1, 2, 3)
 end
+
+@testset "fmapstructure_with_path" begin
+  m = Bar(Foo(Dict("a" => 1, "b" => (b1=2, b2=20)), [3, 4, (5, 6)]))
+  res = fmapstructure_with_path((kp, x) -> x^2, m)
+  @test res == (x = (x = Dict("b" => (b1=4, b2=400), "a" => 1), y = [9, 16, (25, 36)]),)
+  res = fmapstructure_with_path((kp, x) -> x isa Number ? x^2 : nothing, m, 
+          exclude = (kp, x) -> (kp ∈ (KeyPath(:x, :x, "b"), KeyPath(:x, :y, 3)) || Functors.isleaf(x)))
+  @test res == (x = (x = Dict("b" => nothing, "a" => 1), y = [9, 16, nothing]),)
+end 

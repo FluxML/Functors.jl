@@ -22,6 +22,7 @@ struct KeyPath{T<:Tuple}
 end
 
 @functor KeyPath
+isleaf(::KeyPath, @nospecialize(x)) = isleaf(x)
 
 function KeyPath(keys::Union{KeyT, KeyPath}...)
     ks = (k isa KeyPath ? (k.keys...,) : (k,) for k in keys)

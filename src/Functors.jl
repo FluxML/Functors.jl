@@ -1,13 +1,13 @@
 module Functors
 
 export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, 
-       KeyPath, fmap_with_path
+       KeyPath, fmap_with_path, fmapstructure_with_path
 
 include("functor.jl")
+include("keypath.jl")
 include("walks.jl")
 include("maps.jl")
 include("base.jl")
-include("keypath.jl")
 
 ###
 ### Docstrings for basic functionality
@@ -106,7 +106,7 @@ Equivalent to `functor(x)[1]`.
 children
 
 """
-    fmap(f, x, ys...; exclude = Functors.isleaf, walk = Functors.DefaultWalk()[, prune])
+    fmap(f, x, ys...; exclude = Functors.isleaf, walk = Functors.DefaultWalk(), [prune])
 
 A structure and type preserving `map`.
 
@@ -323,12 +323,21 @@ from the root of the recursion.
 ```jldoctest
 julia> x = ([1, 2, 3], 4, (a=5, b=Dict("A"=>6, "B"=>7), c=Dict("C"=>8, "D"=>9)));
 
-julia> fexclude(kp, x) = kp == KeyPath(3, :c) || Functors.isleaf(x)
+julia> fexclude(kp, x) = kp == KeyPath(3, :c) || Functors.isleaf(x);
 
 julia> fmap_with_path((kp, x) -> x isa Dict ? nothing : x.^2, x; exclude = fexclude)
 ([1, 4, 9], 16, (a = 25, b = Dict("B" => 49, "A" => 36), c = nothing))
 ```
 """
 fmap_with_path
+
+"""
+    fmapstructure_with_path(f, x; exclude = isleaf)
+
+Like [`fmap_with_path`](@ref), but doesn't preserve the type of custom structs.
+Instead, it returns a `NamedTuple`, a `Tuple`, an array, a dict, 
+or a nested set of these.
+"""
+fmapstructure_with_path
 
 end # module

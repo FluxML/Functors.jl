@@ -6,7 +6,7 @@ _values(x::Dict) = values(x)
 
 _keys(x::Dict) = Dict(k => k for k in keys(x))
 _keys(x::Tuple) = (keys(x)...,)
-_keys(x::AbstractArray) = collect(x)
+_keys(x::AbstractArray) = collect(keys(x))
 _keys(x::NamedTuple{Ks}) where Ks = NamedTuple{Ks}(Ks)
 
 """
@@ -102,6 +102,15 @@ See [`fmapstructure`](@ref) for more information.
 struct StructuralWalk <: AbstractWalk end
 
 (::StructuralWalk)(recurse, x) = _map(recurse, children(x))
+
+struct StructuralWalkWithPath <: AbstractWalk end
+
+function (::StructuralWalkWithPath)(recurse, kp::KeyPath, x, ys...)
+  x_children = children(x)
+  kps = _map(c -> KeyPath(kp, c), _keys(x_children)) # use _keys and _map to preserve x_children type
+  ys_children = map(children, ys)
+  return _map(recurse, kps, x_children, ys_children...)
+end
 
 """
     ExcludeWalk(walk, fn, exclude)
