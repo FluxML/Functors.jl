@@ -53,6 +53,11 @@ _getkey(x, k::Symbol) = getfield(x, k)
 _getkey(x::AbstractDict, k::Symbol) = x[k]
 _getkey(x, k::AbstractString) = x[k]
 
+"""
+    getkeypath(x, kp::KeyPath)
+
+Return the value in `x` at the path `kp`.
+"""
 function getkeypath(x, kp::KeyPath)
     if isempty(kp)
         return x

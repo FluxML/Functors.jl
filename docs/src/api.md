@@ -31,4 +31,5 @@ Functors.fcollect
 
 ```@docs
 Functors.KeyPath
+Functors.getkeypath
 ```
