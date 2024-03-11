@@ -1,8 +1,10 @@
 module Functors
 
-export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, fleaves
+export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, fleaves, 
+       KeyPath, fmap_with_path, fmapstructure_with_path
 
 include("functor.jl")
+include("keypath.jl")
 include("walks.jl")
 include("maps.jl")
 include("base.jl")
@@ -104,7 +106,7 @@ Equivalent to `functor(x)[1]`.
 children
 
 """
-    fmap(f, x, ys...; exclude = Functors.isleaf, walk = Functors.DefaultWalk()[, prune])
+    fmap(f, x, ys...; exclude = Functors.isleaf, walk = Functors.DefaultWalk(), [prune])
 
 A structure and type preserving `map`.
 
@@ -112,6 +114,8 @@ By default it transforms every leaf node (identified by `exclude`, default [`isl
 by applying `f`, and otherwise traverses `x` recursively using [`functor`](@ref).
 Optionally, it may also be associated with objects `ys` with the same tree structure.
 In that case, `f` is applied to the corresponding leaf nodes in `x` and `ys`.
+
+See also [`fmap_with_path`](@ref) and [`fmapstructure`](@ref).
 
 # Examples
 ```jldoctest
@@ -222,13 +226,15 @@ fmap
 
 
 """
-    fmapstructure(f, x; exclude = isleaf)
+    fmapstructure(f, x, ys...; exclude = isleaf, [prune])
 
 Like [`fmap`](@ref), but doesn't preserve the type of custom structs.
 Instead, it returns a `NamedTuple` (or a `Tuple`, or an array),
 or a nested set of these.
 
 Useful for when the output must not contain custom structs.
+
+See also [`fmap`](@ref) and [`fmapstructure_with_path`](@ref).
 
 # Examples
 ```jldoctest
@@ -304,6 +310,47 @@ julia> fcollect(m, exclude = v -> Functors.isleaf(v))
 fcollect
 
 
+""""
+    fmap_with_path(f, x, ys...; exclude = isleaf, walk = DefaultWalkWithPath(), [prune])
+
+Like [`fmap`](@ref), but also passes a [`KeyPath`](@ref Functors.KeyPath) to `f` for each node in the
+recursion. The `KeyPath` is a tuple of the indices used to reach the current
+node from the root of the recursion. The `KeyPath` is constructed by the
+`walk` function, and can be used to reconstruct the path to the current node
+from the root of the recursion.
+
+`f` has to accept two arguments: the associated `KeyPath` and the value of the current node.
+
+`exclude` also receives the `KeyPath` as its first argument and a node as its second.
+It should return `true` if the recursion should not continue on its children and `f` applied to it.
+
+`prune` is used to control the behaviour when the same node appears twice, see [`fmap`](@ref)
+for more information.
+
+# Examples
+
+```jldoctest
+julia> x = ([1, 2, 3], 4, (a=5, b=Dict("A"=>6, "B"=>7), c=Dict("C"=>8, "D"=>9)));
+
+julia> exclude(kp, x) = kp == KeyPath(3, :c) || Functors.isleaf(x);
+
+julia> fmap_with_path((kp, x) -> x isa Dict ? nothing : x.^2, x; exclude = exclude)
+([1, 4, 9], 16, (a = 25, b = Dict("B" => 49, "A" => 36), c = nothing))
+```
+"""
+fmap_with_path
+
+"""
+    fmapstructure_with_path(f, x, ys...; [exclude, prune])
+
+Like [`fmap_with_path`](@ref), but doesn't preserve the type of custom structs.
+Instead, it returns a named tuple, a tuple, an array, a dict, 
+or a nested set of these.
+
+See also [`fmapstructure`](@ref).
+"""
+fmapstructure_with_path
+
 
 """
     fleaves(x; exclude = isleaf)
@@ -326,13 +373,15 @@ julia> @functor Bar
 
 julia> struct TypeWithNoChildren; x; y; end
 
-julia> m = (a=Bar([1,2,3]), b=TypeWithNoChildren(4, 5))
+julia> m = (a = Bar([1,2,3]), b = TypeWithNoChildren(4, 5));
 
 julia> fleaves(m)
 2-element Vector{Any}:
  [1, 2, 3]
- TypeWithNoChildren(:a, :b)
+ TypeWithNoChildren(4, 5)
+```
 """
 fleaves
 
 end # module
+

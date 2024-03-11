@@ -1,5 +1,6 @@
 ```@docs
 Functors.fmap
+Functors.fmap_with_path
 Functors.@functor
 Functors.@leaf
 ```
@@ -24,6 +25,11 @@ Functors.IterateWalk
 
 ```@docs
 Functors.fmapstructure
+Functors.fmapstructure_with_path
 Functors.fcollect
 Functors.fleaves
+```
+
+```@docs
+Functors.KeyPath
 ```

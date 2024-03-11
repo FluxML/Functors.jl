@@ -4,8 +4,12 @@ using Functors: functor, usecache
 struct Foo; x; y; end
 @functor Foo
 
+Base.:(==)(x::Foo, y::Foo) = x.x == y.x && x.y == y.y
+
 struct Bar{T}; x::T; end
 @functor Bar
+
+Base.:(==)(x::Bar, y::Bar) = x.x == y.x
 
 struct OneChild3; x; y; z; end
 @functor OneChild3 (y,)
@@ -219,7 +223,6 @@ end
   m2 = (x = [1,2], y = (a = [3,4], b = 5))
   n2 = (x = [6,7], y = 8)
   @test_throws Exception fmap(first∘tuple, m2, n2)  # ERROR: type Int64 has no field a
-  @test_throws Exception fmap(first∘tuple, m2, n2)
 
   # The cache uses IDs from the first argument
   shared = [1,2,3]
@@ -238,9 +241,38 @@ end
   @test z4.x === z4.z
 
   @test fmap(+, foo1, m1, n1) isa Foo
-  @static if VERSION >= v"1.6" # fails on Julia 1.0
-    @test fmap(.*, m1, foo1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
-  end
+  @test fmap(.*, m1, foo1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
+end
+
+
+@testset "fmapstructure(f, x, y)" begin
+  m1 = Foo([1,2], 3)
+  n1 = Foo([4,5], 6)
+  @test fmapstructure(+, m1, n1) == (x = [5, 7], y = 9)
+
+  # Mismatched trees should be an error
+  m2 = (x = [1,2], y = (a = [3,4], b = 5))
+  n2 = (x = [6,7], y = 8)
+  @test_throws Exception fmapstructure(first∘tuple, m2, n2)
+
+  # The cache uses IDs from the first argument
+  shared = [1,2,3]
+  m3 = (x = shared, y = [4,5,6], z = shared)
+  n3 = (x = shared, y = shared, z = [7,8,9])
+  @test fmapstructure(+, m3, n3) == (x = [2, 4, 6], y = [5, 7, 9], z = [2, 4, 6])
+  z3 = fmapstructure(+, m3, n3)
+  @test z3.x === z3.z
+
+  # Pruning of duplicates:
+  @test fmapstructure(+, m3, n3; prune = nothing) == (x = [2,4,6], y = [5,7,9], z = nothing)
+
+  # More than two arguments:
+  z4 = fmapstructure(+, m3, n3, m3, n3)
+  @test z4 == fmapstructure(x -> 2x, z3)
+  @test z4.x === z4.z
+
+  foo1 = Foo([7,8], 9)
+  @test fmapstructure(.*, foo1, m1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
 end
 
 @testset "old test update.jl" begin
@@ -405,3 +437,114 @@ end
   @test length(xflat) == 3
   @test 1 ∈ xflat && 2 ∈ xflat && [1, 2, 3] ∈ xflat
 end
+
+@testset "fmap_with_path" begin
+  @testset "basic properties" begin
+    m = Bar(Foo(Dict("a" => 1, "b" => (b1=2, b2=20)), [3, 4, (5, 6)]))
+    res = fmap_with_path((kp, x) -> x^2, m)
+    @test res == Bar{Foo}(Foo(Dict("b" => (b1 = 4, b2 = 400), "a" => 1), [9, 16, (25, 36)]))
+    res = fmap_with_path((kp, x) -> x isa Number ? x^2 : nothing, m, 
+            exclude = (kp, x) -> (kp ∈ (KeyPath(:x, :x, "b"), KeyPath(:x, :y, 3)) || Functors.isleaf(x)))
+    @test res == Bar{Foo}(Foo(Dict("b" => nothing, "a" => 1), [9, 16, nothing]))
+  end
+
+  @testset "sharing" begin
+    shared = [1,2,3]
+    m1 = Foo(shared, Foo([1,2,3], Foo(shared, [1,2,3])))
+    m1f = fmap_with_path((kp, x) -> float(x), m1)
+    @test m1f.x === m1f.y.y.x
+    @test m1f.x !== m1f.y.x
+    m1no = fmap_with_path((kp, x) -> float(x), m1; cache = nothing)  # disable the cache by hand
+    @test m1no.x !== m1no.y.y.x
+
+    # Here "4" is not shared, because Foo isn't leaf:
+    m2 = Foo(Foo(shared, 4), Foo(shared, 4))
+    @test m2.x === m2.y
+    m2f = fmap_with_path((kp, x) -> float(x), m2)
+    @test m2f.x.x === m2f.y.x
+   
+   
+    # Shared mutable containers are preserved, even if all children are isbits:
+    ref = Ref(1)
+    m5 = (x = ref, y = ref, z = Ref(1))
+    m5f = fmap_with_path((kp, x) -> x/2, m5)
+    @test m5f.x === m5f.y
+    @test m5f.x !== m5f.z
+  end
+
+  @testset "fmap_with_path(f, x, y)" begin
+    m1 = (x = [1,2], y = 3)
+    n1 = (x = [4,5], y = 6)
+    @test fmap_with_path((kp, x, y) -> x + y, m1, n1) == (x = [5, 7], y = 9)
+
+    # Reconstruction type comes from the first argument
+    foo1 = Foo([7,8], 9)
+    @test fmap_with_path((kp, x, y) -> x + y, m1, foo1) == (x = [8, 10], y = 12)
+    @test fmap_with_path((kp, x, y) -> x + y, foo1, n1) isa Foo
+    @test fmap_with_path((kp, x, y) -> x + y, foo1, n1).x == [11, 13]
+
+    # Mismatched trees should be an error
+    m2 = (x = [1,2], y = (a = [3,4], b = 5))
+    n2 = (x = [6,7], y = 8)
+    @test_throws Exception fmap_with_path((kp, x, y) -> x, m2, n2)
+
+    # The cache uses IDs from the first argument
+    shared = [1,2,3]
+    m3 = (x = shared, y = [4,5,6], z = shared)
+    n3 = (x = shared, y = shared, z = [7,8,9])
+    @test fmap_with_path((kp, x, y) -> x + y, m3, n3) == (x = [2, 4, 6], y = [5, 7, 9], z = [2, 4, 6])
+    z3 = fmap_with_path((kp, x, y) -> x + y, m3, n3)
+    @test z3.x === z3.z
+
+    # Pruning of duplicates:
+    @test fmap_with_path((kp, x, y) -> x + y, m3, n3; prune = nothing) == (x = [2,4,6], y = [5,7,9], z = nothing)
+
+    # More than two arguments:
+    z4 = fmap_with_path((kp, x...) -> +(x...), m3, n3, m3, n3)
+    @test z4 == fmap_with_path((kp, x) -> 2x, z3)
+    @test z4.x === z4.z
+
+    @test fmap_with_path((kp, x...) -> +(x...), foo1, m1, n1) isa Foo
+    @test fmap_with_path((kp, x...) -> .*(x...), m1, foo1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
+  end
+end
+
+@testset "fmapstructure_with_path" begin
+  @testset "basic properties" begin
+    m = Bar(Foo(Dict("a" => 1, "b" => (b1=2, b2=20)), [3, 4, (5, 6)]))
+    res = fmapstructure_with_path((kp, x) -> x^2, m)
+    @test res == (x = (x = Dict("b" => (b1=4, b2=400), "a" => 1), y = [9, 16, (25, 36)]),)
+    res = fmapstructure_with_path((kp, x) -> x isa Number ? x^2 : nothing, m, 
+            exclude = (kp, x) -> (kp ∈ (KeyPath(:x, :x, "b"), KeyPath(:x, :y, 3)) || Functors.isleaf(x)))
+    @test res == (x = (x = Dict("b" => nothing, "a" => 1), y = [9, 16, nothing]),)
+  end
+
+  @testset "sharing" begin
+    shared = [1,2,3]
+    m1 = Foo(shared, Foo([1,2,3], Foo(shared, [1,2,3])))
+    m1p = fmapstructure_with_path((kp,x)->x, m1; prune = nothing)
+    @test m1p == (x = [1, 2, 3], y = (x = [1, 2, 3], y = (x = nothing, y = [1, 2, 3])))
+    
+    # Here "4" is not shared, because Foo isn't leaf:
+    m2 = Foo(Foo(shared, 4), Foo(shared, 4))
+    @test m2.x === m2.y
+    m2p = fmapstructure_with_path((kp,x)->x, m2; prune = Bar(0))
+    @test m2p == (x = (x = [1, 2, 3], y = 4), y = (x = Bar{Int64}(0), y = 4))
+
+    # Repeated isbits types should not automatically be regarded as shared:
+    m3 = Foo(Foo(shared, 1:3), Foo(1:3, shared))
+    m3p = fmapstructure_with_path((kp,x)->x, m3; prune = 0)
+    @test m3p.y.y == 0
+    @test m3p.y.x == 1:3
+  end
+
+  
+  @testset "fmapstructure_with_path(f, x, y)" begin
+    m1 = (x = [1,2], y = 3)
+    n1 = (x = [4,5], y = 6)
+    @test fmapstructure_with_path((kp, x, y) -> x + y, m1, n1) == (x = [5, 7], y = 9)
+
+    foo1 = Foo([7,8], 9)
+    @test fmapstructure_with_path((kp, x, y) -> x + y, foo1, m1) == (x = [8, 10], y = 12)
+  end
+end 

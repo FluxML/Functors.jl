@@ -7,6 +7,7 @@ using StaticArrays
 
   include("basics.jl")
   include("base.jl")
+  include("keypath.jl")
 
   if VERSION < v"1.6" # || VERSION > v"1.7-"
     @warn "skipping doctests, on Julia $VERSION"
