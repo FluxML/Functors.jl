@@ -15,8 +15,6 @@
 
     kp0 = KeyPath()
     @test (kp0...,) === ()
-<<<<<<< HEAD
-=======
 
     @testset "getkeypath" begin
         x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]))
@@ -47,5 +45,4 @@
         @test !haskeypath(x, KeyPath(:b, "d", 4))
         @test !haskeypath(x, KeyPath(:b, "e"))
     end
->>>>>>> d6930f1 (getkeypath)
 end
