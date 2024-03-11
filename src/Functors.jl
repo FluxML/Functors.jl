@@ -1,6 +1,6 @@
 module Functors
 
-export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute
+export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, fleaves
 
 include("functor.jl")
 include("walks.jl")
@@ -302,5 +302,37 @@ julia> fcollect(m, exclude = v -> Functors.isleaf(v))
 ```
 """
 fcollect
+
+
+
+"""
+    fleaves(x; exclude = isleaf)
+
+Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref)
+and collecting the leaves into a flat array, 
+ordered by a breadth-first traversal of `x`, respecting the iteration order of `children` calls.
+
+The `exclude` function is used to determine whether to recurse into a node, therefore
+identifying the leaves as the nodes for which `exclude` returns `true`.
+
+See also [`fcollect`](@ref) for a similar function that collects all nodes instead.
+
+# Examples
+
+```jldoctest
+julia> struct Bar; x; end
+
+julia> @functor Bar
+
+julia> struct TypeWithNoChildren; x; y; end
+
+julia> m = (a=Bar([1,2,3]), b=TypeWithNoChildren(4, 5))
+
+julia> fleaves(m)
+2-element Vector{Any}:
+ [1, 2, 3]
+ TypeWithNoChildren(:a, :b)
+"""
+fleaves
 
 end # module

@@ -15,3 +15,6 @@ fmapstructure(f, x; kwargs...) = fmap(f, x; walk = StructuralWalk(), kwargs...)
 
 fcollect(x; exclude = v -> false) =
   execute(ExcludeWalk(CollectWalk(), _ -> nothing, exclude), x)
+
+fleaves(x; exclude = isleaf) =
+  execute(ExcludeWalk(FlattenWalk(), x -> [x], exclude), x)

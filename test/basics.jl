@@ -392,3 +392,16 @@ end
 @testset "Deprecated first-arg walk API to fmap" begin
   @test (@test_deprecated fmap(Functors.DefaultWalk(), nothing, (1, 2, 3))) == (1, 2, 3)
 end
+
+@testset "fleaves" begin
+  x = (1, (2, 3), (a=4, b=(5, 6), c=7));
+  @test fleaves(x) == [1, 2, 3, 4, 5, 6, 7]
+  @test fleaves(x, exclude=x -> Functors.isleaf(x) || (x isa NamedTuple)) == [1, 2, 3, (a = 4, b = (5, 6), c = 7)]
+
+  x = Dict("a" => Foo(1, 2), "b" => Bar([1,2,3]))
+  xflat = fleaves(x)
+  # @test xflat== [1, 2, [1, 2, 3]] # cannot guarantee ordering with Dict
+  @test xflat isa Vector
+  @test length(xflat) == 3
+  @test 1 ∈ xflat && 2 ∈ xflat && [1, 2, 3] ∈ xflat
+end

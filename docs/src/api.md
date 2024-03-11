@@ -25,4 +25,5 @@ Functors.IterateWalk
 ```@docs
 Functors.fmapstructure
 Functors.fcollect
+Functors.fleaves
 ```
