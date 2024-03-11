@@ -68,14 +68,16 @@ _haskey(x, k::AbstractString) = haskey(x, k)
 
 Return the value in `x` at the path `kp`.
 
+For object types on which `@functor` has been applied, `x[kp]` is equivalent to `getkeypath(x, kp)`.
+
 See also [`haskeypath`](@ref).
 
 # Examples
 ```jldoctest
 julia> x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]))
-Dict{Any,Any} with 2 entries:
+Dict{Symbol, Any} with 2 entries:
   :a => 3
-  :b => Dict{Any,Any}(:c=>4,"d"=>[5, 6, 7])
+  :b => Dict{Any, Any}(:c=>4, "d"=>[5, 6, 7])
 
 julia> getkeypath(x, KeyPath(:b, "d", 2))
 6
