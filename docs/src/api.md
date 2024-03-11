@@ -32,4 +32,6 @@ Functors.fleaves
 
 ```@docs
 Functors.KeyPath
+Functors.haskeypath
+Functors.getkeypath
 ```

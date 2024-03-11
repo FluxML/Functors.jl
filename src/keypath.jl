@@ -67,6 +67,19 @@ _haskey(x, k::AbstractString) = haskey(x, k)
     getkeypath(x, kp::KeyPath)
 
 Return the value in `x` at the path `kp`.
+
+See also [`haskeypath`](@ref).
+
+# Examples
+```jldoctest
+julia> x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]))
+Dict{Any,Any} with 2 entries:
+  :a => 3
+  :b => Dict{Any,Any}(:c=>4,"d"=>[5, 6, 7])
+
+julia> getkeypath(x, KeyPath(:b, "d", 2))
+6
+```
 """
 function getkeypath(x, kp::KeyPath)
     if isempty(kp)
@@ -76,6 +89,29 @@ function getkeypath(x, kp::KeyPath)
     end
 end
 
+"""
+    haskeypath(x, kp::KeyPath)
+
+Return `true` if `x` has a value at the path `kp`.
+
+See also [`getkeypath`](@ref).
+
+# Examples
+```jldoctest
+julia> x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]))
+Dict{Any,Any} with 2 entries:
+  :a => 3
+  :b => Dict{Any,Any}(:c=>4,"d"=>[5, 6, 7])
+
+julia> haskeypath(x, KeyPath(:a))
+true
+
+julia> haskeypath(x, KeyPath(:b, "d", 1))
+true
+
+julia> haskeypath(x, KeyPath(:b, "d", 4))
+false
+"""
 function haskeypath(x, kp::KeyPath)
     if isempty(kp)
         return true
