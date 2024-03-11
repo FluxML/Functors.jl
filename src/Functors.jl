@@ -332,9 +332,9 @@ for more information.
 ```jldoctest
 julia> x = ([1, 2, 3], 4, (a=5, b=Dict("A"=>6, "B"=>7), c=Dict("C"=>8, "D"=>9)));
 
-julia> fexclude(kp, x) = kp == KeyPath(3, :c) || Functors.isleaf(x);
+julia> exclude(kp, x) = kp == KeyPath(3, :c) || Functors.isleaf(x);
 
-julia> fmap_with_path((kp, x) -> x isa Dict ? nothing : x.^2, x; exclude = fexclude)
+julia> fmap_with_path((kp, x) -> x isa Dict ? nothing : x.^2, x; exclude = exclude)
 ([1, 4, 9], 16, (a = 25, b = Dict("B" => 49, "A" => 36), c = nothing))
 ```
 """
@@ -373,12 +373,12 @@ julia> @functor Bar
 
 julia> struct TypeWithNoChildren; x; y; end
 
-julia> m = (a=Bar([1,2,3]), b=TypeWithNoChildren(4, 5))
+julia> m = (a = Bar([1,2,3]), b = TypeWithNoChildren(4, 5));
 
 julia> fleaves(m)
 2-element Vector{Any}:
  [1, 2, 3]
- TypeWithNoChildren(:a, :b)
+ TypeWithNoChildren(4, 5)
 ```
 """
 fleaves

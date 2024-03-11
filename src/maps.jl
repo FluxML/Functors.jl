@@ -11,11 +11,10 @@ function fmap(f, x, ys...; exclude = isleaf,
   execute(_walk, x, ys...)
 end
 
-function fmap_with_path(f, x, ys...; 
-                exclude = isleaf,
-                walk = DefaultWalkWithPath(),
-                cache = IdDict(),
-                prune = NoKeyword())
+function fmap_with_path(f, x, ys...; exclude = isleaf,
+                                     walk = DefaultWalkWithPath(),
+                                     cache = IdDict(),
+                                     prune = NoKeyword())
   
   _walk = ExcludeWalkWithKeyPath(walk, f, exclude)
   if !isnothing(cache)
