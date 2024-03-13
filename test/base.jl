@@ -56,6 +56,12 @@ VERSION >= v"1.7" && @testset "Returns" begin
   @test Functors.functor(ret)[2]((value = 1:3,)) === Returns(1:3)
 end
 
+@testset "Splat" begin
+  ret = Base.splat(Returns([0, pi, 2pi]))
+  @test Functors.functor(ret)[1].f.value == [0, pi, 2pi]
+  @test Functors.functor(ret)[2]((f = sin,)) === Base.splat(sin)
+end
+
 @testset "LinearAlgebra containers" begin
   @test fmapstructure(identity, [1,2,3]') == (parent = [1, 2, 3],)
   @test fmapstructure(identity, transpose([1,2,3])) == (parent = [1, 2, 3],)
