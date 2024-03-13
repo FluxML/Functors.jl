@@ -9,7 +9,10 @@
 @functor Base.Fix1
 @functor Base.Fix2
 @functor Base.Broadcast.BroadcastFunction
-@functor Base.Splat
+
+@static if VERSION >= v"1.9"
+  @functor Base.Splat
+end
 
 @static if VERSION >= v"1.7"
   @functor Base.Returns
