@@ -2,18 +2,14 @@
 CurrentModule = Functors
 ```
 
-# Basic Layers
-
-## Index
+# API
 
 ```@index
 Modules = [Functors]
 Pages = ["api.md"]
 ```
 
-## Docs
-
-### Constructors and helpers
+## Constructors and helpers
 
 ```@docs
 Functors.@functor
@@ -25,7 +21,7 @@ Functors.fcollect
 Functors.fleaves
 ```
 
-### Maps
+## Maps
 
 ```@docs
 Functors.fmap
@@ -34,7 +30,7 @@ Functors.fmapstructure
 Functors.fmapstructure_with_path
 ```
 
-### Walks
+## Walks
 
 ```@docs
 Functors.AbstractWalk
@@ -48,7 +44,7 @@ Functors.AnonymousWalk
 Functors.IterateWalk
 ```
 
-### KeyPath
+## KeyPath
 
 ```@docs
 Functors.KeyPath
