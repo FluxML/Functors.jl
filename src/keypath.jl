@@ -68,8 +68,6 @@ _haskey(x, k::AbstractString) = haskey(x, k)
 
 Return the value in `x` at the path `kp`.
 
-For object types on which `@functor` has been applied, `x[kp]` is equivalent to `getkeypath(x, kp)`.
-
 See also [`haskeypath`](@ref).
 
 # Examples
