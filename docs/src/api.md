@@ -1,15 +1,36 @@
-```@docs
-Functors.fmap
-Functors.fmap_with_path
-Functors.@functor
-Functors.@leaf
+```@meta
+CurrentModule = Functors
 ```
 
+# API
+
+```@index
+Modules = [Functors]
+Pages = ["api.md"]
+```
+
+## Constructors and helpers
+
 ```@docs
+Functors.@functor
+Functors.@leaf
 Functors.functor
 Functors.children
 Functors.isleaf
+Functors.fcollect
+Functors.fleaves
 ```
+
+## Maps
+
+```@docs
+Functors.fmap
+Functors.fmap_with_path
+Functors.fmapstructure
+Functors.fmapstructure_with_path
+```
+
+## Walks
 
 ```@docs
 Functors.AbstractWalk
@@ -23,12 +44,7 @@ Functors.AnonymousWalk
 Functors.IterateWalk
 ```
 
-```@docs
-Functors.fmapstructure
-Functors.fmapstructure_with_path
-Functors.fcollect
-Functors.fleaves
-```
+## KeyPath
 
 ```@docs
 Functors.KeyPath
