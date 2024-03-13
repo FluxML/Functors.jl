@@ -37,8 +37,6 @@ function makefunctor(m::Module, T, fs = fieldnames(T))
       reconstruct(y::NamedTuple) = $T($(escargs_nt...))
       return (;$(escfs...)), reconstruct
     end
-
-    Base.getindex(x::$T, kp::KeyPath) = getkeypath(x, kp)
   end
 end
 
