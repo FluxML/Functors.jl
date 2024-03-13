@@ -48,4 +48,6 @@ Functors.IterateWalk
 
 ```@docs
 Functors.KeyPath
+Functors.haskeypath
+Functors.getkeypath
 ```
