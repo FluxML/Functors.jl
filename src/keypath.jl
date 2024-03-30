@@ -9,14 +9,46 @@ A type for representing a path of keys to a value in a nested structure.
 Can be constructed with a sequence of keys, or by concatenating other `KeyPath`s.
 Keys can be of type `Symbol`, `String`, or `Int`.
 
+For custom types, access through symbol keys is assumed to be done with `getproperty`.
+For consistency, the method `Base.propertynames` is used to get the viable property names.
+
+For string and integer keys instead, the access is done with `getindex`.
+
+See also [`getkeypath`](@ref), [`haskeypath`](@ref).
+
 # Examples
 
 ```jldoctest
 julia> kp = KeyPath(:b, 3)
 KeyPath(:b, 3)
 
-julia> KeyPath(:a, kp, :c, 4)
+julia> KeyPath(:a, kp, :c, 4) # construct mixing keys and keypaths
 KeyPath(:a, :b, 3, :c, 4)
+
+julia> struct T
+           a
+           b
+       end
+
+julia> function Base.getproperty(x::T, k::Symbol)
+            if k in fieldnames(T)
+                return getfield(x, k)
+            elseif k === :ab
+                return "ab"
+            else        
+                error()
+            end
+        end;
+
+julia> Base.propertynames(::T) = (:a, :b, :ab);
+
+julia> x = T(3, Dict(:c => 4, :d => 5));
+
+julia> getkeypath(x, KeyPath(:ab)) # equivalent to x.ab
+"ab"
+
+julia> getkeypath(x, KeyPath(:b, :c)) # equivalent to (x.b)[:c]
+4
 ```
 """
 struct KeyPath{T<:Tuple}
@@ -52,14 +84,14 @@ end
 keypathstr(kp::KeyPath) = join(kp.keys, ".")
 
 _getkey(x, k::Integer) = x[k]
-_getkey(x, k::Symbol) = getfield(x, k)
+_getkey(x, k::Symbol) = getproperty(x, k)
 _getkey(x::AbstractDict, k::Symbol) = x[k]
 _getkey(x, k::AbstractString) = x[k]
 
 _haskey(x, k::Integer) = haskey(x, k)
 _haskey(x::Tuple, k::Integer) = 1 <= k <= length(x)
 _haskey(x::AbstractArray, k::Integer) = 1 <= k <= length(x) # TODO: extend to generic indexing
-_haskey(x, k::Symbol) = k in fieldnames(typeof(x))
+_haskey(x, k::Symbol) = k in propertynames(x)
 _haskey(x::AbstractDict, k::Symbol) = haskey(x, k)
 _haskey(x, k::AbstractString) = haskey(x, k)
 
@@ -68,7 +100,7 @@ _haskey(x, k::AbstractString) = haskey(x, k)
 
 Return the value in `x` at the path `kp`.
 
-See also [`haskeypath`](@ref).
+See also [`KeyPath`](@ref) and  [`haskeypath`](@ref).
 
 # Examples
 ```jldoctest
@@ -94,7 +126,7 @@ end
 
 Return `true` if `x` has a value at the path `kp`.
 
-See also [`getkeypath`](@ref).
+See also [`KeyPath`](@ref) and [`getkeypath`](@ref).
 
 # Examples
 ```jldoctest
