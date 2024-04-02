@@ -143,6 +143,7 @@ true
 
 julia> haskeypath(x, KeyPath(:b, "d", 4))
 false
+```
 """
 function haskeypath(x, kp::KeyPath)
     if isempty(kp)
