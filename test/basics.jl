@@ -400,10 +400,13 @@ end
   @functor A
   a = A(1)
   @test Functors.children(a) === (x = 1,)
-  Functors.@leaf A
-  children, re = Functors.functor(a)
+
+  struct B; x; end
+  Functors.@leaf B
+  b = B(1)
+  children, re = Functors.functor(b)
   @test children == Functors.NoChildren() 
-  @test re(children) === a
+  @test re(children) === b
 end
 
 @testset "IterateWalk" begin
