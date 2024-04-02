@@ -311,7 +311,7 @@ julia> fcollect(m, exclude = v -> Functors.isleaf(v))
 fcollect
 
 
-""""
+"""
     fmap_with_path(f, x, ys...; exclude = isleaf, walk = DefaultWalkWithPath(), [prune])
 
 Like [`fmap`](@ref), but also passes a [`KeyPath`](@ref Functors.KeyPath) to `f` for each node in the
