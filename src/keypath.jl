@@ -131,9 +131,9 @@ See also [`KeyPath`](@ref) and [`getkeypath`](@ref).
 # Examples
 ```jldoctest
 julia> x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]))
-Dict{Any,Any} with 2 entries:
+Dict{Symbol, Any} with 2 entries:
   :a => 3
-  :b => Dict{Any,Any}(:c=>4,"d"=>[5, 6, 7])
+  :b => Dict{Any, Any}(:c=>4, "d"=>[5, 6, 7])
 
 julia> haskeypath(x, KeyPath(:a))
 true
