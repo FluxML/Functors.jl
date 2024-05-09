@@ -179,10 +179,10 @@ Whenever the cache already contains `x`, either:
 
 Typically wraps an existing `walk` for use with [`fmap`](@ref).
 """
-struct CachedWalk{T, S} <: AbstractWalk
+struct CachedWalk{T, S, C <: AbstractDict} <: AbstractWalk
   walk::T
   prune::S
-  cache::IdDict{Any, Any}
+  cache::C
 end
 CachedWalk(walk; prune = NoKeyword(), cache = IdDict()) =
   CachedWalk(walk, prune, cache)
@@ -190,7 +190,7 @@ CachedWalk(walk; prune = NoKeyword(), cache = IdDict()) =
 function (walk::CachedWalk)(recurse, x, ys...)
   should_cache = usecache(walk.cache, x)
   if should_cache && haskey(walk.cache, x)
-    return walk.prune isa NoKeyword ? walk.cache[x] : walk.prune
+    return walk.prune isa NoKeyword ? cacheget(walk.cache, x, recurse, x, ys...) : walk.prune
   else
     ret = walk.walk(recurse, x, ys...)
     if should_cache
@@ -200,10 +200,10 @@ function (walk::CachedWalk)(recurse, x, ys...)
   end
 end
 
-struct CachedWalkWithPath{T, S} <: AbstractWalk
+struct CachedWalkWithPath{T, S, C <: AbstractDict} <: AbstractWalk
   walk::T
   prune::S
-  cache::IdDict{Any, Any}
+  cache::C
 end
 
 CachedWalkWithPath(walk; prune = NoKeyword(), cache = IdDict()) =
@@ -212,7 +212,7 @@ CachedWalkWithPath(walk; prune = NoKeyword(), cache = IdDict()) =
 function (walk::CachedWalkWithPath)(recurse, kp::KeyPath, x, ys...)
   should_cache = usecache(walk.cache, x)
   if should_cache && haskey(walk.cache, x)
-    return walk.prune isa NoKeyword ? walk.cache[x] : walk.prune
+    return walk.prune isa NoKeyword ? cacheget(walk.cache, x, recurse, kp, x, ys...) : walk.prune
   else
     ret = walk.walk(recurse, kp, x, ys...)
     if should_cache

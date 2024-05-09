@@ -6,7 +6,7 @@ function fmap(f, x, ys...; exclude = isleaf,
                            prune = NoKeyword())
   _walk = ExcludeWalk(AnonymousWalk(walk), f, exclude)
   if !isnothing(cache)
-    _walk = CachedWalk(_walk, prune, cache)
+    _walk = CachedWalk(_walk, prune, WalkCache(_walk, cache))
   end
   execute(_walk, x, ys...)
 end
@@ -18,7 +18,7 @@ function fmap_with_path(f, x, ys...; exclude = isleaf,
   
   _walk = ExcludeWalkWithKeyPath(walk, f, exclude)
   if !isnothing(cache)
-    _walk = CachedWalkWithPath(_walk, prune, cache)
+    _walk = CachedWalkWithPath(_walk, prune, WalkCache(_walk, cache))
   end
   return execute(_walk, KeyPath(), x, ys...)
 end

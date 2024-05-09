@@ -7,6 +7,7 @@ export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, fleav
 include("functor.jl")
 include("keypath.jl")
 include("walks.jl")
+include("cache.jl")
 include("maps.jl")
 include("base.jl")
 
