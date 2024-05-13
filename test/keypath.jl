@@ -52,6 +52,21 @@
         end
     end
 
+    @testset "setkeypath!" begin
+        x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]))
+        setkeypath!(x, KeyPath(:a), 4)
+        @test x[:a] == 4
+        setkeypath!(x, KeyPath(:b, "d", 1), 17)
+        @test x[:b]["d"][1] == 17
+        setkeypath!(x, KeyPath(:b, "d"), [0])
+        @test x[:b]["d"] == [0]
+        
+        x = Tkp(3, Tkp(4, 5, [6, 7]), 8)
+        kp = KeyPath(:b, :c, 2)
+        setkeypath!(x, kp, 17)
+        @test x.b.c[2] == 17
+    end
+
     @testset "haskeypath" begin
         x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]))
         @test haskeypath(x, KeyPath(:a))
