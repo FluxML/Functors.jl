@@ -50,4 +50,5 @@ Functors.IterateWalk
 Functors.KeyPath
 Functors.haskeypath
 Functors.getkeypath
+Functors.setkeypath!
 ```
