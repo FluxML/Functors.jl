@@ -35,7 +35,7 @@ jobs:
             arch: x64
     steps:
       - uses: actions/checkout@v3
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         # `allow-failure` not available yet https://github.com/actions/toolkit/issues/399
         continue-on-error: ${{ matrix.julia-version == 'nightly' }}
         with:
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: '1.6'
       - run: |
