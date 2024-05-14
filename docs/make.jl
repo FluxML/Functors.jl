@@ -3,7 +3,6 @@ using Documenter, Functors
 DocMeta.setdocmeta!(Functors, :DocTestSetup, :(using Functors); recursive = true)
 
 makedocs(modules = [Functors],
-         doctest = false,
          sitename = "Functors.jl",
          pages = ["Home" => "index.md",
                   "API" => "api.md"],
