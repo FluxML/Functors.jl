@@ -2,7 +2,7 @@ module Functors
 
 export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, fleaves,
        fmap_with_path, fmapstructure_with_path,
-       KeyPath, getkeypath, haskeypath
+       KeyPath, getkeypath, haskeypath, setkeypath!
 
 include("functor.jl")
 include("keypath.jl")

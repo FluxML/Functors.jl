@@ -65,12 +65,14 @@ end
 
 Base.isempty(kp::KeyPath) = false
 Base.isempty(kp::KeyPath{Tuple{}}) = true
-Base.getindex(kp::KeyPath, i::Int) = kp.keys[i]
+Base.getindex(kp::KeyPath, i::Integer) = kp.keys[i]
+Base.getindex(kp::KeyPath, r::AbstractVector) = KeyPath(kp.keys[r])
+Base.last(kp::KeyPath) = last(kp.keys)
+Base.lastindex(kp::KeyPath) = lastindex(kp.keys)
 Base.length(kp::KeyPath) = length(kp.keys)
 Base.iterate(kp::KeyPath, state=1) = iterate(kp.keys, state)
-Base.:(==)(kp1::KeyPath, kp2::KeyPath) = kp1.keys == kp2.keys
 Base.tail(kp::KeyPath) = KeyPath(Base.tail(kp.keys))
-Base.last(kp::KeyPath) = last(kp.keys)
+Base.:(==)(kp1::KeyPath, kp2::KeyPath) = kp1.keys == kp2.keys
 
 function Base.show(io::IO, kp::KeyPath)
     compat = get(io, :compact, false)
@@ -88,6 +90,11 @@ _getkey(x, k::Symbol) = getproperty(x, k)
 _getkey(x::AbstractDict, k::Symbol) = x[k]
 _getkey(x, k::AbstractString) = x[k]
 
+_setkey!(x, k::Integer, v) = (x[k] = v)
+_setkey!(x, k::Symbol, v) = setproperty!(x, k, v)
+_setkey!(x::AbstractDict, k::Symbol, v) = (x[k] = v)
+_setkey!(x, k::AbstractString, v) = (x[k] = v)
+
 _haskey(x, k::Integer) = haskey(x, k)
 _haskey(x::Tuple, k::Integer) = 1 <= k <= length(x)
 _haskey(x::AbstractArray, k::Integer) = 1 <= k <= length(x) # TODO: extend to generic indexing
@@ -95,12 +102,13 @@ _haskey(x, k::Symbol) = k in propertynames(x)
 _haskey(x::AbstractDict, k::Symbol) = haskey(x, k)
 _haskey(x, k::AbstractString) = haskey(x, k)
 
+
 """
     getkeypath(x, kp::KeyPath)
 
 Return the value in `x` at the path `kp`.
 
-See also [`KeyPath`](@ref) and  [`haskeypath`](@ref).
+See also [`KeyPath`](@ref), [`haskeypath`](@ref), and [`setkeypath!`](@ref).
 
 # Examples
 ```jldoctest
@@ -126,14 +134,14 @@ end
 
 Return `true` if `x` has a value at the path `kp`.
 
-See also [`KeyPath`](@ref) and [`getkeypath`](@ref).
+See also [`KeyPath`](@ref), [`getkeypath`](@ref), and [`setkeypath!`](@ref).
 
 # Examples
 ```jldoctest
 julia> x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]))
-Dict{Any,Any} with 2 entries:
+Dict{Symbol, Any} with 2 entries:
   :a => 3
-  :b => Dict{Any,Any}(:c=>4,"d"=>[5, 6, 7])
+  :b => Dict{Any, Any}(:c=>4, "d"=>[5, 6, 7])
 
 julia> haskeypath(x, KeyPath(:a))
 true
@@ -152,4 +160,20 @@ function haskeypath(x, kp::KeyPath)
         k = first(kp)
         return _haskey(x, k) && haskeypath(_getkey(x, k), tail(kp))
     end
+end
+
+"""
+    setkeypath!(x, kp::KeyPath, v)
+
+Set the value in `x` at the path `kp` to `v`.
+
+See also [`KeyPath`](@ref), [`getkeypath`](@ref), and [`haskeypath`](@ref).
+"""
+function setkeypath!(x, kp::KeyPath, v)
+    if isempty(kp)
+        error("Empty keypath not allowed.")
+    end
+    y = getkeypath(x, kp[1:end-1])
+    k = kp[end]
+    return _setkey!(y, k, v)
 end
