@@ -439,6 +439,9 @@ end
   @test xflat isa Vector
   @test length(xflat) == 3
   @test 1 ∈ xflat && 2 ∈ xflat && [1, 2, 3] ∈ xflat
+
+  @test fleaves((;)) == []
+  @test fleaves((; a = 1, b = 2, c = (;))) == [1, 2]
 end
 
 @testset "fmap_with_path" begin

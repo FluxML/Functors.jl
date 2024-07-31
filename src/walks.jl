@@ -315,6 +315,6 @@ function (walk::FlattenWalk)(recurse, x, ys...)
   x_children = _values(children(x))
   ys_children = map(children, ys)
   res = _map(recurse, x_children, ys_children...)
-  return reduce(vcat, _values(res))
+  return reduce(vcat, _values(res); init = [])
 end
 
