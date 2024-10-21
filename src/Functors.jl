@@ -371,6 +371,8 @@ julia> struct Bar; x; end
 
 julia> struct TypeWithNoChildren; x; y; end
 
+julia> @leaf TypeWithNoChildren
+
 julia> m = (a = Bar([1,2,3]), b = TypeWithNoChildren(4, 5));
 
 julia> fleaves(m)

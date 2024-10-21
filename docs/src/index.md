@@ -55,7 +55,7 @@ The use of `@functor` with no fields argument as in `@functor Baz` is equivalent
 Using [`@leaf`](@ref) instead of [`@functor`](@ref) will prevent the fields of a struct from being traversed. 
 
 !!! warning "Change to opt-out behaviour in v0.5"
-    Previous releases of functors, up to v0.4, used an opt-in behaviour where structs were leaves unless marked with `@functor`. This was changed in v0.5 to an opt-out behaviour where structs are functors unless marked with `@leaf`.
+    Previous releases of functors, up to v0.4, used an opt-in behaviour where structs were leaves functors unless marked with `@functor`. This was changed in v0.5 to an opt-out behaviour where structs are functors unless marked with `@leaf`.
 
 ## Appropriate Use
 
