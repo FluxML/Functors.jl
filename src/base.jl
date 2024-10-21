@@ -43,7 +43,7 @@ function functor(::Type{<:PermutedDimsArray{T,N,perm,iperm}}, x) where {T,N,perm
   (parent = _PermutedDimsArray(x, iperm),), y -> PermutedDimsArray(only(y), perm)
 end
 function functor(::Type{<:PermutedDimsArray{T,N,perm,iperm}}, x::PermutedDimsArray{Tx,N,perm,iperm}) where {T,Tx,N,perm,iperm}
-  (parent = parent(x),), y -> PermutedDimsArray(only(y), perm)  # most common case, avoid wrapping wrice.
+  (parent = parent(x),), y -> PermutedDimsArray(only(y), perm)  # most common case, avoid wrapping twice.
 end
 
 _PermutedDimsArray(x, iperm) = PermutedDimsArray(x, iperm)

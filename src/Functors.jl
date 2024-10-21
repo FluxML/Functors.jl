@@ -26,7 +26,7 @@ include("base.jl")
     functor(typeof(x), x)
 
 Returns a tuple containing, first, a `NamedTuple` of the children of `x`
-(typically its fields), and second, a reconstruction funciton.
+(typically its fields), and second, a reconstruction function.
 This controls the behaviour of [`fmap`](@ref).
 
 Methods should be added to `functor(::Type{T}, x)` for custom types,

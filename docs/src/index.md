@@ -64,15 +64,15 @@ Using [`@leaf`](@ref) instead of [`@functor`](@ref) will prevent the fields of a
 By default all composite types in are functors and can be traversed, unless marked with [`@leaf`](@ref). 
 
 The following types instead are explicitly marked as leaves in Functors.jl:
-- `Number`
-- `AbstractArray{<:Number}`
-- `AbstractString`
+- `Number`.
+- `AbstractArray{<:Number}`, except for the wrappers `Transpose`, `Adjoint`, and `PermutedDimsArray`.
+- `AbstractString`.
 
 This is because in typical application the internals of these are abstracted away and it is not desirable to traverse them.
 
 ## What if I get an error?
 
-Since by default Funcotrs.jl tries to traverse most types e.g. when using [`fmap`](@ref), it is possible it fails in case the type has not an appropriate constructor. If use experience this issue, you have a few alternatives:
+Since by default Functors.jl tries to traverse most types e.g. when using [`fmap`](@ref), it is possible it fails in case the type has not an appropriate constructor. If use experience this issue, you have a few alternatives:
 - Mark the type as a leaf using [`@leaf`](@ref) 
 - Use the `@functor` macro to specify which fields to traverse.
 - Define an appropriate constructor for the type.
