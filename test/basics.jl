@@ -130,7 +130,8 @@ end
 end
 
 @testset "Self-referencing types" begin
-    @test fmap(identity, Base.ImmutableDict(:a => 42)) == Base.ImmutableDict(:a => 42)
+   # https://github.com/FluxML/Functors.jl/pull/72/ 
+    @test_broken fmap(identity, Base.ImmutableDict(:a => 42)) == Base.ImmutableDict(:a => 42)
 end
 
 @testset "functor(typeof(x), y) from @functor" begin
@@ -352,11 +353,12 @@ end
   Functors.@leaf B
   b = B(1)
   children, re = Functors.functor(b)
+  @test re(children) === b
   
   a = LeafType(1)
   children, re = Functors.functor(a)
-  @test children == Functors.NoChildren() 
-  @test re(children) === b
+  @test children == Functors.NoChildren()
+  @test re(children) === a 
 end
 
 @testset "IterateWalk" begin

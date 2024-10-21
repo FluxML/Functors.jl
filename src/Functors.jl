@@ -1,9 +1,12 @@
 module Functors
 
-export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, fleaves,
+using ConstructionBase: constructorof
+
+export @leaf, @functor, @flexiblefunctor, 
+       fmap, fmapstructure, fcollect, execute, fleaves,
        fmap_with_path, fmapstructure_with_path,
        KeyPath, getkeypath, haskeypath, setkeypath!
-using ConstructionBase: constructorof
+
 
 include("functor.jl")
 include("keypath.jl")

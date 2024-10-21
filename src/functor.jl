@@ -11,8 +11,6 @@ macro leaf(T)
   :($Functors.functor(::Type{<:$(esc(T))}, x) = ($Functors.NoChildren(), _ -> x))
 end
 
-# @leaf Any # every type is a leaf by default
-
 # Default functor
 function functor(T, x)
   names = fieldnames(T)
