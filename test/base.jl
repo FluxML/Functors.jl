@@ -179,3 +179,8 @@ end
     @test x.is[1] isa Vector{<:Complex}
     @test collect(x) isa Vector{<:Tuple{Complex, Complex}}
 end
+
+@testset "AbstractDict is leaf" begin
+  struct DummyDict <: AbstractDict end
+  @test Functors.isleaf(DummyDict())
+end
