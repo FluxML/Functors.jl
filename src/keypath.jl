@@ -55,7 +55,6 @@ struct KeyPath{T<:Tuple}
     keys::T    
 end
 
-@functor KeyPath
 isleaf(::KeyPath, @nospecialize(x)) = isleaf(x)
 
 function KeyPath(keys::Union{KeyT, KeyPath}...)

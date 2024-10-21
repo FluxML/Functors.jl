@@ -4,13 +4,15 @@ Functors.jl provides a set of tools to represent [functors](https://en.wikipedia
 
 The most straightforward use is to traverse a complicated nested structure as a tree, and apply a function `f` to every field it encounters along the way.
 
-For large models it can be cumbersome or inefficient to work with parameters as one big, flat vector, and structs help manage complexity; but it may be desirable to easily operate over all parameters at once, e.g. for changing precision or applying an optimiser update step.
+For large machine learning models it can be cumbersome or inefficient to work with parameters as one big, flat vector, and structs help manage complexity; but it may be desirable to easily operate over all parameters at once, e.g. for changing precision or applying an optimiser update step.
 
 ## Basic Usage and Implementation
 
-When one marks a structure as [`@functor`](@ref) it means that Functors.jl is allowed to look into the fields of the instances of the struct and modify them. This is achieved through [`Functors.fmap`](@ref).
+By default, julia types are marked as [`@functor`](@ref Functors.functor)s, meaning that Functors.jl is allowed to look into the fields of the instances of the struct and modify them. This is achieved through [`fmap`](@ref). To opt-out of this behaviour, use [`@leaf`](@ref) on your custom type.
 
-The workhorse of fmap is actually a lower level function, functor:
+```julia-repl
+
+The workhorse of `fmap` is actually a lower level function, [`functor`](@ref Functors.functor):
 
 ```julia-repl
 julia> using Functors
@@ -19,8 +21,6 @@ julia> struct Foo
          x
          y
        end
-
-julia> @functor Foo
 
 julia> foo = Foo(1, [1, 2, 3]) # notice all the elements are integers
 
@@ -50,13 +50,31 @@ julia> fmap(float, model)
 Baz(1.0, 2)
 ```
 
-Any field not in the list will be passed through as-is during reconstruction. This is done by invoking the default constructor, so structs that define custom inner constructors are expected to provide one that acts like the default.
+Any field not in the list will be passed through as-is during reconstruction. This is done by invoking the default constructor accepting all fields as arguments, so structs that define custom inner constructors are expected to provide one that acts like the default. 
 
-## Appropriate Use
+The use of `@functor` with no fields argument as in `@functor Baz` is equivalent to `@functor Baz fieldnames(Baz)` and also equivalent to avoiding `@functor` altogether.
 
-!!! warning "Not everything should be a functor!"
-    Due to its generic nature it is very attractive to mark several structures as [`@functor`](@ref) when it may not be quite safe to do so.
+Using [`@leaf`](@ref) instead of [`@functor`](@ref) will prevent the fields of a struct from being traversed. 
 
-Typically, since any function `f` is applied to the leaves of the tree, but it is possible for some functions to require dispatching on the specific type of the fields causing some methods to be missed entirely.
+!!! warning "Change to opt-out behaviour in v0.5"
+    Previous releases of functors, up to v0.4, used an opt-in behaviour where structs were leaves functors unless marked with `@functor`. This was changed in v0.5 to an opt-out behaviour where structs are functors unless marked with `@leaf`.
 
-Examples of this include element types of arrays which typically have their own mathematical operations defined. Adding a [`@functor`](@ref) to such a type would end up missing methods such as `+(::MyElementType, ::MyElementType)`. Think `RGB` from Colors.jl.
+## Which types are leaves?
+
+By default all composite types in are functors and can be traversed, unless marked with [`@leaf`](@ref). 
+
+The following types instead are explicitly marked as leaves in Functors.jl:
+- `Number`.
+- `AbstractArray{<:Number}`, except for the wrappers `Transpose`, `Adjoint`, and `PermutedDimsArray`.
+- `AbstractString`.
+
+This is because in typical application the internals of these are abstracted away and it is not desirable to traverse them.
+
+## What if I get an error?
+
+Since by default Functors.jl tries to traverse most types e.g. when using [`fmap`](@ref), it is possible it fails in case the type has not an appropriate constructor. If use experience this issue, you have a few alternatives:
+- Mark the type as a leaf using [`@leaf`](@ref) 
+- Use the `@functor` macro to specify which fields to traverse.
+- Define an appropriate constructor for the type.
+
+If you are not able to traverse types in julia Base, please open an issue.

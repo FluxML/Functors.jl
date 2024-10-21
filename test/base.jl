@@ -1,3 +1,10 @@
+@testset "Numbers are leaves" begin
+  @test Functors.isleaf(1)
+  @test Functors.isleaf(1.0)
+  @test Functors.isleaf(1im)
+  @test Functors.isleaf(1//2)
+  @test Functors.isleaf(1.0 + 2.0im)
+end
 
 @testset "RefValue" begin
   @test fmap(sqrt, Ref(16))[] == 4.0
@@ -171,4 +178,21 @@ end
     x = fmap(complex, zip([1,2,3], [4,5]))
     @test x.is[1] isa Vector{<:Complex}
     @test collect(x) isa Vector{<:Tuple{Complex, Complex}}
+end
+
+@testset "AbstractString is leaf" begin
+  struct DummyString <: AbstractString
+    str::String
+  end
+  s = DummyString("hello")
+  @test Functors.isleaf(s)
+end
+
+@testset "AbstractDict is functor" begin
+  od = OrderedDict(1 => 1, 2 => 2)
+  @test !Functors.isleaf(od)
+  od2 = fmap(x -> 2x, od)
+  @test od2 isa OrderedDict
+  @test od2[1] == 2
+  @test od2[2] == 4
 end
