@@ -24,13 +24,6 @@ end
 
 functor(x) = functor(typeof(x), x)
 
-functor(::Type{<:Tuple}, x) = x, identity
-functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty(x, s), L)), identity
-functor(::Type{<:Dict}, x) = Dict(k => x[k] for k in keys(x)), identity
-
-functor(::Type{<:AbstractArray}, x) = x, identity
-@leaf AbstractArray{<:Number}
-
 function makefunctor(m::Module, T, fs = fieldnames(T))
   fidx = Ref(0)
   escargs = map(fieldnames(T)) do f

@@ -1,3 +1,10 @@
+@testset "Numbers are leaves" begin
+  @test Functors.isleaf(1)
+  @test Functors.isleaf(1.0)
+  @test Functors.isleaf(1im)
+  @test Functors.isleaf(1//2)
+  @test Functors.isleaf(1.0 + 2.0im)
+end
 
 @testset "RefValue" begin
   @test fmap(sqrt, Ref(16))[] == 4.0

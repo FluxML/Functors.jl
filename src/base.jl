@@ -1,5 +1,13 @@
 
-functor(::Type{<:Base.ComposedFunction}, x) = (outer = x.outer, inner = x.inner), y -> Base.ComposedFunction(y.outer, y.inner)
+@leaf Number
+
+functor(::Type{<:Tuple}, x) = x, identity
+functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty(x, s), L)), identity
+functor(::Type{<:Dict}, x) = Dict(k => x[k] for k in keys(x)), identity
+
+functor(::Type{<:AbstractArray}, x) = x, identity
+@leaf AbstractArray{<:Number}
+
 
 ###
 ### Array wrappers
