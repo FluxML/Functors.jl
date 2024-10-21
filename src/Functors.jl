@@ -1,6 +1,7 @@
 module Functors
 using Compat: @compat
 using ConstructionBase: constructorof
+using LinearAlgebra
 
 export @leaf, @functor, @flexiblefunctor,
        fmap, fmapstructure, fcollect, execute, fleaves,
@@ -169,19 +170,15 @@ Thus the relationship `x.i === x.iv[1]` will be preserved.
 An immutable object which appears twice is not stored in the cache, thus `f(34)` will be called twice,
 and the results will agree only if `f` is pure.
 
-By default, `Tuple`s, `NamedTuple`s, and some other container-like types in Base have
-children to recurse into. Arrays of numbers do not.
-To enable recursion into new types, you must provide a method of [`functor`](@ref),
-which can be done using the macro [`@functor`](@ref):
+By default, almost all container-like types have children to recurse into. 
+Arrays of numbers do not.
+
+To opt out of recursion for custom types use [`@leaf`](@ref) or pass a custom `exclude` function.
 
 ```jldoctest withfoo
 julia> struct Foo; x; y; end
 
-julia> @functor Foo
-
 julia> struct Bar; x; end
-
-julia> @functor Bar
 
 julia> m = Foo(Bar([1,2,3]), (4, 5, Bar(Foo(6, 7))));
 
@@ -247,8 +244,6 @@ See also [`fmap`](@ref) and [`fmapstructure_with_path`](@ref).
 ```jldoctest
 julia> struct Foo; x; y; end
 
-julia> @functor Foo
-
 julia> m = Foo([1,2,3], [4, (5, 6), Foo(7, 8)]);
 
 julia> fmapstructure(x -> 2x, m)
@@ -285,13 +280,11 @@ See also [`children`](@ref).
 ```jldoctest
 julia> struct Foo; x; y; end
 
-julia> @functor Foo
-
 julia> struct Bar; x; end
 
-julia> @functor Bar
-
 julia> struct TypeWithNoChildren; x; y; end
+
+julia> @leaf TypeWithNoChildren
 
 julia> m = Foo(Bar([1,2,3]), TypeWithNoChildren(:a, :b))
 Foo(Bar([1, 2, 3]), TypeWithNoChildren(:a, :b))
@@ -375,8 +368,6 @@ See also [`fcollect`](@ref) for a similar function that collects all nodes inste
 
 ```jldoctest
 julia> struct Bar; x; end
-
-julia> @functor Bar
 
 julia> struct TypeWithNoChildren; x; y; end
 

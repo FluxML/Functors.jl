@@ -13,7 +13,6 @@ functor(::Type{<:AbstractArray}, x) = x, identity
 ### Array wrappers
 ###
 
-using LinearAlgebra
 # The reason for these is to let W and W' be seen as tied weights in Flux models.
 # Can't treat ReshapedArray very well, as its type doesn't include enough details for reconstruction.
 
