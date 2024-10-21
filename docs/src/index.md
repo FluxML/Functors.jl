@@ -59,6 +59,15 @@ Using [`@leaf`](@ref) instead of [`@functor`](@ref) will prevent the fields of a
 !!! warning "Change to opt-out behaviour in v0.5"
     Previous releases of functors, up to v0.4, used an opt-in behaviour where structs were leaves functors unless marked with `@functor`. This was changed in v0.5 to an opt-out behaviour where structs are functors unless marked with `@leaf`.
 
+## Which types are leaves?
+
+By default all composite types in are functors and can be traversed, unless marked with [`@leaf`](@ref). 
+
+The following types instead are explicitly marked as leaves in Functors.jl:
+- `Number`
+- `AbstractArray{<:Number}`
+- `AbstractString`
+
 ## Appropriate Use
 
 Typically, since any function `f` is applied to the leaves of the tree, but it is possible for some functions to require dispatching on the specific type of the fields causing some methods to be missed entirely.

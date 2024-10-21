@@ -2,8 +2,7 @@
 
 @leaf Number
 @leaf AbstractArray{<:Number}
-@leaf AbstractDict  # We are conservative here
-                    # since most probably default functor does the wrong thing
+@leaf AbstractString 
 
 ## Fast Paths for common types
 functor(::Type{<:Tuple}, x) = x, identity
@@ -11,10 +10,11 @@ functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty
 functor(::Type{<:Dict}, x) = Dict(k => x[k] for k in keys(x)), identity
 functor(::Type{<:AbstractArray}, x) = x, identity
 
-# TODO: evaluate if this is a good idea
-# function functor(::Type{<:D}, x) where {D<:AbstractDict}
-#   return constructorof(D)(k => x[k] for k in keys(x)), identity
-# end
+## This may be a reasonable default for AbstractDict
+## but is not guaranteed to be correct for all dict subtypes
+function functor(::Type{D}, x) where {D<:AbstractDict}
+  return constructorof(D)(k => x[k] for k in keys(x)), identity
+end
 
 
 ###
