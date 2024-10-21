@@ -1,12 +1,13 @@
 module Functors
-
+using Compat: @compat
 using ConstructionBase: constructorof
 
-export @leaf, @functor, @flexiblefunctor, 
+export @leaf, @functor, @flexiblefunctor,
        fmap, fmapstructure, fcollect, execute, fleaves,
        fmap_with_path, fmapstructure_with_path,
        KeyPath, getkeypath, haskeypath, setkeypath!
 
+@compat(public, (isleaf, children, functor))
 
 include("functor.jl")
 include("keypath.jl")
@@ -20,7 +21,8 @@ include("base.jl")
 
 
 """
-    Functors.functor(x) = functor(typeof(x), x)
+    functor(x)
+    functor(typeof(x), x)
 
 Returns a tuple containing, first, a `NamedTuple` of the children of `x`
 (typically its fields), and second, a reconstruction funciton.
@@ -75,7 +77,7 @@ TwoThirds(Foo(10, 20), Foo(3, 4), 560)
 var"@functor"
 
 """
-    Functors.isleaf(x)
+    isleaf(x)
 
 Return true if `x` has no [`children`](@ref) according to [`functor`](@ref).
 
@@ -103,7 +105,7 @@ true
 isleaf
 
 """
-    Functors.children(x)
+    children(x)
 
 Return the children of `x` as defined by [`functor`](@ref).
 Equivalent to `functor(x)[1]`.

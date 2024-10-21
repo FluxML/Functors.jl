@@ -4,13 +4,13 @@ Functors.jl provides a set of tools to represent [functors](https://en.wikipedia
 
 The most straightforward use is to traverse a complicated nested structure as a tree, and apply a function `f` to every field it encounters along the way.
 
-For large models it can be cumbersome or inefficient to work with parameters as one big, flat vector, and structs help manage complexity; but it may be desirable to easily operate over all parameters at once, e.g. for changing precision or applying an optimiser update step.
+For large machine learning models it can be cumbersome or inefficient to work with parameters as one big, flat vector, and structs help manage complexity; but it may be desirable to easily operate over all parameters at once, e.g. for changing precision or applying an optimiser update step.
 
 ## Basic Usage and Implementation
 
-By default, julia types are marked as [`@functor`](@ref)s, meaning that Functors.jl is allowed to look into the fields of the instances of the struct and modify them. This is achieved through [`Functors.fmap`](@ref).
+By default, julia types are marked as [`@functor`](@ref)s, meaning that Functors.jl is allowed to look into the fields of the instances of the struct and modify them. This is achieved through [`fmap`](@ref).
 
-The workhorse of `fmap` is actually a lower level function, functor:
+The workhorse of `fmap` is actually a lower level function, [`functor`](@ref):
 
 ```julia-repl
 julia> using Functors
@@ -50,13 +50,12 @@ Baz(1.0, 2)
 
 Any field not in the list will be passed through as-is during reconstruction. This is done by invoking the default constructor accepting all fields as arguments, so structs that define custom inner constructors are expected to provide one that acts like the default. 
 
-The use of `@functor` with no fields argument as in `@functor Baz` is equivalent to `@functor Baz fieldnames(Baz)`
-and also equivalent to avoiding `@functor` altogether.
+The use of `@functor` with no fields argument as in `@functor Baz` is equivalent to `@functor Baz fieldnames(Baz)` and also equivalent to avoiding `@functor` altogether.
 
 Using [`@leaf`](@ref) instead of [`@functor`](@ref) will prevent the fields of a struct from being traversed. 
 
 !!! warning "Change to opt-out behaviour in v0.5"
-    Previous releases of functors, up to v0.4, used an opt-in behaviour where structs were not functors unless marked with `@functor`. This was changed in v0.5 to an opt-out behaviour where structs are functors unless marked with `@leaf`.
+    Previous releases of functors, up to v0.4, used an opt-in behaviour where structs were leaves unless marked with `@functor`. This was changed in v0.5 to an opt-out behaviour where structs are functors unless marked with `@leaf`.
 
 ## Appropriate Use
 

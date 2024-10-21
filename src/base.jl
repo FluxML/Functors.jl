@@ -1,14 +1,6 @@
 
 functor(::Type{<:Base.ComposedFunction}, x) = (outer = x.outer, inner = x.inner), y -> Base.ComposedFunction(y.outer, y.inner)
 
-@static if VERSION >= v"1.9"
-  @functor Base.Splat
-end
-
-@static if VERSION >= v"1.7"
-  @functor Base.Returns
-end
-
 ###
 ### Array wrappers
 ###
