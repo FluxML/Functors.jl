@@ -181,6 +181,6 @@ end
 end
 
 @testset "AbstractDict is leaf" begin
-  struct DummyDict <: AbstractDict end
-  @test Functors.isleaf(DummyDict())
+  struct DummyDict{K,V} <: AbstractDict{K,V} end
+  @test Functors.isleaf(DummyDict{Int,Int}())
 end
