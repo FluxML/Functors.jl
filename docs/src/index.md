@@ -8,9 +8,11 @@ For large machine learning models it can be cumbersome or inefficient to work wi
 
 ## Basic Usage and Implementation
 
-By default, julia types are marked as [`@functor`](@ref)s, meaning that Functors.jl is allowed to look into the fields of the instances of the struct and modify them. This is achieved through [`fmap`](@ref).
+By default, julia types are marked as [`@functor`](@ref Functors.functor)s, meaning that Functors.jl is allowed to look into the fields of the instances of the struct and modify them. This is achieved through [`fmap`](@ref). To opt-out of this behaviour, use [`@leaf`](@ref) on your custom type.
 
-The workhorse of `fmap` is actually a lower level function, [`functor`](@ref):
+```julia-repl
+
+The workhorse of `fmap` is actually a lower level function, [`functor`](@ref Functors.functor):
 
 ```julia-repl
 julia> using Functors

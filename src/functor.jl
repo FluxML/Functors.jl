@@ -5,7 +5,7 @@ const NoChildren = Tuple{}
 """
     @leaf T
 
-Define [`functor`](@ref) for the type `T` so that  `isleaf(x::T) == true`.
+Define [`functor`](@ref Functors.functor) for the type `T` so that  `isleaf(x::T) == true`.
 """
 macro leaf(T)
   :($Functors.functor(::Type{<:$(esc(T))}, x) = ($Functors.NoChildren(), _ -> x))

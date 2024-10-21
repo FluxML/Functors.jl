@@ -38,7 +38,7 @@ functor
     @functor T
     @functor T (x,)
 
-Adds methods to [`functor`](@ref) allowing recursion into objects of type `T`,
+Adds methods to [`functor`](@ref Functors.functor) allowing recursion into objects of type `T`,
 and reconstruction. Assumes that `T` has a constructor accepting all of its fields,
 which is true unless you have provided an inner constructor which does not.
 
@@ -80,7 +80,7 @@ var"@functor"
 """
     isleaf(x)
 
-Return true if `x` has no [`children`](@ref) according to [`functor`](@ref).
+Return true if `x` has no [`children`](@ref Functors.children) according to [`functor`](@ref Functors.functor).
 
 # Examples
 ```jldoctest
@@ -108,7 +108,7 @@ isleaf
 """
     children(x)
 
-Return the children of `x` as defined by [`functor`](@ref).
+Return the children of `x` as defined by [`functor`](@ref Functors.functor).
 Equivalent to `functor(x)[1]`.
 """
 children
@@ -118,8 +118,8 @@ children
 
 A structure and type preserving `map`.
 
-By default it transforms every leaf node (identified by `exclude`, default [`isleaf`](@ref))
-by applying `f`, and otherwise traverses `x` recursively using [`functor`](@ref).
+By default it transforms every leaf node (identified by `exclude`, default [`isleaf`](@ref Functors.isleaf))
+by applying `f`, and otherwise traverses `x` recursively using [`functor`](@ref Functors.functor).
 Optionally, it may also be associated with objects `ys` with the same tree structure.
 In that case, `f` is applied to the corresponding leaf nodes in `x` and `ys`.
 
@@ -264,7 +264,7 @@ fmapstructure
 """
     fcollect(x; exclude = v -> false)
 
-Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref)
+Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref Functors.functor)
 and collecting the results into a flat array, ordered by a breadth-first
 traversal of `x`, respecting the iteration order of `children` calls.
 
@@ -355,7 +355,7 @@ fmapstructure_with_path
 """
     fleaves(x; exclude = isleaf)
 
-Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref)
+Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref Functors.functor)
 and collecting the leaves into a flat array, 
 ordered by a breadth-first traversal of `x`, respecting the iteration order of `children` calls.
 
