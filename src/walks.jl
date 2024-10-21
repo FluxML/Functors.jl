@@ -9,11 +9,12 @@ function check_lenghts(x, ys...)
 end
 
 _map(f, x::Dict, ys...) = Dict(k => f(v, (y[k] for y in ys)...) for (k, v) in x)
+_map(f, x::D, ys...) where {D<:AbstractDict} = constructorof(D)(k => f(v, (y[k] for y in ys)...) for (k, v) in x)
 
 _values(x) = x
-_values(x::Dict) = values(x)
+_values(x::AbstractDict) = values(x)
 
-_keys(x::Dict) = Dict(k => k for k in keys(x))
+_keys(x::D) where {D <: AbstractDict} = constructorof(D)(k => k for k in keys(x))
 _keys(x::Tuple) = (keys(x)...,)
 _keys(x::AbstractArray) = collect(keys(x))
 _keys(x::NamedTuple{Ks}) where Ks = NamedTuple{Ks}(Ks)

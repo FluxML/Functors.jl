@@ -11,12 +11,14 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 [compat]
 Compat = "4.16"
 ConstructionBase = "1.4"
+OrderedCollections = "1.6"
 julia = "1.6"
 
 [extras]
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["Test", "StaticArrays", "Zygote"]
+test = ["Test", "OrderedCollections", "StaticArrays", "Zygote"]

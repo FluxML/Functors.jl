@@ -68,8 +68,13 @@ The following types instead are explicitly marked as leaves in Functors.jl:
 - `AbstractArray{<:Number}`
 - `AbstractString`
 
-## Appropriate Use
+This is because in typical application the internals of these are abstracted away and it is not desirable to traverse them.
 
-Typically, since any function `f` is applied to the leaves of the tree, but it is possible for some functions to require dispatching on the specific type of the fields causing some methods to be missed entirely.
+## What if I get an error?
 
-Examples of this include element types of arrays which typically have their own mathematical operations defined. Adding a [`@functor`](@ref) to such a type would end up missing methods such as `+(::MyElementType, ::MyElementType)`. Think `RGB` from Colors.jl.
+Since by default Funcotrs.jl tries to traverse most types e.g. when using [`fmap`](@ref), it is possible it fails in case the type has not an appropriate constructor. If use experience this issue, you have a few alternatives:
+- Mark the type as a leaf using [`@leaf`](@ref) 
+- Use the `@functor` macro to specify which fields to traverse.
+- Define an appropriate constructor for the type.
+
+If you are not able to traverse types in julia Base, please open an issue.

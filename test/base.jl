@@ -180,7 +180,19 @@ end
     @test collect(x) isa Vector{<:Tuple{Complex, Complex}}
 end
 
-# @testset "AbstractDict is leaf" begin
-#   struct DummyDict{K,V} <: AbstractDict{K,V} end
-#   @test Functors.isleaf(DummyDict{Int,Int}())
-# end
+@testset "AbstractString is leaf" begin
+  struct DummyString <: AbstractString
+    str::String
+  end
+  s = DummyString("hello")
+  @test Functors.isleaf(s)
+end
+
+@testset "AbstractDict is functor" begin
+  od = OrderedDict(1 => 1, 2 => 2)
+  @test !Functors.isleaf(od)
+  od2 = fmap(x -> 2x, od)
+  @test od2 isa OrderedDict
+  @test od2[1] == 2
+  @test od2[2] == 4
+end

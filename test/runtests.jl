@@ -2,6 +2,7 @@ using Functors, Test
 using Zygote
 using LinearAlgebra
 using StaticArrays
+using OrderedCollections: OrderedDict
 
 @testset "Functors.jl" begin
   include("basics.jl")
