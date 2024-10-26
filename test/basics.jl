@@ -131,7 +131,9 @@ end
 
 @testset "Self-referencing types" begin
    # https://github.com/FluxML/Functors.jl/pull/72/ 
-    @test_broken fmap(identity, Base.ImmutableDict(:a => 42)) == Base.ImmutableDict(:a => 42)
+    @test fmap(identity, Base.ImmutableDict(:a => 42)) == Base.ImmutableDict(:a => 42)
+    nt = fmap(x -> 2x, (; a = 1 ± 0.1, b = 2 ± 0.2))
+    @test nt == (; a = 2 ± 0.2, b = 4 ± 0.4)
 end
 
 @testset "functor(typeof(x), y) from @functor" begin

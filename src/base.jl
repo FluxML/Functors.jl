@@ -13,9 +13,8 @@ functor(::Type{<:AbstractArray}, x) = x, identity
 ## This may be a reasonable default for AbstractDict
 ## but is not guaranteed to be correct for all dict subtypes
 function functor(::Type{D}, x) where {D<:AbstractDict}
-  return constructorof(D)(k => x[k] for k in keys(x)), identity
+  return constructorof(D)([k => x[k] for k in keys(x)]...), identity
 end
-
 
 ###
 ### Array wrappers
