@@ -1,3 +1,13 @@
+# We run the benchmarks using AirspeedVelocity.jl
+
+# To run benchmarks locally, first install AirspeedVelocity.jl:
+# julia> using Pkg; Pkg.add("AirspeedVelocity"); Pkg.build("AirspeedVelocity")
+# and make sure .julia/bin is in your PATH.
+
+# Then commit the changes and run:
+# $ benchpkg Functors --rev=master,mybranch --bench-on=mybranch 
+
+
 using BenchmarkTools: BenchmarkTools, BenchmarkGroup, @benchmarkable, @btime, @benchmark, judge
 using ConcreteStructs: @concrete
 using Flux: Dense, Chain
@@ -40,16 +50,5 @@ end
 
 setup_fmap_bench!(SUITE)
 
+## AirspeedVelocity.jl will automatically run the benchmarks and save the results
 # results = BenchmarkTools.run(SUITE; verbose=true)
-
-# filename = joinpath(@__DIR__, "benchmarks_old.json")
-# BenchmarkTools.save(filename, median(results))
-
-
-# # Plot
-# using StatsPlots, BenchmarkTools
-# plot(results["fmap"], yaxis=:log10, st=:violin)
-
-# # Compare
-# old_results = BenchmarkTools.load("benchmarks.json")[1]
-# judge(median(results), old_results)
