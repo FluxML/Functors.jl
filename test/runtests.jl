@@ -3,7 +3,7 @@ using Zygote
 using LinearAlgebra
 using StaticArrays
 using OrderedCollections: OrderedDict
-import Measurements # for ±
+using Measurements: ±
 
 @testset "Functors.jl" begin
   include("basics.jl")
