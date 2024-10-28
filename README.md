@@ -49,9 +49,9 @@ Bar(Foo(1.0, [1.0, 2.0, 3.0]))
 ```
 
 > [!NOTE]
-> Up to to v0.4 Functors.jl's functionality on custom type had to be opted in via the `@functor Foo` macro call. 
-> With v0.5, this no longer necessary: by default any type is recursively traversed up to the leaves
-> and `ConstructionBase.constructorof` is used to reconstruct the type.
+> Up to to v0.4, Functors.jl's functionality had to be opted in on custom types via the `@functor Foo` macro call. 
+> With v0.5 instead, this is no longer necessary: by default any type is recursively traversed up to the leaves
+> and `ConstructionBase.constructorof` is used to reconstruct it.
 > In order to opt-out of this behaviour and make a type non traversable you can use `@leaf Foo`.
 
 ## Further Details
