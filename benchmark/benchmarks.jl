@@ -5,7 +5,7 @@
 # and make sure .julia/bin is in your PATH.
 
 # Then commit the changes and run:
-# $ benchpkg Functors --rev=master,mybranch --bench-on=mybranch 
+# $ benchpkg Functors --rev=mybranch,master --bench-on=mybranch 
 
 
 using BenchmarkTools: BenchmarkTools, BenchmarkGroup, @benchmarkable, @btime, @benchmark, judge
@@ -45,6 +45,9 @@ function setup_fmap_bench!(suite)
     a = Chain(Dense(5, 5, tanh), Dense(5, 5, tanh))
     suite["fmap"]["flux dense chain"] = @benchmarkable fmap(identity, $a)
     
+    nt = (layers=(w= rand(5,5), b=rand(5), σ=tanh),)
+    suite["fmap"]["named tuple"] = @benchmarkable fmap(identity, $nt)
+
     return suite
 end
 
