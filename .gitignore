@@ -3,3 +3,7 @@
 Manifest.toml
 build
 .vscode
+benchmarks*.json
+results*.json
+*.tmp
+
