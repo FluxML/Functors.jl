@@ -1,20 +1,34 @@
-## Opt-Out
+###
+### Opt-Out
+###
 
 @leaf Number
 @leaf AbstractArray{<:Number}
 @leaf AbstractString 
 
-## Fast Paths for common types
+###
+### Fast Paths for common types
+###
+
 functor(::Type{<:Tuple}, x) = x, identity
 functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty(x, s), L)), identity
 functor(::Type{<:Dict}, x) = Dict(k => x[k] for k in keys(x)), identity
 functor(::Type{<:AbstractArray}, x) = x, identity
 
-## This may be a reasonable default for AbstractDict
-## but is not guaranteed to be correct for all dict subtypes
+# This may be a reasonable default for AbstractDict
+# but is not guaranteed to be correct for all dict subtypes
 function functor(::Type{D}, x) where {D<:AbstractDict}
   return constructorof(D)([k => x[k] for k in keys(x)]...), identity
 end
+
+### 
+### Base Types requiring special handling
+###
+
+@static if VERSION >= v"1.12-DEV"
+  functor(::Type{<:Base.Fix{N}}, x) where N = (; x.f, x.x), y -> Base.Fix{N}(y.f, y.x)
+end
+
 
 ###
 ### Array wrappers
