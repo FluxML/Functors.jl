@@ -1,28 +1,39 @@
+###
+### Opt-Out
+###
 
-@functor Base.RefValue
+@leaf Number
+@leaf AbstractArray{<:Number}
+@leaf AbstractString 
 
-@functor Base.Pair
+###
+### Fast Paths for common types
+###
 
-@functor Base.Generator  # aka Iterators.map
+functor(::Type{<:Tuple}, x) = x, identity
+functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty(x, s), L)), identity
+functor(::Type{<:Dict}, x) = Dict(k => x[k] for k in keys(x)), identity
+functor(::Type{<:AbstractArray}, x) = x, identity
 
-@functor Base.ComposedFunction
-@functor Base.Fix1
-@functor Base.Fix2
-@functor Base.Broadcast.BroadcastFunction
-
-@static if VERSION >= v"1.9"
-  @functor Base.Splat
+# This may be a reasonable default for AbstractDict
+# but is not guaranteed to be correct for all dict subtypes
+function functor(::Type{D}, x) where {D<:AbstractDict}
+  return constructorof(D)([k => x[k] for k in keys(x)]...), identity
 end
 
-@static if VERSION >= v"1.7"
-  @functor Base.Returns
+### 
+### Base Types requiring special handling
+###
+
+@static if VERSION >= v"1.12-DEV"
+  functor(::Type{<:Base.Fix{N}}, x) where N = (; x.f, x.x), y -> Base.Fix{N}(y.f, y.x)
 end
+
 
 ###
 ### Array wrappers
 ###
 
-using LinearAlgebra
 # The reason for these is to let W and W' be seen as tied weights in Flux models.
 # Can't treat ReshapedArray very well, as its type doesn't include enough details for reconstruction.
 
@@ -45,32 +56,9 @@ function functor(::Type{<:PermutedDimsArray{T,N,perm,iperm}}, x) where {T,N,perm
   (parent = _PermutedDimsArray(x, iperm),), y -> PermutedDimsArray(only(y), perm)
 end
 function functor(::Type{<:PermutedDimsArray{T,N,perm,iperm}}, x::PermutedDimsArray{Tx,N,perm,iperm}) where {T,Tx,N,perm,iperm}
-  (parent = parent(x),), y -> PermutedDimsArray(only(y), perm)  # most common case, avoid wrapping wrice.
+  (parent = parent(x),), y -> PermutedDimsArray(only(y), perm)  # most common case, avoid wrapping twice.
 end
 
 _PermutedDimsArray(x, iperm) = PermutedDimsArray(x, iperm)
 _PermutedDimsArray(x::NamedTuple{(:parent,)}, iperm) = x.parent
 _PermutedDimsArray(bc::Broadcast.Broadcasted, iperm) = _PermutedDimsArray(Broadcast.materialize(bc), iperm)
-
-###
-### Iterators
-###
-
-@functor Iterators.Accumulate
-# Count
-@functor Iterators.Cycle
-@functor Iterators.Drop
-@functor Iterators.DropWhile
-@functor Iterators.Enumerate
-@functor Iterators.Filter
-@functor Iterators.Flatten
-# IterationCutShort
-@functor Iterators.PartitionIterator
-@functor Iterators.ProductIterator
-@functor Iterators.Repeated
-@functor Iterators.Rest
-@functor Iterators.Reverse
-# Stateful
-@functor Iterators.Take
-@functor Iterators.TakeWhile
-@functor Iterators.Zip

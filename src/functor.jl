@@ -5,21 +5,24 @@ const NoChildren = Tuple{}
 """
     @leaf T
 
-Define [`functor`](@ref) for the type `T` so that  `isleaf(x::T) == true`.
+Define [`functor`](@ref Functors.functor) for the type `T` so that  `isleaf(x::T) == true`.
 """
 macro leaf(T)
   :($Functors.functor(::Type{<:$(esc(T))}, x) = ($Functors.NoChildren(), _ -> x))
 end
 
-@leaf Any # every type is a leaf by default
+# Default functor
+function functor(T, x)
+  names = fieldnames(T)
+  if isempty(names)
+    return NoChildren(), _ -> x
+  end
+  S = constructorof(T) # remove parameters from parametric types and support anonymous functions
+  vals = ntuple(i -> getfield(x, names[i]), length(names))
+  return NamedTuple{names}(vals), y -> S(y...)
+end
+
 functor(x) = functor(typeof(x), x)
-
-functor(::Type{<:Tuple}, x) = x, identity
-functor(::Type{<:NamedTuple{L}}, x) where L = NamedTuple{L}(map(s -> getproperty(x, s), L)), identity
-functor(::Type{<:Dict}, x) = Dict(k => x[k] for k in keys(x)), identity
-
-functor(::Type{<:AbstractArray}, x) = x, identity
-@leaf AbstractArray{<:Number}
 
 function makefunctor(m::Module, T, fs = fieldnames(T))
   fidx = Ref(0)
@@ -30,7 +33,7 @@ function makefunctor(m::Module, T, fs = fieldnames(T))
     f in fs ? :(y[$(Meta.quot(f))]) : :(x.$f)
   end
   escfs = [:($f=x.$f) for f in fs]
-
+  
   @eval m begin
     function $Functors.functor(::Type{<:$T}, x)
       reconstruct(y) = $T($(escargs...))

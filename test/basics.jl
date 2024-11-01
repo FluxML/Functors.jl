@@ -2,36 +2,38 @@
 using Functors: functor, usecache
 
 struct Foo; x; y; end
-@functor Foo
 
 Base.:(==)(x::Foo, y::Foo) = x.x == y.x && x.y == y.y
 
 struct Bar{T}; x::T; end
-@functor Bar
 
 Base.:(==)(x::Bar, y::Bar) = x.x == y.x
 
 struct OneChild3; x; y; z; end
 @functor OneChild3 (y,)
 
-struct NoChildren2; x; y; end
+struct NoChild2; x; y; end
+@functor NoChild2 ()
 
-struct NoChild{T}; x::T; end
+struct NoChild1{T}; x::T; end
+@functor NoChild1 ()
 
 struct WrongOrder; x; y; z; end
 @functor WrongOrder (z, x)
 
+struct LeafType{T}; x::T; end
+@leaf LeafType
 
 ###
 ### Basic functionality
 ###
 
-@testset "Children and Leaves" begin
-  no_children = NoChildren2(1, 2)
+@testset "NoChild is not a leaf" begin
+  no_children = NoChild2(1, 2)
   has_children = Foo(1, 2)
-  @test Functors.isleaf(no_children)
+  @test !Functors.isleaf(no_children)
   @test !Functors.isleaf(has_children)
-  @test Functors.children(no_children) === Functors.NoChildren()
+  @test Functors.children(no_children) === (;)
   @test Functors.children(has_children) == (x=1, y=2)
 end
 
@@ -108,8 +110,8 @@ end
     # Leaf types:
     @test usecache(d, [1,2])
     @test !usecache(d, 4.0)
-    @test usecache(d, NoChild([1,2]))
-    @test !usecache(d, NoChild((3,4)))
+    @test usecache(d, LeafType([1,2]))
+    @test !usecache(d, LeafType((3,4)))
 
     # Not leaf:
     @test usecache(d, Ref(3))  # mutable container
@@ -128,7 +130,10 @@ end
 end
 
 @testset "Self-referencing types" begin
+   # https://github.com/FluxML/Functors.jl/pull/72/ 
     @test fmap(identity, Base.ImmutableDict(:a => 42)) == Base.ImmutableDict(:a => 42)
+    nt = fmap(x -> 2x, (; a = 1 ± 0.1, b = 2 ± 0.2))
+    @test nt == (; a = 2 ± 0.2, b = 4 ± 0.4)
 end
 
 @testset "functor(typeof(x), y) from @functor" begin
@@ -163,6 +168,17 @@ end
   @test_throws Exception functor(NamedTuple{(:x, :y)}, (z=33, x=1))
 end
 
+@testset "anonymous functions" begin  
+  model = let W = rand(2,2), b = ones(2)
+    x -> tanh.(W*x .+ b)
+  end
+  newmodel = fmap(zero, model)
+  @test newmodel isa Function
+  @test newmodel([1,2]) == [0,0]
+  @test newmodel.W == [0 0; 0 0]
+  @test newmodel.b == [0, 0]  
+end
+
 ###
 ### Extras
 ###
@@ -185,7 +201,7 @@ end
 
   m1 = [1, 2, 3]
   m2 = Bar(m1)
-  m0 = NoChildren2(:a, :b)
+  m0 = NoChild2(:a, :b)
   m3 = Foo(m2, m0)
   m4 = Bar(m3)
   @test all(fcollect(m4) .=== [m4, m3, m2, m1, m0])
@@ -299,74 +315,13 @@ end
   @test m̂.b ≈ fill(-0.2f0, size(m.b))
 end
 
-###
-### FlexibleFunctors.jl
-###
+@testset "parametric types" begin
+  struct A{T}
+    x::T
+  end
 
-struct FFoo
-  x
-  y
-  p
-end
-@flexiblefunctor FFoo p
-
-struct FBar
-  x
-  p
-end
-@flexiblefunctor FBar p
-
-struct FOneChild4
-  x
-  y
-  z
-  p
-end
-@flexiblefunctor FOneChild4 p
-
-@testset "Flexible Nested" begin
-  model = FBar(FFoo(1, [1, 2, 3], (:y, )), (:x,))
-
-  model′ = fmap(float, model)
-
-  @test model.x.y == model′.x.y
-  @test model′.x.y isa Vector{Float64}
-end
-
-@testset "Flexible Walk" begin
-  model = FFoo((0, FBar([1, 2, 3], (:x,))), [4, 5], (:x, :y))
-
-  model′ = fmapstructure(identity, model)
-  @test model′ == (; x=(0, (; x=[1, 2, 3])), y=[4, 5])
-
-  model2 = FFoo((0, FBar([1, 2, 3], (:x,))), [4, 5], (:x,))
-
-  model2′ = fmapstructure(identity, model2)
-  @test model2′ == (; x=(0, (; x=[1, 2, 3])))
-end
-
-@testset "Flexible Property list" begin
-  model = FOneChild4(1, 2, 3, (:x, :z))
-  model′ = fmap(x -> 2x, model)
-
-  @test (model′.x, model′.y, model′.z) == (2, 2, 6)
-end
-
-@testset "Flexible fcollect" begin
-  m1 = 1
-  m2 = [1, 2, 3]
-  m3 = FFoo(m1, m2, (:y, ))
-  m4 = FBar(m3, (:x,))
-  @test all(fcollect(m4) .=== [m4, m3, m2])
-  @test all(fcollect(m4, exclude = x -> x isa Array) .=== [m4, m3])
-  @test all(fcollect(m4, exclude = x -> x isa FFoo) .=== [m4])
-
-  m0 = NoChildren2(:a, :b)
-  m1 = [1, 2, 3]
-  m2 = FBar(m1, ())
-  m3 = FFoo(m2, m0, (:x, :y,))
-  m4 = FBar(m3, (:x,))
-  @test all(fcollect(m4) .=== [m4, m3, m2, m0])
+  a = A(1)
+  @test fmap(x -> x/2, a) == A(0.5)
 end
 
 @testset "Dict" begin
@@ -396,17 +351,16 @@ end
 end
 
 @testset "@leaf" begin
-  struct A; x; end
-  @functor A
-  a = A(1)
-  @test Functors.children(a) === (x = 1,)
-
   struct B; x; end
   Functors.@leaf B
   b = B(1)
   children, re = Functors.functor(b)
-  @test children == Functors.NoChildren() 
   @test re(children) === b
+  
+  a = LeafType(1)
+  children, re = Functors.functor(a)
+  @test children == Functors.NoChildren()
+  @test re(children) === a 
 end
 
 @testset "IterateWalk" begin

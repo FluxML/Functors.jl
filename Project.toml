@@ -4,17 +4,23 @@ authors = ["Mike J Innes <mike.j.innes@gmail.com>"]
 version = "0.4.12"
 
 [deps]
+Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
+ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [compat]
-Documenter = "1"
+Compat = "4.16"
+ConstructionBase = "1.4"
+Measurements = "2"
+OrderedCollections = "1.6"
 julia = "1.6"
 
 [extras]
-Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["Test", "Documenter", "StaticArrays", "Zygote"]
+test = ["Test", "OrderedCollections", "StaticArrays", "Zygote", "Measurements"]

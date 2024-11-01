@@ -13,7 +13,9 @@
 [action-img]: https://github.com/FluxML/Functors.jl/workflows/CI/badge.svg
 [action-url]: https://github.com/FluxML/Functors.jl/actions
 
-Functors.jl provides tools to express a powerful design pattern for dealing with large/ nested structures, as in machine learning and optimisation. For large machine learning models it can be cumbersome or inefficient to work with parameters as one big, flat vector, and structs help manage complexity; but it is also desirable to easily operate over all parameters at once, e.g. for changing precision or applying an optimiser update step.
+Functors.jl provides tools to express a powerful design pattern for dealing with large / nested structures, as in machine learning and optimisation. For large machine learning models it can be cumbersome or inefficient to work with parameters as one big, flat vector, and structs help manage complexity; but it is also desirable to easily operate over all parameters at once, e.g. for changing precision or applying an optimiser update step.
+
+## Basic Usage
 
 Functors.jl provides `fmap` to make those things easy, acting as a 'map over parameters':
 
@@ -24,8 +26,6 @@ julia> struct Foo
          x
          y
        end
-
-julia> @functor Foo
 
 julia> model = Foo(1, [1, 2, 3])
 Foo(1, [1, 2, 3])
@@ -41,8 +41,6 @@ julia> struct Bar
          x
        end
 
-julia> @functor Bar
-
 julia> model = Bar(Foo(1, [1, 2, 3]))
 Bar(Foo(1, [1, 2, 3]))
 
@@ -50,17 +48,25 @@ julia> fmap(float, model)
 Bar(Foo(1.0, [1.0, 2.0, 3.0]))
 ```
 
+> [!NOTE]
+> Up to to v0.4, Functors.jl's functionality had to be opted in on custom types via the `@functor Foo` macro call. 
+> With v0.5 instead, this is no longer necessary: by default any type is recursively traversed up to the leaves
+> and `ConstructionBase.constructorof` is used to reconstruct it.
+> In order to opt-out of this behaviour and make a type non traversable you can use `@leaf Foo`.
+
+## Further Details
+
 The workhorse of `fmap` is actually a lower level function, `functor`:
 
 ```julia
-julia> xs, re = functor(Foo(1, [1, 2, 3]))
-((x = 1, y = [1, 2, 3]), var"#21#22"())
+julia> children, reconstruct = Functors.functor(Foo(1, [1, 2, 3]))
+((x = 1, y = [1, 2, 3]), Functors.var"#3#6"{DataType}(Foo))
 
-julia> re(map(float, xs))
+julia> reconstruct(map(float, children))
 Foo(1.0, [1.0, 2.0, 3.0])
 ```
 
-`functor` returns the parts of the object that can be inspected, as well as a `re` function that takes those values and restructures them back into an object of the original type.
+`functor` returns the parts of the object that can be inspected, as well as a `reconstruct` function that takes those values and restructures them back into an object of the original type.
 
 To include only certain fields, pass a tuple of field names to `@functor`:
 

@@ -1,8 +1,14 @@
 module Functors
+using Compat: @compat
+using ConstructionBase: constructorof
+using LinearAlgebra
 
-export @functor, @flexiblefunctor, fmap, fmapstructure, fcollect, execute, fleaves,
+export @leaf, @functor, @flexiblefunctor,
+       fmap, fmapstructure, fcollect, execute, fleaves,
        fmap_with_path, fmapstructure_with_path,
        KeyPath, getkeypath, haskeypath, setkeypath!
+
+@compat(public, (isleaf, children, functor))
 
 include("functor.jl")
 include("keypath.jl")
@@ -16,10 +22,11 @@ include("base.jl")
 
 
 """
-    Functors.functor(x) = functor(typeof(x), x)
+    functor(x)
+    functor(typeof(x), x)
 
 Returns a tuple containing, first, a `NamedTuple` of the children of `x`
-(typically its fields), and second, a reconstruction funciton.
+(typically its fields), and second, a reconstruction function.
 This controls the behaviour of [`fmap`](@ref).
 
 Methods should be added to `functor(::Type{T}, x)` for custom types,
@@ -31,7 +38,7 @@ functor
     @functor T
     @functor T (x,)
 
-Adds methods to [`functor`](@ref) allowing recursion into objects of type `T`,
+Adds methods to [`functor`](@ref Functors.functor) allowing recursion into objects of type `T`,
 and reconstruction. Assumes that `T` has a constructor accepting all of its fields,
 which is true unless you have provided an inner constructor which does not.
 
@@ -42,8 +49,6 @@ this can be restricted be restructed by providing a tuple of field names.
 ```jldoctest
 julia> struct Foo; x; y; end
 
-julia> @functor Foo
-
 julia> Functors.children(Foo(1,2))
 (x = 1, y = 2)
 
@@ -51,6 +56,8 @@ julia> _, re = Functors.functor(Foo(1,2));
 
 julia> re((10, 20))
 Foo(10, 20)
+
+julia> @functor Foo # same as before, nothing changes
 
 julia> struct TwoThirds a; b; c; end
 
@@ -71,9 +78,9 @@ TwoThirds(Foo(10, 20), Foo(3, 4), 560)
 var"@functor"
 
 """
-    Functors.isleaf(x)
+    isleaf(x)
 
-Return true if `x` has no [`children`](@ref) according to [`functor`](@ref).
+Return true if `x` has no [`children`](@ref Functors.children) according to [`functor`](@ref Functors.functor).
 
 # Examples
 ```jldoctest
@@ -99,9 +106,9 @@ true
 isleaf
 
 """
-    Functors.children(x)
+    children(x)
 
-Return the children of `x` as defined by [`functor`](@ref).
+Return the children of `x` as defined by [`functor`](@ref Functors.functor).
 Equivalent to `functor(x)[1]`.
 """
 children
@@ -111,8 +118,8 @@ children
 
 A structure and type preserving `map`.
 
-By default it transforms every leaf node (identified by `exclude`, default [`isleaf`](@ref))
-by applying `f`, and otherwise traverses `x` recursively using [`functor`](@ref).
+By default it transforms every leaf node (identified by `exclude`, default [`isleaf`](@ref Functors.isleaf))
+by applying `f`, and otherwise traverses `x` recursively using [`functor`](@ref Functors.functor).
 Optionally, it may also be associated with objects `ys` with the same tree structure.
 In that case, `f` is applied to the corresponding leaf nodes in `x` and `ys`.
 
@@ -163,19 +170,15 @@ Thus the relationship `x.i === x.iv[1]` will be preserved.
 An immutable object which appears twice is not stored in the cache, thus `f(34)` will be called twice,
 and the results will agree only if `f` is pure.
 
-By default, `Tuple`s, `NamedTuple`s, and some other container-like types in Base have
-children to recurse into. Arrays of numbers do not.
-To enable recursion into new types, you must provide a method of [`functor`](@ref),
-which can be done using the macro [`@functor`](@ref):
+By default, almost all container-like types have children to recurse into. 
+Arrays of numbers do not.
+
+To opt out of recursion for custom types use [`@leaf`](@ref) or pass a custom `exclude` function.
 
 ```jldoctest withfoo
 julia> struct Foo; x; y; end
 
-julia> @functor Foo
-
 julia> struct Bar; x; end
-
-julia> @functor Bar
 
 julia> m = Foo(Bar([1,2,3]), (4, 5, Bar(Foo(6, 7))));
 
@@ -241,8 +244,6 @@ See also [`fmap`](@ref) and [`fmapstructure_with_path`](@ref).
 ```jldoctest
 julia> struct Foo; x; y; end
 
-julia> @functor Foo
-
 julia> m = Foo([1,2,3], [4, (5, 6), Foo(7, 8)]);
 
 julia> fmapstructure(x -> 2x, m)
@@ -263,7 +264,7 @@ fmapstructure
 """
     fcollect(x; exclude = v -> false)
 
-Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref)
+Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref Functors.functor)
 and collecting the results into a flat array, ordered by a breadth-first
 traversal of `x`, respecting the iteration order of `children` calls.
 
@@ -279,13 +280,11 @@ See also [`children`](@ref).
 ```jldoctest
 julia> struct Foo; x; y; end
 
-julia> @functor Foo
-
 julia> struct Bar; x; end
 
-julia> @functor Bar
-
 julia> struct TypeWithNoChildren; x; y; end
+
+julia> @leaf TypeWithNoChildren
 
 julia> m = Foo(Bar([1,2,3]), TypeWithNoChildren(:a, :b))
 Foo(Bar([1, 2, 3]), TypeWithNoChildren(:a, :b))
@@ -356,7 +355,7 @@ fmapstructure_with_path
 """
     fleaves(x; exclude = isleaf)
 
-Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref)
+Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref Functors.functor)
 and collecting the leaves into a flat array, 
 ordered by a breadth-first traversal of `x`, respecting the iteration order of `children` calls.
 
@@ -370,9 +369,9 @@ See also [`fcollect`](@ref) for a similar function that collects all nodes inste
 ```jldoctest
 julia> struct Bar; x; end
 
-julia> @functor Bar
-
 julia> struct TypeWithNoChildren; x; y; end
+
+julia> @leaf TypeWithNoChildren
 
 julia> m = (a = Bar([1,2,3]), b = TypeWithNoChildren(4, 5));
 
