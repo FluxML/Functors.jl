@@ -8,9 +8,7 @@ For large machine learning models it can be cumbersome or inefficient to work wi
 
 ## Basic Usage and Implementation
 
-By default, julia types are marked as [`@functor`](@ref Functors.functor)s, meaning that Functors.jl is allowed to look into the fields of the instances of the struct and modify them. This is achieved through [`fmap`](@ref). To opt-out of this behaviour, use [`@leaf`](@ref) on your custom type.
-
-```julia-repl
+By default, Functors.jl is allowed to look into the fields of the instances of any struct and modify them. This can be achieved through [`fmap`](@ref). To opt-out of this behaviour and mark a custom type as non traversable, use the macro [`@leaf`](@ref).
 
 The workhorse of `fmap` is actually a lower level function, [`functor`](@ref Functors.functor):
 
@@ -54,7 +52,7 @@ Any field not in the list will be passed through as-is during reconstruction. Th
 
 The use of `@functor` with no fields argument as in `@functor Baz` is equivalent to `@functor Baz fieldnames(Baz)` and also equivalent to avoiding `@functor` altogether.
 
-Using [`@leaf`](@ref) instead of [`@functor`](@ref) will prevent the fields of a struct from being traversed. 
+Using [`@leaf`](@ref) instead of [`@functor`](@ref) will prevent the fields of a struct from being traversed.
 
 !!! warning "Change to opt-out behaviour in v0.5"
     Previous releases of functors, up to v0.4, used an opt-in behaviour where structs were leaves functors unless marked with `@functor`. This was changed in v0.5 to an opt-out behaviour where structs are functors unless marked with `@leaf`.
