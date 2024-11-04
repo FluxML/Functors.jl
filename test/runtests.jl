@@ -10,4 +10,5 @@ using Measurements: ±
   include("base.jl")
   include("keypath.jl")
   include("flexiblefunctors.jl")
+  include("cache.jl")
 end
