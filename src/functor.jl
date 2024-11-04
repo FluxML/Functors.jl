@@ -85,13 +85,3 @@ end
 macro flexiblefunctor(args...)
   flexiblefunctorm(args...)
 end
-
-###
-### Compat
-###
-
-if VERSION < v"1.7"
-  # Function in 1.7 checks t.name.flags & 0x2 == 0x2,
-  # but for 1.6 this seems to work instead:
-  ismutabletype(@nospecialize t) = t.mutable
-end
