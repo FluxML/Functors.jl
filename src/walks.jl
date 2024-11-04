@@ -56,26 +56,6 @@ function execute(walk::AbstractWalk, x, ys...)
 end
 
 """
-    AnonymousWalk(walk_fn)
-
-Wrap a `walk_fn` so that `AnonymousWalk(walk_fn) isa AbstractWalk`.
-This type only exists for backwards compatability and should not be directly used.
-Attempting to wrap an existing `AbstractWalk` is a no-op (i.e. it is not wrapped).
-"""
-struct AnonymousWalk{F} <: AbstractWalk
-  walk::F
-
-  function AnonymousWalk(walk::F) where F
-    Base.depwarn("Wrapping a custom walk function as an `AnonymousWalk`. Future versions will only support custom walks that explicitly subtype `AbstractWalk`.", :AnonymousWalk)
-    return new{F}(walk)
-  end
-end
-# do not wrap an AbstractWalk
-AnonymousWalk(walk::AbstractWalk) = walk
-
-(walk::AnonymousWalk)(recurse, x, ys...) = walk.walk(recurse, x, ys...)
-
-"""
     DefaultWalk()
 
 The default walk behavior for Functors.jl.

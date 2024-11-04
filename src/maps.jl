@@ -4,7 +4,7 @@ function fmap(f, x, ys...; exclude = isleaf,
                            walk = DefaultWalk(),
                            cache = IdDict(),
                            prune = NoKeyword())
-  _walk = ExcludeWalk(AnonymousWalk(walk), f, exclude)
+  _walk = ExcludeWalk(walk, f, exclude)
   if !isnothing(cache)
     _walk = CachedWalk(_walk, prune, WalkCache(_walk, cache))
   end

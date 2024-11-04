@@ -2,6 +2,7 @@ module Functors
 using Compat: @compat
 using ConstructionBase: constructorof
 using LinearAlgebra
+using Random: AbstractRNG
 
 export @leaf, @functor, @flexiblefunctor,
        fmap, fmapstructure, fcollect, execute, fleaves,
