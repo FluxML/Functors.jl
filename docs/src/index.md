@@ -65,6 +65,7 @@ The following types instead are explicitly marked as leaves in Functors.jl:
 - `Number`.
 - `AbstractArray{<:Number}`, except for the wrappers `Transpose`, `Adjoint`, and `PermutedDimsArray`.
 - `AbstractRNG`.
+- `AbstractString`, `AbstractChar`, `AbstractPattern`, `AbstractMatch`.
 
 This is because in typical application the internals of these are abstracted away and it is not desirable to traverse them.
 
