@@ -4,7 +4,7 @@
 
 @leaf Number
 @leaf AbstractArray{<:Number}
-@leaf AbstractString 
+@leaf AbstractRNG
 
 ###
 ### Fast Paths for common types

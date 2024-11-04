@@ -180,12 +180,12 @@ end
     @test collect(x) isa Vector{<:Tuple{Complex, Complex}}
 end
 
-@testset "AbstractString is leaf" begin
+@testset "AbstractString is not leaf" begin
   struct DummyString <: AbstractString
     str::String
   end
   s = DummyString("hello")
-  @test Functors.isleaf(s)
+  @test !Functors.isleaf(s)
 end
 
 @testset "AbstractDict is functor" begin
