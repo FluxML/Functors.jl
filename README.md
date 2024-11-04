@@ -53,6 +53,8 @@ Bar(Foo(1.0, [1.0, 2.0, 3.0]))
 > With v0.5 instead, this is no longer necessary: by default any type is recursively traversed up to the leaves
 > and `ConstructionBase.constructorof` is used to reconstruct it.
 > In order to opt-out of this behaviour and make a type non traversable you can use `@leaf Foo`.
+>
+> Most users should be unaffected by the change and could remove `@functor` from their custom types.
 
 ## Further Details
 
