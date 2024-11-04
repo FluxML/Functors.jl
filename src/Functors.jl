@@ -13,6 +13,7 @@ export @leaf, @functor, @flexiblefunctor,
 include("functor.jl")
 include("keypath.jl")
 include("walks.jl")
+include("cache.jl")
 include("maps.jl")
 include("base.jl")
 
