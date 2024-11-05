@@ -23,6 +23,14 @@ function __cacheget_generator__(world, source, self, cache, x, args #= for `retu
                 Expr(Symbol("scope-block"), Expr(:block, Expr(:meta, :inline), Expr(:return, body))))
     ci = ccall(:jl_expand, Any, (Any, Any), expr, @__MODULE__)
     ci.inlineable = true
+    if hasfield(Core.CodeInfo, :nargs)
+        ci.nargs = 4
+        ci.isva = true
+    end
+    if isdefined(Base, :__has_internal_change) && Base.__has_internal_change(v"1.12-alpha", :codeinfonargs)
+        ci.nargs = 4
+        ci.isva = true
+    end
     return ci
 end
 
