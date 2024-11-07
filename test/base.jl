@@ -212,3 +212,10 @@ end
   @test od2[1] == 2
   @test od2[2] == 4
 end
+
+@testset "Types are leaves" begin
+  @test Functors.isleaf(Int)
+  @test Functors.isleaf(Array)
+  @test fmap(identity, (1,Int,Ref,Array,5)) == (1,Int,Ref,Array,5)
+end
+

@@ -62,6 +62,7 @@ Using [`@leaf`](@ref) instead of [`@functor`](@ref) will prevent the fields of a
 By default all composite types in are functors and can be traversed, unless marked with [`@leaf`](@ref). 
 
 The following types instead are explicitly marked as leaves in Functors.jl:
+- `Type`
 - `Number`.
 - `AbstractArray{<:Number}`, except for the wrappers `Transpose`, `Adjoint`, and `PermutedDimsArray`.
 - `AbstractRNG`.

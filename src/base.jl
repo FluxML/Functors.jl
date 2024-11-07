@@ -2,6 +2,7 @@
 ### Opt-Out
 ###
 
+@leaf Type
 @leaf Number
 @leaf AbstractArray{<:Number}
 @leaf AbstractString
