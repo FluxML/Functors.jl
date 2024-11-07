@@ -212,3 +212,9 @@ end
   @test od2[1] == 2
   @test od2[2] == 4
 end
+
+@testset "Type is leaf" begin
+  # https://github.com/FluxML/Functors.jl/issues/94
+  @test Functors.isleaf(Matrix{Float64})
+  @test Functors.isleaf(AbstractArray)
+end

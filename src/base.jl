@@ -9,6 +9,7 @@
 @leaf AbstractMatch
 @leaf AbstractPattern
 @leaf AbstractRNG
+@leaf Type
 
 ###
 ### Fast Paths for common types
