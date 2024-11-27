@@ -44,6 +44,10 @@
         kp = KeyPath(:b, :c, 2)
         @test getkeypath(x, kp) == 7
 
+        x = [(a=1,) (b=2,)]
+        @test getkeypath(x, KeyPath(CartesianIndex(1, 1), :a)) == 1
+        @test getkeypath(x, KeyPath(CartesianIndex(1, 2), :b)) == 2
+
         @testset "access through getproperty" begin
             x = Tkp(3, Dict(:c => 4, :d => 5), 6);
 
@@ -65,6 +69,10 @@
         kp = KeyPath(:b, :c, 2)
         setkeypath!(x, kp, 17)
         @test x.b.c[2] == 17
+
+        x = [(a=1,) (b=2,)]
+        setkeypath!(x, KeyPath(CartesianIndex(1, 2)), (c=3,))
+        @test x[2] == (c=3,)
     end
 
     @testset "haskeypath" begin
@@ -74,6 +82,11 @@
         @test haskeypath(x, KeyPath(:b, "d", 2))
         @test !haskeypath(x, KeyPath(:b, "d", 4))
         @test !haskeypath(x, KeyPath(:b, "e"))
+
+        x = [(a=1,) (b=2,)]
+        @test haskeypath(x, KeyPath(CartesianIndex(1, 1)))
+        @test haskeypath(x, KeyPath(CartesianIndex(1, 2)))
+        @test !haskeypath(x, KeyPath(CartesianIndex(1, 3)))
 
         @testset "access through getproperty" begin
             x = Tkp(3, Dict(:c => 4, :d => 5), 6);

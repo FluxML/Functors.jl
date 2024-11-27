@@ -1,18 +1,18 @@
 using Base: tail
 
-KeyT = Union{Symbol, AbstractString, Integer}
+KeyT = Union{Symbol, AbstractString, Integer, CartesianIndex}
 
 """
     KeyPath(keys...)
 
 A type for representing a path of keys to a value in a nested structure.
 Can be constructed with a sequence of keys, or by concatenating other `KeyPath`s.
-Keys can be of type `Symbol`, `String`, or `Int`.
+Keys can be of type `Symbol`, `String`, `Int`, or `CartesianIndex`.
 
 For custom types, access through symbol keys is assumed to be done with `getproperty`.
 For consistency, the method `Base.propertynames` is used to get the viable property names.
 
-For string and integer keys instead, the access is done with `getindex`.
+For string, integer, and cartesian index keys, the access is done with `getindex` instead.
 
 See also [`getkeypath`](@ref), [`haskeypath`](@ref).
 
@@ -85,11 +85,13 @@ end
 keypathstr(kp::KeyPath) = join(kp.keys, ".")
 
 _getkey(x, k::Integer) = x[k]
+_getkey(x::AbstractArray, k::CartesianIndex) = x[k]
 _getkey(x, k::Symbol) = getproperty(x, k)
 _getkey(x::AbstractDict, k::Symbol) = x[k]
 _getkey(x, k::AbstractString) = x[k]
 
 _setkey!(x, k::Integer, v) = (x[k] = v)
+_setkey!(x::AbstractArray, k::CartesianIndex, v) = (x[k] = v)
 _setkey!(x, k::Symbol, v) = setproperty!(x, k, v)
 _setkey!(x::AbstractDict, k::Symbol, v) = (x[k] = v)
 _setkey!(x, k::AbstractString, v) = (x[k] = v)
@@ -97,6 +99,7 @@ _setkey!(x, k::AbstractString, v) = (x[k] = v)
 _haskey(x, k::Integer) = haskey(x, k)
 _haskey(x::Tuple, k::Integer) = 1 <= k <= length(x)
 _haskey(x::AbstractArray, k::Integer) = 1 <= k <= length(x) # TODO: extend to generic indexing
+_haskey(x::AbstractArray, k::CartesianIndex) = checkbounds(Bool, x, k)
 _haskey(x, k::Symbol) = k in propertynames(x)
 _haskey(x::AbstractDict, k::Symbol) = haskey(x, k)
 _haskey(x, k::AbstractString) = haskey(x, k)
