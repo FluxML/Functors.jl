@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>API · Functors.jl</title><meta name="title" content="API · Functors.jl"/><meta property="og:title" content="API · Functors.jl"/><meta property="twitter:title" content="API · Functors.jl"/><meta name="description" content="Documentation for Functors.jl."/><meta property="og:description" content="Documentation for Functors.jl."/><meta property="twitter:description" content="Documentation for Functors.jl."/><script async src="https://www.googletagmanager.com/gtag/js?id=UA-36890222-9"></script><script>  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-36890222-9', {'page_path': location.pathname + location.search + location.hash});
+</script><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/flux.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Functors.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">Functors.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>API</a><ul class="internal"><li><a class="tocitem" href="#Constructors-and-helpers"><span>Constructors and helpers</span></a></li><li><a class="tocitem" href="#Maps"><span>Maps</span></a></li><li><a class="tocitem" href="#Walks"><span>Walks</span></a></li><li><a class="tocitem" href="#KeyPath"><span>KeyPath</span></a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>API</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>API</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/FluxML/Functors.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/FluxML/Functors.jl/blob/master/docs/src/api.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="API"><a class="docs-heading-anchor" href="#API">API</a><a id="API-1"></a><a class="docs-heading-anchor-permalink" href="#API" title="Permalink"></a></h1><ul><li><a href="#Functors.AbstractWalk"><code>Functors.AbstractWalk</code></a></li><li><a href="#Functors.CachedWalk"><code>Functors.CachedWalk</code></a></li><li><a href="#Functors.CollectWalk"><code>Functors.CollectWalk</code></a></li><li><a href="#Functors.DefaultWalk"><code>Functors.DefaultWalk</code></a></li><li><a href="#Functors.ExcludeWalk"><code>Functors.ExcludeWalk</code></a></li><li><a href="#Functors.IterateWalk"><code>Functors.IterateWalk</code></a></li><li><a href="#Functors.KeyPath"><code>Functors.KeyPath</code></a></li><li><a href="#Functors.StructuralWalk"><code>Functors.StructuralWalk</code></a></li><li><a href="#Functors.children"><code>Functors.children</code></a></li><li><a href="#Functors.execute"><code>Functors.execute</code></a></li><li><a href="#Functors.fcollect"><code>Functors.fcollect</code></a></li><li><a href="#Functors.fleaves"><code>Functors.fleaves</code></a></li><li><a href="#Functors.fmap"><code>Functors.fmap</code></a></li><li><a href="#Functors.fmap_with_path"><code>Functors.fmap_with_path</code></a></li><li><a href="#Functors.fmapstructure"><code>Functors.fmapstructure</code></a></li><li><a href="#Functors.fmapstructure_with_path"><code>Functors.fmapstructure_with_path</code></a></li><li><a href="#Functors.functor"><code>Functors.functor</code></a></li><li><a href="#Functors.getkeypath"><code>Functors.getkeypath</code></a></li><li><a href="#Functors.haskeypath"><code>Functors.haskeypath</code></a></li><li><a href="#Functors.isleaf"><code>Functors.isleaf</code></a></li><li><a href="#Functors.setkeypath!"><code>Functors.setkeypath!</code></a></li><li><a href="#Functors.@functor"><code>Functors.@functor</code></a></li><li><a href="#Functors.@leaf"><code>Functors.@leaf</code></a></li></ul><h2 id="Constructors-and-helpers"><a class="docs-heading-anchor" href="#Constructors-and-helpers">Constructors and helpers</a><a id="Constructors-and-helpers-1"></a><a class="docs-heading-anchor-permalink" href="#Constructors-and-helpers" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.@functor" href="#Functors.@functor"><code>Functors.@functor</code></a> — <span class="docstring-category">Macro</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@functor T
+@functor T (x,)</code></pre><p>Adds methods to <a href="#Functors.functor"><code>functor</code></a> allowing recursion into objects of type <code>T</code>, and reconstruction. Assumes that <code>T</code> has a constructor accepting all of its fields, which is true unless you have provided an inner constructor which does not.</p><p>By default all fields of <code>T</code> are considered <a href="#Functors.children"><code>children</code></a>;  this can be restricted be restructed by providing a tuple of field names.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; struct Foo; x; y; end
+
+julia&gt; Functors.children(Foo(1,2))
+(x = 1, y = 2)
+
+julia&gt; _, re = Functors.functor(Foo(1,2));
+
+julia&gt; re((10, 20))
+Foo(10, 20)
+
+julia&gt; @functor Foo # same as before, nothing changes
+
+julia&gt; struct TwoThirds a; b; c; end
+
+julia&gt; @functor TwoThirds (a, c)
+
+julia&gt; ch2, re3 = Functors.functor(TwoThirds(10,20,30));
+
+julia&gt; ch2
+(a = 10, c = 30)
+
+julia&gt; re3((&quot;ten&quot;, &quot;thirty&quot;))
+TwoThirds(&quot;ten&quot;, 20, &quot;thirty&quot;)
+
+julia&gt; fmap(x -&gt; 10x, TwoThirds(Foo(1,2), Foo(3,4), 56))
+TwoThirds(Foo(10, 20), Foo(3, 4), 560)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/Functors.jl#L39-L79">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.@leaf" href="#Functors.@leaf"><code>Functors.@leaf</code></a> — <span class="docstring-category">Macro</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@leaf T</code></pre><p>Define <a href="#Functors.functor"><code>functor</code></a> for the type <code>T</code> so that  <code>isleaf(x::T) == true</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/functor.jl#L5-L9">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.functor" href="#Functors.functor"><code>Functors.functor</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">functor(x)
+functor(typeof(x), x)</code></pre><p>Returns a tuple containing, first, a <code>NamedTuple</code> of the children of <code>x</code> (typically its fields), and second, a reconstruction function. This controls the behaviour of <a href="#Functors.fmap"><code>fmap</code></a>.</p><p>Methods should be added to <code>functor(::Type{T}, x)</code> for custom types, usually using the macro <a href="#Functors.@functor"><code>@functor</code></a>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/Functors.jl#L26-L36">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.children" href="#Functors.children"><code>Functors.children</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">children(x)</code></pre><p>Return the children of <code>x</code> as defined by <a href="#Functors.functor"><code>functor</code></a>. Equivalent to <code>functor(x)[1]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/Functors.jl#L110-L115">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.isleaf" href="#Functors.isleaf"><code>Functors.isleaf</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">isleaf(x)</code></pre><p>Return true if <code>x</code> has no <a href="#Functors.children"><code>children</code></a> according to <a href="#Functors.functor"><code>functor</code></a>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; Functors.isleaf(1)
+true
+
+julia&gt; Functors.isleaf([2, 3, 4])
+true
+
+julia&gt; Functors.isleaf([&quot;five&quot;, [6, 7]])
+false
+
+julia&gt; Functors.isleaf([])
+false
+
+julia&gt; Functors.isleaf((8, 9))
+false
+
+julia&gt; Functors.isleaf(())
+true</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/Functors.jl#L82-L107">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.fcollect" href="#Functors.fcollect"><code>Functors.fcollect</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fcollect(x; exclude = v -&gt; false)</code></pre><p>Traverse <code>x</code> by recursing each child of <code>x</code> as defined by <a href="#Functors.functor"><code>functor</code></a> and collecting the results into a flat array, ordered by a breadth-first traversal of <code>x</code>, respecting the iteration order of <code>children</code> calls.</p><p>Doesn&#39;t recurse inside branches rooted at nodes <code>v</code> for which <code>exclude(v) == true</code>. In such cases, the root <code>v</code> is also excluded from the result. By default, <code>exclude</code> always yields <code>false</code>.</p><p>See also <a href="#Functors.children"><code>children</code></a>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; struct Foo; x; y; end
+
+julia&gt; struct Bar; x; end
+
+julia&gt; struct TypeWithNoChildren; x; y; end
+
+julia&gt; @leaf TypeWithNoChildren
+
+julia&gt; m = Foo(Bar([1,2,3]), TypeWithNoChildren(:a, :b))
+Foo(Bar([1, 2, 3]), TypeWithNoChildren(:a, :b))
+
+julia&gt; fcollect(m)
+4-element Vector{Any}:
+ Foo(Bar([1, 2, 3]), TypeWithNoChildren(:a, :b))
+ Bar([1, 2, 3])
+ [1, 2, 3]
+ TypeWithNoChildren(:a, :b)
+
+julia&gt; fcollect(m, exclude = v -&gt; v isa Bar)
+2-element Vector{Any}:
+ Foo(Bar([1, 2, 3]), TypeWithNoChildren(:a, :b))
+ TypeWithNoChildren(:a, :b)
+
+julia&gt; fcollect(m, exclude = v -&gt; Functors.isleaf(v))
+2-element Vector{Any}:
+ Foo(Bar([1, 2, 3]), TypeWithNoChildren(:a, :b))
+ Bar([1, 2, 3])</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/Functors.jl#L266-L311">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.fleaves" href="#Functors.fleaves"><code>Functors.fleaves</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fleaves(x; exclude = isleaf)</code></pre><p>Traverse <code>x</code> by recursing each child of <code>x</code> as defined by <a href="#Functors.functor"><code>functor</code></a> and collecting the leaves into a flat array,  ordered by a breadth-first traversal of <code>x</code>, respecting the iteration order of <code>children</code> calls.</p><p>The <code>exclude</code> function is used to determine whether to recurse into a node, therefore identifying the leaves as the nodes for which <code>exclude</code> returns <code>true</code>.</p><p>See also <a href="#Functors.fcollect"><code>fcollect</code></a> for a similar function that collects all nodes instead.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; struct Bar; x; end
+
+julia&gt; struct TypeWithNoChildren; x; y; end
+
+julia&gt; @leaf TypeWithNoChildren
+
+julia&gt; m = (a = Bar([1,2,3]), b = TypeWithNoChildren(4, 5));
+
+julia&gt; fleaves(m)
+2-element Vector{Any}:
+ [1, 2, 3]
+ TypeWithNoChildren(4, 5)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/Functors.jl#L357-L385">source</a></section></article><h2 id="Maps"><a class="docs-heading-anchor" href="#Maps">Maps</a><a id="Maps-1"></a><a class="docs-heading-anchor-permalink" href="#Maps" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.fmap" href="#Functors.fmap"><code>Functors.fmap</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fmap(f, x, ys...; exclude = Functors.isleaf, walk = Functors.DefaultWalk(), [prune])</code></pre><p>A structure and type preserving <code>map</code>.</p><p>By default it transforms every leaf node (identified by <code>exclude</code>, default <a href="#Functors.isleaf"><code>isleaf</code></a>) by applying <code>f</code>, and otherwise traverses <code>x</code> recursively using <a href="#Functors.functor"><code>functor</code></a>. Optionally, it may also be associated with objects <code>ys</code> with the same tree structure. In that case, <code>f</code> is applied to the corresponding leaf nodes in <code>x</code> and <code>ys</code>.</p><p>See also <a href="#Functors.fmap_with_path"><code>fmap_with_path</code></a> and <a href="#Functors.fmapstructure"><code>fmapstructure</code></a>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; fmap(string, (x=1, y=(2, 3)))
+(x = &quot;1&quot;, y = (&quot;2&quot;, &quot;3&quot;))
+
+julia&gt; nt = (a = [1,2], b = [23, (45,), (x=6//7, y=())], c = [8,9]);
+
+julia&gt; fmap(println, nt)
+[1, 2]
+23
+45
+6//7
+()
+[8, 9]
+(a = nothing, b = Any[nothing, (nothing,), (x = nothing, y = nothing)], c = nothing)
+
+julia&gt; fmap(println, nt; exclude = x -&gt; x isa Array)
+[1, 2]
+Any[23, (45,), (x = 6//7, y = ())]
+[8, 9]
+(a = nothing, b = nothing, c = nothing)
+
+julia&gt; twice = [1, 2];  # println only acts once on this
+
+julia&gt; fmap(println, (i = twice, ii = 34, iii = [5, 6], iv = (twice, 34), v = 34.0))
+[1, 2]
+34
+[5, 6]
+34
+34.0
+(i = nothing, ii = nothing, iii = nothing, iv = (nothing, nothing), v = nothing)
+
+julia&gt; d1 = Dict(&quot;x&quot; =&gt; [1,2], &quot;y&quot; =&gt; 3);
+
+julia&gt; d2 = Dict(&quot;x&quot; =&gt; [4,5], &quot;y&quot; =&gt; 6, &quot;z&quot; =&gt; &quot;an_extra_value&quot;);
+
+julia&gt; fmap(+, d1, d2) == Dict(&quot;x&quot; =&gt; [5, 7], &quot;y&quot; =&gt; 9) # Note that &quot;z&quot; is ignored
+true</code></pre><p>Mutable objects which appear more than once are only handled once (by caching <code>f(x)</code> in an <code>IdDict</code>). Thus the relationship <code>x.i === x.iv[1]</code> will be preserved. An immutable object which appears twice is not stored in the cache, thus <code>f(34)</code> will be called twice, and the results will agree only if <code>f</code> is pure.</p><p>By default, almost all container-like types have children to recurse into.  Arrays of numbers do not.</p><p>To opt out of recursion for custom types use <a href="#Functors.@leaf"><code>@leaf</code></a> or pass a custom <code>exclude</code> function.</p><pre><code class="language-julia-repl hljs">julia&gt; struct Foo; x; y; end
+
+julia&gt; struct Bar; x; end
+
+julia&gt; m = Foo(Bar([1,2,3]), (4, 5, Bar(Foo(6, 7))));
+
+julia&gt; fmap(x -&gt; 10x, m)
+Foo(Bar([10, 20, 30]), (40, 50, Bar(Foo(60, 70))))
+
+julia&gt; fmap(string, m)
+Foo(Bar(&quot;[1, 2, 3]&quot;), (&quot;4&quot;, &quot;5&quot;, Bar(Foo(&quot;6&quot;, &quot;7&quot;))))
+
+julia&gt; fmap(string, m, exclude = v -&gt; v isa Bar)
+Foo(&quot;Bar([1, 2, 3])&quot;, (4, 5, &quot;Bar(Foo(6, 7))&quot;))</code></pre><p>To recurse into custom types without reconstructing them afterwards, use <a href="#Functors.fmapstructure"><code>fmapstructure</code></a>.</p><p>For advanced customization of the traversal behaviour, pass a custom <code>walk</code> function that subtypes <a href="#Functors.AbstractWalk"><code>Functors.AbstractWalk</code></a>. The call <code>fmap(f, x, ys...; walk = mywalk)</code> will wrap <code>mywalk</code> in <a href="#Functors.ExcludeWalk"><code>ExcludeWalk</code></a> then <a href="#Functors.CachedWalk"><code>CachedWalk</code></a>. Here, <a href="#Functors.ExcludeWalk"><code>ExcludeWalk</code></a> is responsible for applying <code>f</code> at excluded nodes. For a low-level interface for executing a user-constructed walk, see <a href="#Functors.execute"><code>execute</code></a>.</p><pre><code class="language-julia-repl hljs">julia&gt; struct MyWalk &lt;: Functors.AbstractWalk end
+
+julia&gt; (::MyWalk)(recurse, x) = x isa Bar ? &quot;hello&quot; :
+                                            Functors.DefaultWalk()(recurse, x)
+
+julia&gt; fmap(x -&gt; 10x, m; walk = MyWalk())
+Foo(&quot;hello&quot;, (40, 50, &quot;hello&quot;))</code></pre><p>The behaviour when the same node appears twice can be altered by giving a value to the <code>prune</code> keyword, which is then used in place of all but the first:</p><pre><code class="language-julia-repl hljs">julia&gt; twice = [1, 2];
+
+julia&gt; fmap(float, (x = twice, y = [1,2], z = twice); prune = missing)
+(x = [1.0, 2.0], y = [1.0, 2.0], z = missing)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/Functors.jl#L118-L225">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.fmap_with_path" href="#Functors.fmap_with_path"><code>Functors.fmap_with_path</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fmap_with_path(f, x, ys...; exclude = isleaf, walk = DefaultWalkWithPath(), [prune])</code></pre><p>Like <a href="#Functors.fmap"><code>fmap</code></a>, but also passes a <a href="#Functors.KeyPath"><code>KeyPath</code></a> to <code>f</code> for each node in the recursion. The <code>KeyPath</code> is a tuple of the indices used to reach the current node from the root of the recursion. The <code>KeyPath</code> is constructed by the <code>walk</code> function, and can be used to reconstruct the path to the current node from the root of the recursion.</p><p><code>f</code> has to accept two arguments: the associated <code>KeyPath</code> and the value of the current node.</p><p><code>exclude</code> also receives the <code>KeyPath</code> as its first argument and a node as its second. It should return <code>true</code> if the recursion should not continue on its children and <code>f</code> applied to it.</p><p><code>prune</code> is used to control the behaviour when the same node appears twice, see <a href="#Functors.fmap"><code>fmap</code></a> for more information.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; x = ([1, 2, 3], 4, (a=5, b=Dict(&quot;A&quot;=&gt;6, &quot;B&quot;=&gt;7), c=Dict(&quot;C&quot;=&gt;8, &quot;D&quot;=&gt;9)));
+
+julia&gt; exclude(kp, x) = kp == KeyPath(3, :c) || Functors.isleaf(x);
+
+julia&gt; fmap_with_path((kp, x) -&gt; x isa Dict ? nothing : x.^2, x; exclude = exclude)
+([1, 4, 9], 16, (a = 25, b = Dict(&quot;B&quot; =&gt; 49, &quot;A&quot; =&gt; 36), c = nothing))</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/Functors.jl#L315-L342">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.fmapstructure" href="#Functors.fmapstructure"><code>Functors.fmapstructure</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fmapstructure(f, x, ys...; exclude = isleaf, [prune])</code></pre><p>Like <a href="#Functors.fmap"><code>fmap</code></a>, but doesn&#39;t preserve the type of custom structs. Instead, it returns a <code>NamedTuple</code> (or a <code>Tuple</code>, or an array), or a nested set of these.</p><p>Useful for when the output must not contain custom structs.</p><p>See also <a href="#Functors.fmap"><code>fmap</code></a> and <a href="#Functors.fmapstructure_with_path"><code>fmapstructure_with_path</code></a>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; struct Foo; x; y; end
+
+julia&gt; m = Foo([1,2,3], [4, (5, 6), Foo(7, 8)]);
+
+julia&gt; fmapstructure(x -&gt; 2x, m)
+(x = [2, 4, 6], y = Any[8, (10, 12), (x = 14, y = 16)])
+
+julia&gt; fmapstructure(println, m)
+[1, 2, 3]
+4
+5
+6
+7
+8
+(x = nothing, y = Any[nothing, (nothing, nothing), (x = nothing, y = nothing)])</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/Functors.jl#L234-L263">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.fmapstructure_with_path" href="#Functors.fmapstructure_with_path"><code>Functors.fmapstructure_with_path</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fmapstructure_with_path(f, x, ys...; [exclude, prune])</code></pre><p>Like <a href="#Functors.fmap_with_path"><code>fmap_with_path</code></a>, but doesn&#39;t preserve the type of custom structs. Instead, it returns a named tuple, a tuple, an array, a dict,  or a nested set of these.</p><p>See also <a href="#Functors.fmapstructure"><code>fmapstructure</code></a>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/Functors.jl#L345-L353">source</a></section></article><h2 id="Walks"><a class="docs-heading-anchor" href="#Walks">Walks</a><a id="Walks-1"></a><a class="docs-heading-anchor-permalink" href="#Walks" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.AbstractWalk" href="#Functors.AbstractWalk"><code>Functors.AbstractWalk</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">AbstractWalk</code></pre><p>Any walk for use with <a href="#Functors.fmap"><code>fmap</code></a> should inherit from this type. A walk subtyping <code>AbstractWalk</code> must satisfy the walk function interface:</p><pre><code class="language-julia hljs">struct MyWalk &lt;: AbstractWalk end
+
+function (::MyWalk)(recurse, x, ys...)
+  # implement this
+end</code></pre><p>The walk function is called on a node <code>x</code> in a Functors tree. It may also be passed associated nodes <code>ys...</code> in other Functors trees. The walk function recurses further into <code>(x, ys...)</code> by calling <code>recurse</code> on the child nodes. The choice of which nodes to recurse and in what order is custom to the walk.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/walks.jl#L24-L41">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.execute" href="#Functors.execute"><code>Functors.execute</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">execute(walk, x, ys...)</code></pre><p>Execute a <code>walk</code> that recursively calls itself, starting at a node <code>x</code> in a Functors tree, as well as optional associated nodes <code>ys...</code> in other Functors trees. Any custom <code>walk</code> function that subtypes <a href="#Functors.AbstractWalk"><code>Functors.AbstractWalk</code></a> is permitted.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/walks.jl#L44-L50">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.DefaultWalk" href="#Functors.DefaultWalk"><code>Functors.DefaultWalk</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">DefaultWalk()</code></pre><p>The default walk behavior for Functors.jl. Walks all the <a href="#Functors.children"><code>Functors.children</code></a> of trees <code>(x, ys...)</code> based on the structure of <code>x</code>. The resulting mapped child nodes are restructured into the type of <code>x</code>.</p><p>See <a href="#Functors.fmap"><code>fmap</code></a> for more information.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/walks.jl#L58-L67">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.StructuralWalk" href="#Functors.StructuralWalk"><code>Functors.StructuralWalk</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">StructuralWalk()</code></pre><p>A structural variant of <a href="#Functors.DefaultWalk"><code>Functors.DefaultWalk</code></a>. The recursion behavior is identical, but the mapped children are not restructured.</p><p>See <a href="#Functors.fmapstructure"><code>fmapstructure</code></a> for more information.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/walks.jl#L86-L93">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.ExcludeWalk" href="#Functors.ExcludeWalk"><code>Functors.ExcludeWalk</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">ExcludeWalk(walk, fn, exclude)</code></pre><p>A walk that recurses nodes <code>(x, ys...)</code> according to <code>walk</code>, except when <code>exclude(x)</code> is true. Then, <code>fn(x, ys...)</code> is applied instead of recursing further.</p><p>Typically wraps an existing <code>walk</code> for use with <a href="#Functors.fmap"><code>fmap</code></a>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/walks.jl#L111-L119">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.CachedWalk" href="#Functors.CachedWalk"><code>Functors.CachedWalk</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">CachedWalk(walk[; prune])</code></pre><p>A walk that recurses nodes <code>(x, ys...)</code> according to <code>walk</code> and storing the output of the recursion in a cache indexed by <code>x</code> (based on object ID). Whenever the cache already contains <code>x</code>, either:</p><ul><li><code>prune</code> is specified, then it is returned, or</li><li><code>prune</code> is unspecified, and the previously cached recursion of <code>(x, ys...)</code> returned.</li></ul><p>Typically wraps an existing <code>walk</code> for use with <a href="#Functors.fmap"><code>fmap</code></a>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/walks.jl#L152-L163">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.CollectWalk" href="#Functors.CollectWalk"><code>Functors.CollectWalk</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">CollectWalk()</code></pre><p>A walk that recurses into a node <code>x</code> via <a href="#Functors.children"><code>Functors.children</code></a>, storing the recursion history in a cache. The resulting ordered recursion history is returned.</p><p>See <a href="#Functors.fcollect"><code>fcollect</code></a> for more information.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/walks.jl#L207-L215">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.IterateWalk" href="#Functors.IterateWalk"><code>Functors.IterateWalk</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">IterateWalk()</code></pre><p>A walk that walks all the <a href="#Functors.children"><code>Functors.children</code></a> of trees <code>(x, ys...)</code>  and concatenates the iterators of the children via <a href="https://docs.julialang.org/en/v1/base/iterators/#Base.Iterators.flatten"><code>Iterators.flatten</code></a>. The resulting iterator is returned.</p><p>When used with <a href="#Functors.fmap"><code>fmap</code></a>, the provided function <code>f</code> should return an iterator. For example, to iterate through the square of every scalar value:</p><pre><code class="language-julia-repl hljs">julia&gt; x = ([1, 2, 3], 4, (5, 6, [7, 8]));
+
+julia&gt; make_iterator(x) = x isa AbstractVector ? x.^2 : (x^2,);
+
+julia&gt; iter = fmap(make_iterator, x; walk=Functors.IterateWalk(), cache=nothing);
+
+julia&gt; collect(iter)
+8-element Vector{Int64}:
+  1
+  4
+  9
+ 16
+ 25
+ 36
+ 49
+ 64</code></pre><p>We can also simultaneously iterate through multiple functors:</p><pre><code class="language- hljs">julia&gt; y = ([8, 7, 6], 5, (4, 3, [2, 1]));
+
+julia&gt; make_zipped_iterator(x, y) = zip(make_iterator(x), make_iterator(y));
+
+julia&gt; zipped_iter = fmap(make_zipped_iterator, x, y; walk=Functors.IterateWalk(), cache=nothing);
+
+julia&gt; collect(zipped_iter)
+8-element Vector{Tuple{Int64, Int64}}:
+ (1, 64)
+ (4, 49)
+ (9, 36)
+ (16, 25)
+ (25, 16)
+ (36, 9)
+ (49, 4)
+ (64, 1)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/walks.jl#L237-L285">source</a></section></article><h2 id="KeyPath"><a class="docs-heading-anchor" href="#KeyPath">KeyPath</a><a id="KeyPath-1"></a><a class="docs-heading-anchor-permalink" href="#KeyPath" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.KeyPath" href="#Functors.KeyPath"><code>Functors.KeyPath</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">KeyPath(keys...)</code></pre><p>A type for representing a path of keys to a value in a nested structure. Can be constructed with a sequence of keys, or by concatenating other <code>KeyPath</code>s. Keys can be of type <code>Symbol</code>, <code>String</code>, <code>Int</code>, or <code>CartesianIndex</code>.</p><p>For custom types, access through symbol keys is assumed to be done with <code>getproperty</code>. For consistency, the method <code>Base.propertynames</code> is used to get the viable property names.</p><p>For string, integer, and cartesian index keys, the access is done with <code>getindex</code> instead.</p><p>See also <a href="#Functors.getkeypath"><code>getkeypath</code></a>, <a href="#Functors.haskeypath"><code>haskeypath</code></a>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; kp = KeyPath(:b, 3)
+KeyPath(:b, 3)
+
+julia&gt; KeyPath(:a, kp, :c, 4) # construct mixing keys and keypaths
+KeyPath(:a, :b, 3, :c, 4)
+
+julia&gt; struct T
+           a
+           b
+       end
+
+julia&gt; function Base.getproperty(x::T, k::Symbol)
+            if k in fieldnames(T)
+                return getfield(x, k)
+            elseif k === :ab
+                return &quot;ab&quot;
+            else        
+                error()
+            end
+        end;
+
+julia&gt; Base.propertynames(::T) = (:a, :b, :ab);
+
+julia&gt; x = T(3, Dict(:c =&gt; 4, :d =&gt; 5));
+
+julia&gt; getkeypath(x, KeyPath(:ab)) # equivalent to x.ab
+&quot;ab&quot;
+
+julia&gt; getkeypath(x, KeyPath(:b, :c)) # equivalent to (x.b)[:c]
+4</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/keypath.jl#L5-L53">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.haskeypath" href="#Functors.haskeypath"><code>Functors.haskeypath</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">haskeypath(x, kp::KeyPath)</code></pre><p>Return <code>true</code> if <code>x</code> has a value at the path <code>kp</code>.</p><p>See also <a href="#KeyPath"><code>KeyPath</code></a>, <a href="#Functors.getkeypath"><code>getkeypath</code></a>, and <a href="#Functors.setkeypath!"><code>setkeypath!</code></a>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; x = Dict(:a =&gt; 3, :b =&gt; Dict(:c =&gt; 4, &quot;d&quot; =&gt; [5, 6, 7]))
+Dict{Symbol, Any} with 2 entries:
+  :a =&gt; 3
+  :b =&gt; Dict{Any, Any}(:c=&gt;4, &quot;d&quot;=&gt;[5, 6, 7])
+
+julia&gt; haskeypath(x, KeyPath(:a))
+true
+
+julia&gt; haskeypath(x, KeyPath(:b, &quot;d&quot;, 1))
+true
+
+julia&gt; haskeypath(x, KeyPath(:b, &quot;d&quot;, 4))
+false</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/keypath.jl#L134-L157">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.getkeypath" href="#Functors.getkeypath"><code>Functors.getkeypath</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">getkeypath(x, kp::KeyPath)</code></pre><p>Return the value in <code>x</code> at the path <code>kp</code>.</p><p>See also <a href="#KeyPath"><code>KeyPath</code></a>, <a href="#Functors.haskeypath"><code>haskeypath</code></a>, and <a href="#Functors.setkeypath!"><code>setkeypath!</code></a>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; x = Dict(:a =&gt; 3, :b =&gt; Dict(:c =&gt; 4, &quot;d&quot; =&gt; [5, 6, 7]))
+Dict{Symbol, Any} with 2 entries:
+  :a =&gt; 3
+  :b =&gt; Dict{Any, Any}(:c=&gt;4, &quot;d&quot;=&gt;[5, 6, 7])
+
+julia&gt; getkeypath(x, KeyPath(:b, &quot;d&quot;, 2))
+6</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/keypath.jl#L108-L125">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Functors.setkeypath!" href="#Functors.setkeypath!"><code>Functors.setkeypath!</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">setkeypath!(x, kp::KeyPath, v)</code></pre><p>Set the value in <code>x</code> at the path <code>kp</code> to <code>v</code>.</p><p>See also <a href="#KeyPath"><code>KeyPath</code></a>, <a href="#Functors.getkeypath"><code>getkeypath</code></a>, and <a href="#Functors.haskeypath"><code>haskeypath</code></a>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/FluxML/Functors.jl/blob/3eefb60ca30091f329e8c3e0bf2c04844e0cb9c7/src/keypath.jl#L167-L173">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Thursday 28 November 2024 10:05">Thursday 28 November 2024</span>. Using Julia version 1.10.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
