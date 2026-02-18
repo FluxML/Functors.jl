@@ -2,7 +2,7 @@ using Functors, Test
 using Zygote
 using LinearAlgebra
 using StaticArrays
-using OrderedCollections: OrderedDict
+using OrderedCollections: OrderedDict, OrderedSet
 using Measurements: ±
 
 @testset "Functors.jl" begin

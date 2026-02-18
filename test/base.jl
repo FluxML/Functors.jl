@@ -49,6 +49,14 @@ end
     @test fmap(sqrt, Base.Fix2(/, 4); exclude)(10) == 5.0
 end
 
+@testset "Set" begin
+  s = Set([4, 9])
+  (xs, rec) = Functors.functor(s)
+  @test issetequal(xs, s)
+  @test rec(xs) == s
+  @test fmap(sqrt, s) == rec(map(sqrt, xs)) == Set([2, 3])
+end
+
 @testset "BroadcastFunction" begin
   f = Bar(3.3)
   bf = Base.Broadcast.BroadcastFunction(f)
@@ -211,6 +219,15 @@ end
   @test od2 isa OrderedDict
   @test od2[1] == 2
   @test od2[2] == 4
+end
+
+@testset "AbstractSet is functor" begin
+  os = OrderedSet([1, 2])
+  @test !Functors.isleaf(os)
+  os2 = fmap(x -> 2x, os)
+  @test os2 isa OrderedSet
+  @test os2[1] == 2
+  @test os2[2] == 4
 end
 
 @testset "Types are leaves" begin

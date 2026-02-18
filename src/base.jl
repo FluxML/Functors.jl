@@ -34,6 +34,8 @@ end
   functor(::Type{<:Base.Fix{N}}, x) where N = (; x.f, x.x), y -> Base.Fix{N}(y.f, y.x)
 end
 
+# Otherwise Base.Set are treated as Dict{K,Nothing}
+functor(::Type{S}, x) where {S<:AbstractSet} = collect(x), constructorof(S)
 
 ###
 ### Array wrappers
