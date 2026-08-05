@@ -21,7 +21,7 @@ function __cacheget_generator__(world, source, self, cache, x, args #= for `retu
     end
     expr = Expr(:lambda, [Symbol("#self#"), :cache, :x, :args],
                 Expr(Symbol("scope-block"), Expr(:block, Expr(:meta, :inline), Expr(:return, body))))
-    ci = ccall(:jl_expand, Any, (Any, Any), expr, @__MODULE__)
+    ci = Meta.lower(@__MODULE__, expr)
     ci.inlineable = true
     if hasfield(Core.CodeInfo, :nargs)
         ci.nargs = 4
