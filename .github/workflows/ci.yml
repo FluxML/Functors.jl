@@ -34,14 +34,14 @@ jobs:
             version: '1'
             arch: x64
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
         # `allow-failure` not available yet https://github.com/actions/toolkit/issues/399
         continue-on-error: ${{ matrix.julia-version == 'nightly' }}
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: actions/cache@v5
+      - uses: actions/cache@v6
         continue-on-error: ${{ matrix.julia-version == 'nightly' }}
         env:
           cache-name: cache-artifacts
