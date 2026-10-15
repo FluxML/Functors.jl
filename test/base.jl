@@ -226,8 +226,7 @@ end
   @test !Functors.isleaf(os)
   os2 = fmap(x -> 2x, os)
   @test os2 isa OrderedSet
-  @test os2[1] == 2
-  @test os2[2] == 4
+  @test collect(os2) == [2, 4]
 end
 
 @testset "Types are leaves" begin
