@@ -114,10 +114,7 @@ See also [`KeyPath`](@ref), [`haskeypath`](@ref), and [`setkeypath!`](@ref).
 
 # Examples
 ```jldoctest
-julia> x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]))
-Dict{Symbol, Any} with 2 entries:
-  :a => 3
-  :b => Dict{Any, Any}(:c=>4, "d"=>[5, 6, 7])
+julia> x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]));
 
 julia> getkeypath(x, KeyPath(:b, "d", 2))
 6
@@ -140,10 +137,7 @@ See also [`KeyPath`](@ref), [`getkeypath`](@ref), and [`setkeypath!`](@ref).
 
 # Examples
 ```jldoctest
-julia> x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]))
-Dict{Symbol, Any} with 2 entries:
-  :a => 3
-  :b => Dict{Any, Any}(:c=>4, "d"=>[5, 6, 7])
+julia> x = Dict(:a => 3, :b => Dict(:c => 4, "d" => [5, 6, 7]));
 
 julia> haskeypath(x, KeyPath(:a))
 true
