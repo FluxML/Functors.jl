@@ -385,5 +385,7 @@ julia> fleaves(m)
 """
 fleaves
 
+include("precompile.jl")
+
 end # module
 
