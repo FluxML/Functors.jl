@@ -11,4 +11,5 @@ using Measurements: ±
   include("keypath.jl")
   include("flexiblefunctors.jl")
   include("cache.jl")
+  include("erased.jl")
 end

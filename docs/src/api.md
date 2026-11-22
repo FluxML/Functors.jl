@@ -21,6 +21,14 @@ Functors.fcollect
 Functors.fleaves
 ```
 
+## Type-erased access
+
+```@docs
+Functors.erased_children
+Functors.erased_isleaf
+Functors.ErasedChildren
+```
+
 ## Maps
 
 ```@docs
