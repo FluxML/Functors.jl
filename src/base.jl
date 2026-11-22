@@ -34,6 +34,11 @@ end
   functor(::Type{<:Base.Fix{N}}, x) where N = (; x.f, x.x), y -> Base.Fix{N}(y.f, y.x)
 end
 
+# Newer Julia versions give Enumerate a `from` counter, which is not a child.
+@static if :from in fieldnames(Iterators.Enumerate)
+  functor(::Type{<:Iterators.Enumerate}, x) = (itr = x.itr,), y -> enumerate(y.itr; from = x.from)
+end
+
 # Otherwise Base.Set are treated as Dict{K,Nothing}
 functor(::Type{S}, x) where {S<:AbstractSet} = collect(x), constructorof(S)
 

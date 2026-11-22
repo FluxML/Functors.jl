@@ -268,7 +268,7 @@ fmapstructure
     fcollect(x; exclude = v -> false)
 
 Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref Functors.functor)
-and collecting the results into a flat array, ordered by a breadth-first
+and collecting the results into a flat array, ordered by a depth-first (pre-order)
 traversal of `x`, respecting the iteration order of `children` calls.
 
 Doesn't recurse inside branches rooted at nodes `v`
