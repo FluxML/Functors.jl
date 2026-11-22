@@ -16,6 +16,26 @@
     kp0 = KeyPath()
     @test (kp0...,) === ()
 
+    @testset "hash" begin
+        @test hash(KeyPath(:a, 1)) == hash(KeyPath(:a, Int32(1)))
+        @test hash(KeyPath("w")) == hash(KeyPath(SubString("wx", 1, 1)))
+        @test hash(KeyPath(:a, KeyPath(:b))) == hash(KeyPath(:a, :b))
+        @test hash(KeyPath(CartesianIndex(1, 2))) == hash(KeyPath(CartesianIndex(Int32(1), Int32(2))))
+        @test hash(KeyPath(:a), UInt(1)) != hash(KeyPath(:a), UInt(2))
+
+        @test length(Set([KeyPath("w"), KeyPath(SubString("wx", 1, 1))])) == 1
+        @test length(unique([KeyPath(:layers, 1), KeyPath(:layers, Int32(1))])) == 1
+        @test length(Set([KeyPath(:a), KeyPath(:a, :b), KeyPath(), KeyPath("a"), KeyPath(1)])) == 5
+
+        m = Dict("w" => [1.0, 2.0], "b" => [0.0], "layers" => (1.0, 2.0))
+        paths = Dict{KeyPath,Any}()
+        fmap_with_path((kp, x) -> (paths[kp] = x; x), m)
+        @test haskey(paths, KeyPath(split("w.b", ".")[1]))
+        @test paths[KeyPath(SubString("bw", 1, 1))] == [0.0]
+        @test paths[KeyPath(SubString("layers!", 1, 6), Int32(2))] == 2.0
+        @test !haskey(paths, KeyPath("layers", 3))
+    end
+
     struct Tkp
         a
         b

@@ -72,6 +72,7 @@ Base.length(kp::KeyPath) = length(kp.keys)
 Base.iterate(kp::KeyPath, state=1) = iterate(kp.keys, state)
 Base.tail(kp::KeyPath) = KeyPath(Base.tail(kp.keys))
 Base.:(==)(kp1::KeyPath, kp2::KeyPath) = kp1.keys == kp2.keys
+Base.hash(kp::KeyPath, h::UInt) = hash(kp.keys, hash(KeyPath, h))
 
 function Base.show(io::IO, kp::KeyPath)
     compat = get(io, :compact, false)
