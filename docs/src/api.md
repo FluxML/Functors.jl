@@ -21,12 +21,12 @@ Functors.fcollect
 Functors.fleaves
 ```
 
-## Type-erased access
+## Reading children without specializing
 
 ```@docs
-Functors.erased_children
-Functors.erased_isleaf
-Functors.ErasedChildren
+Functors.nospecialize_children
+Functors.nospecialize_isleaf
+Functors.ChildList
 ```
 
 ## Maps

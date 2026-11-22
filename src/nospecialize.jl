@@ -1,28 +1,28 @@
 ###
-### Type-erased access to children, compiled once for all types
+### Reading children without specializing on their type
 ###
 
 """
-    ErasedChildren
+    ChildList
 
-The children of a node, as returned by [`erased_children`](@ref Functors.erased_children).
+The children of a node, as returned by [`nospecialize_children`](@ref Functors.nospecialize_children).
 `keys(c)` and `values(c)` are `Vector{Any}`s, holding the keys and values of
 [`children`](@ref Functors.children)`(x)` in iteration order.
 """
-struct ErasedChildren
+struct ChildList
   keys::Vector{Any}
   vals::Vector{Any}
 end
 
-Base.keys(c::ErasedChildren) = c.keys
-Base.values(c::ErasedChildren) = c.vals
-Base.length(c::ErasedChildren) = length(c.vals)
+Base.keys(c::ChildList) = c.keys
+Base.values(c::ChildList) = c.vals
+Base.length(c::ChildList) = length(c.vals)
 
 """
-    erased_children(x)
+    nospecialize_children(x)
 
-Return the [`children`](@ref Functors.children) of `x` as an
-[`ErasedChildren`](@ref Functors.ErasedChildren), whose `keys` and `values` are `Vector{Any}`s,
+Return the [`children`](@ref Functors.children) of `x` as a
+[`ChildList`](@ref Functors.ChildList), whose `keys` and `values` are `Vector{Any}`s,
 or `nothing` when `children(x) === Functors.NoChildren()`.
 
 Keys are field names for structs and `NamedTuple`s, indices for `Tuple`s and arrays,
@@ -30,29 +30,29 @@ as in a [`KeyPath`](@ref), and the keys of an `AbstractDict`.
 
 This is for code that reads a structure without rebuilding it, such as printing a model or
 counting its arrays. Calling `children(x)` compiles `functor` for each new type of `x`,
-while `erased_children` is compiled once. For types that use the default `functor`, and
+while `nospecialize_children` is compiled once. For types that use the default `functor`, and
 for `Tuple`s, `NamedTuple`s, leaves defined by Functors and arrays which are not leaves,
 it reads the children directly. For types with their own `functor` or `children` methods,
 it calls `children(x)` and converts the result.
 
-See also [`erased_isleaf`](@ref Functors.erased_isleaf).
+See also [`nospecialize_isleaf`](@ref Functors.nospecialize_isleaf).
 
 # Examples
 
 ```jldoctest
 julia> struct Foo; a; b; end
 
-julia> c = Functors.erased_children(Foo(1, [2, 3]));
+julia> c = Functors.nospecialize_children(Foo(1, [2, 3]));
 
 julia> keys(c), values(c)
 (Any[:a, :b], Any[1, [2, 3]])
 
-julia> Functors.erased_children([4.0, 5.0]) === nothing  # an array of numbers is a leaf
+julia> Functors.nospecialize_children([4.0, 5.0]) === nothing  # an array of numbers is a leaf
 true
 ```
 """
-Base.@nospecializeinfer function erased_children(@nospecialize(x))
-  kind = _erased_kinds(typeof(x)).children
+Base.@nospecializeinfer function nospecialize_children(@nospecialize(x))
+  kind = _kinds(typeof(x)).children
   if kind == _FIELDS
     T = typeof(x)
     n = fieldcount(T)
@@ -63,24 +63,24 @@ Base.@nospecializeinfer function erased_children(@nospecialize(x))
       ks[i] = fieldname(T, i)
       vs[i] = getfield(x, i)
     end
-    return ErasedChildren(ks, vs)
+    return ChildList(ks, vs)
   elseif kind == _LEAF
     return nothing
   elseif kind == _ITSELF
-    return _erase(x)
+    return _childlist(x)
   else
-    return _erase(children(x))
+    return _childlist(children(x))
   end
 end
 
 """
-    erased_isleaf(x)
+    nospecialize_isleaf(x)
 
 The same as [`isleaf`](@ref Functors.isleaf)`(x)`, but compiled once for all types,
-like [`erased_children`](@ref Functors.erased_children).
+like [`nospecialize_children`](@ref Functors.nospecialize_children).
 """
-Base.@nospecializeinfer function erased_isleaf(@nospecialize(x))::Bool
-  k = _erased_kinds(typeof(x))
+Base.@nospecializeinfer function nospecialize_isleaf(@nospecialize(x))::Bool
+  k = _kinds(typeof(x))
   k.isleaf || return isleaf(x)
   if k.children == _FIELDS
     return fieldcount(typeof(x)) == 0
@@ -93,7 +93,7 @@ Base.@nospecializeinfer function erased_isleaf(@nospecialize(x))::Bool
   end
 end
 
-Base.@nospecializeinfer function _erase(@nospecialize(ch))
+Base.@nospecializeinfer function _childlist(@nospecialize(ch))
   ch === NoChildren() && return nothing
   if ch isa Union{Tuple, NamedTuple}
     n = nfields(ch)
@@ -103,9 +103,9 @@ Base.@nospecializeinfer function _erase(@nospecialize(ch))
       ks[i] = ch isa NamedTuple ? fieldname(typeof(ch), i) : i
       vs[i] = getfield(ch, i)
     end
-    return ErasedChildren(ks, vs)
+    return ChildList(ks, vs)
   else  # an AbstractArray, AbstractDict, or anything else with keys and values
-    return ErasedChildren(vec(collect(Any, keys(ch))), vec(collect(Any, values(ch))))
+    return ChildList(vec(collect(Any, keys(ch))), vec(collect(Any, values(ch))))
   end
 end
 
@@ -119,7 +119,7 @@ end
   _CALL    # anything else: call `children(x)`
 end
 
-struct _ErasedKinds
+struct _Kinds
   children::_ChildrenKind
   isleaf::Bool  # whether `isleaf` is the default method, which calls `children`
 end
@@ -140,35 +140,35 @@ const _FUNCTOR_KINDS = let d = IdDict{Any, _ChildrenKind}()
   d
 end
 
-const _ERASED_KINDS = IdDict{Any, _ErasedKinds}()
-const _ERASED_KINDS_WORLD = Ref(typemax(UInt))
-const _ERASED_KINDS_LOCK = ReentrantLock()
+const _KINDS = IdDict{Any, _Kinds}()
+const _KINDS_WORLD = Ref(typemax(UInt))
+const _KINDS_LOCK = ReentrantLock()
 
 # Forgets everything whenever the world age changes, as new methods may have been defined.
-Base.@nospecializeinfer function _erased_kinds(@nospecialize(T::Type))
+Base.@nospecializeinfer function _kinds(@nospecialize(T::Type))
   world = Base.get_world_counter()
-  lock(_ERASED_KINDS_LOCK)
+  lock(_KINDS_LOCK)
   try
-    if _ERASED_KINDS_WORLD[] != world
-      empty!(_ERASED_KINDS)
-      _ERASED_KINDS_WORLD[] = world
+    if _KINDS_WORLD[] != world
+      empty!(_KINDS)
+      _KINDS_WORLD[] = world
     end
-    k = get(_ERASED_KINDS, T, nothing)
+    k = get(_KINDS, T, nothing)
     if k === nothing
-      k = _ERASED_KINDS[T] = _find_erased_kinds(T)
+      k = _KINDS[T] = _find_kinds(T)
     end
-    return k::_ErasedKinds
+    return k::_Kinds
   finally
-    unlock(_ERASED_KINDS_LOCK)
+    unlock(_KINDS_LOCK)
   end
 end
 
-Base.@nospecializeinfer function _find_erased_kinds(@nospecialize(T::Type))
+Base.@nospecializeinfer function _find_kinds(@nospecialize(T::Type))
   kind = _CALL
   if _which(children, Tuple{T}) === _DEFAULT_CHILDREN && _which(functor, Tuple{T}) === _DEFAULT_FUNCTOR1
     kind = get(_FUNCTOR_KINDS, _which(functor, Tuple{Type{T}, T}), _CALL)
   end
-  return _ErasedKinds(kind, _which(isleaf, Tuple{T}) === _DEFAULT_ISLEAF)
+  return _Kinds(kind, _which(isleaf, Tuple{T}) === _DEFAULT_ISLEAF)
 end
 
 # `nothing` when there is no unique method, e.g. an ambiguity. Then `_CALL` reports the error.

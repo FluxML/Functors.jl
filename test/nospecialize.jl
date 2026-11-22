@@ -1,4 +1,4 @@
-using Functors: erased_children, erased_isleaf, ErasedChildren, children, isleaf, NoChildren
+using Functors: nospecialize_children, nospecialize_isleaf, ChildList, children, isleaf, NoChildren
 using Random: Xoshiro
 
 struct EPlain; a; b; end
@@ -24,22 +24,22 @@ struct EFlex; a; b; params; end
 struct ELater; a; b; end
 struct EFresh{T}; a::T; b; end
 
-# What `erased_children(x)` should return, built from `children(x)`:
-function erased_reference(x)
+# What `nospecialize_children(x)` should return, built from `children(x)`:
+function reference_children(x)
   ch = children(x)
   ch === NoChildren() && return nothing
   return vec(collect(Any, keys(ch))), vec(collect(Any, values(ch)))
 end
 
-function erased_agrees(x)
-  ec, ref = erased_children(x), erased_reference(x)
+function agrees(x)
+  ec, ref = nospecialize_children(x), reference_children(x)
   same = ref === nothing ? ec === nothing :
-    ec isa ErasedChildren && isequal(keys(ec), ref[1]) &&
+    ec isa ChildList && isequal(keys(ec), ref[1]) &&
     length(ec) == length(ref[2]) && all(map(===, values(ec), ref[2]))
-  return same && erased_isleaf(x) === isleaf(x)
+  return same && nospecialize_isleaf(x) === isleaf(x)
 end
 
-@testset "erased_children & erased_isleaf agree with children & isleaf" begin
+@testset "nospecialize_children & nospecialize_isleaf agree with children & isleaf" begin
   objs = Any[
     EPlain(1, [2.0, 3.0]), EParam(1.0, [2.0]), EMutable(EPlain(1, 2)), EEmpty(),
     ESubset(1, 2, 3), ENone(1), ELeaf([1.0]), EOneArg(1, 2), EChildren(1, 2),
@@ -53,25 +53,25 @@ end
     r"re", match(r"e", "re"), Xoshiro(1),
   ]
   VERSION >= v"1.12-" && push!(objs, Base.Fix1(+, 1))
-  @test filter(!erased_agrees, objs) == []
-  @test values(erased_children(EPlain(1, 2))) == [1, 2]
-  @test keys(erased_children(Any[1 2; 3 4])) == vec(CartesianIndices((2, 2)))
+  @test filter(!agrees, objs) == []
+  @test values(nospecialize_children(EPlain(1, 2))) == [1, 2]
+  @test keys(nospecialize_children(Any[1 2; 3 4])) == vec(CartesianIndices((2, 2)))
 end
 
-@testset "erased_children notices methods defined after a first call" begin
+@testset "nospecialize_children notices methods defined after a first call" begin
   x = ELater(1, 2)
-  @test keys(erased_children(x)) == [:a, :b]
-  @test !erased_isleaf(x)
+  @test keys(nospecialize_children(x)) == [:a, :b]
+  @test !nospecialize_isleaf(x)
   @eval Functors.functor(::Type{<:ELater}, x) = (; b = x.b), y -> ELater(x.a, y.b)
-  @test keys(Base.invokelatest(erased_children, x)) == [:b]
+  @test keys(Base.invokelatest(nospecialize_children, x)) == [:b]
   @eval Functors.isleaf(::ELater) = true
-  @test Base.invokelatest(erased_isleaf, x)
+  @test Base.invokelatest(nospecialize_isleaf, x)
 end
 
-@testset "erased_children compiles nothing for a type with the default functor" begin
+@testset "nospecialize_children compiles nothing for a type with the default functor" begin
   x = EFresh(1.0, :b)
-  @test keys(erased_children(x)) == [:a, :b]
-  @test !erased_isleaf(x)
+  @test keys(nospecialize_children(x)) == [:a, :b]
+  @test !nospecialize_isleaf(x)
   # `which` may create a MethodInstance, but without compiled code:
   compiled_for_EFresh(f) = any(methods(f)) do m
     any(Base.specializations(m)) do mi

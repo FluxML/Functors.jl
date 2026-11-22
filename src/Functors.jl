@@ -9,7 +9,7 @@ export @leaf, @functor, @flexiblefunctor,
        fmap_with_path, fmapstructure_with_path,
        KeyPath, getkeypath, haskeypath, setkeypath!
 
-@compat(public, (isleaf, children, functor, erased_children, erased_isleaf, ErasedChildren))
+@compat(public, (isleaf, children, functor, nospecialize_children, nospecialize_isleaf, ChildList))
 
 include("functor.jl")
 include("keypath.jl")
@@ -17,7 +17,7 @@ include("walks.jl")
 include("cache.jl")
 include("maps.jl")
 include("base.jl")
-include("erased.jl")
+include("nospecialize.jl")
 
 ###
 ### Docstrings for basic functionality
