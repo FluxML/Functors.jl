@@ -41,6 +41,7 @@ Functors.ExcludeWalk
 Functors.CachedWalk
 Functors.CollectWalk
 Functors.IterateWalk
+Functors.FlattenWalk
 ```
 
 ## KeyPath

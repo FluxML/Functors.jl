@@ -396,6 +396,18 @@ end
 
   @test fleaves((;)) == []
   @test fleaves((; a = 1, b = 2, c = (;))) == [1, 2]
+
+  @testset "walk keyword" begin
+    x = (1, (2, 3), (a=4, b=(5, 6), c=7))
+    @test fleaves(x; walk = Functors.FlattenWalk()) == fleaves(x)
+
+    struct ReverseFlattenWalk <: Functors.AbstractWalk end
+    (::ReverseFlattenWalk)(recurse, x) =
+      reduce(vcat, map(recurse, reverse(Functors.children(x))); init = [])
+    @test fleaves(x; walk = ReverseFlattenWalk()) == [7, 6, 5, 4, 3, 2, 1]
+    @test fleaves(x; walk = ReverseFlattenWalk(), exclude = x -> Functors.isleaf(x) || x isa NamedTuple) ==
+      [(a=4, b=(5, 6), c=7), 3, 2, 1]
+  end
 end
 
 @testset "fmap_with_path" begin
