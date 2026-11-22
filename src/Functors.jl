@@ -358,8 +358,8 @@ fmapstructure_with_path
     fleaves(x; exclude = isleaf, walk = Functors.FlattenWalk())
 
 Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref Functors.functor)
-and collecting the leaves into a flat array, 
-ordered by a breadth-first traversal of `x`, respecting the iteration order of `children` calls.
+and collecting the leaves into a flat array,
+ordered by a depth-first traversal of `x`, respecting the iteration order of `children` calls.
 
 The `exclude` function is used to determine whether to recurse into a node, therefore
 identifying the leaves as the nodes for which `exclude` returns `true`.
