@@ -159,6 +159,11 @@ end
     x = fmap(complex, enumerate([1,2,3]))
     @test first(x) === (1, 1+0im)
 
+    if :from in fieldnames(Iterators.Enumerate)
+      x = fmap(complex, enumerate([1,2,3]; from = 5))
+      @test first(x) === (5, 1+0im)
+    end
+
     x = fmap(float, Iterators.filter(<(3), [1,2,3]); exclude)
     @test collect(x) isa Vector{Float64}
 
