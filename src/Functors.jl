@@ -355,14 +355,18 @@ fmapstructure_with_path
 
 
 """
-    fleaves(x; exclude = isleaf)
+    fleaves(x; exclude = isleaf, walk = Functors.FlattenWalk())
 
 Traverse `x` by recursing each child of `x` as defined by [`functor`](@ref Functors.functor)
-and collecting the leaves into a flat array, 
-ordered by a breadth-first traversal of `x`, respecting the iteration order of `children` calls.
+and collecting the leaves into a flat array,
+ordered by a depth-first traversal of `x`, respecting the iteration order of `children` calls.
 
 The `exclude` function is used to determine whether to recurse into a node, therefore
 identifying the leaves as the nodes for which `exclude` returns `true`.
+
+The `walk` determines how the non-leaf nodes are traversed, see [`Functors.AbstractWalk`](@ref).
+Since the leaves are collected into a vector, a custom `walk` has to return the flat vector of
+the leaves found below a node, as [`Functors.FlattenWalk`](@ref) does.
 
 See also [`fcollect`](@ref) for a similar function that collects all nodes instead.
 
@@ -381,6 +385,21 @@ julia> fleaves(m)
 2-element Vector{Any}:
  [1, 2, 3]
  TypeWithNoChildren(4, 5)
+```
+
+A custom `walk` can change the order of the traversal, e.g. to visit the children in reverse:
+
+```jldoctest
+julia> struct ReverseWalk <: Functors.AbstractWalk end
+
+julia> (::ReverseWalk)(recurse, x) = reduce(vcat, map(recurse, reverse(Functors.children(x))); init = []);
+
+julia> fleaves((1, (2, 3), 4); walk = ReverseWalk())
+4-element Vector{Any}:
+ 4
+ 3
+ 2
+ 1
 ```
 """
 fleaves

@@ -30,5 +30,5 @@ fmapstructure_with_path(f, x, ys...; kwargs...) = fmap_with_path(f, x, ys...; wa
 fcollect(x; exclude = v -> false) =
   execute(ExcludeWalk(CollectWalk(), _ -> nothing, exclude), x)
 
-fleaves(x; exclude = isleaf) =
-  execute(ExcludeWalk(FlattenWalk(), x -> [x], exclude), x)
+fleaves(x; exclude = isleaf, walk = FlattenWalk()) =
+  execute(ExcludeWalk(walk, x -> [x], exclude), x)

@@ -291,6 +291,14 @@ function (walk::IterateWalk)(recurse, x, ys...)
   return Iterators.flatten(_map(recurse, x_children, ys_children...))
 end
 
+"""
+    FlattenWalk()
+
+A walk that recurses into the [`Functors.children`](@ref) of a node `x`
+and concatenates the resulting vectors, in the order of the children, into a flat vector.
+
+This is the default `walk` of [`fleaves`](@ref).
+"""
 struct FlattenWalk <: AbstractWalk end
 
 function (walk::FlattenWalk)(recurse, x, ys...)
