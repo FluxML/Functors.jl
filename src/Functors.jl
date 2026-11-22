@@ -2,14 +2,14 @@ module Functors
 using Compat: @compat
 using ConstructionBase: constructorof
 using LinearAlgebra
-using Random: AbstractRNG
+using Random: Random, AbstractRNG
 
 export @leaf, @functor, @flexiblefunctor,
        fmap, fmapstructure, fcollect, execute, fleaves,
        fmap_with_path, fmapstructure_with_path,
        KeyPath, getkeypath, haskeypath, setkeypath!
 
-@compat(public, (isleaf, children, functor))
+@compat(public, (isleaf, children, functor, nospecialize_children, nospecialize_isleaf, ChildList))
 
 include("functor.jl")
 include("keypath.jl")
@@ -17,6 +17,7 @@ include("walks.jl")
 include("cache.jl")
 include("maps.jl")
 include("base.jl")
+include("nospecialize.jl")
 
 ###
 ### Docstrings for basic functionality

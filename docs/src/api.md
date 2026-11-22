@@ -21,6 +21,14 @@ Functors.fcollect
 Functors.fleaves
 ```
 
+## Reading children without specializing
+
+```@docs
+Functors.nospecialize_children
+Functors.nospecialize_isleaf
+Functors.ChildList
+```
+
 ## Maps
 
 ```@docs
