@@ -78,7 +78,7 @@ struct DefaultWalkWithPath <: AbstractWalk end
 function (::DefaultWalkWithPath)(recurse, kp::KeyPath, x, ys...)
   x_children, re = functor(x)
   kps = _map(c -> KeyPath(kp, c), _keys(x_children)) # use _keys and _map to preserve x_children type
-  ys_children = map(children, ys)
+  ys_children = map(y -> functor(typeof(x), y)[1], ys)
   re(_map(recurse, kps, x_children, ys_children...))
 end
 

@@ -467,6 +467,32 @@ end
     @test fmap_with_path((kp, x...) -> +(x...), foo1, m1, n1) isa Foo
     @test fmap_with_path((kp, x...) -> .*(x...), m1, foo1, n1) == (x = [4*7, 2*5*8], y = 3*6*9)
   end
+
+  @testset "fmap_with_path(f, x, y) follows the structure of x" begin
+    # only `y` is a child of x
+    x = OneChild3("x", [1.0, 2.0], "z")
+    y = (x = "xx", y = [10.0, 20.0], z = "zz")
+    kps = []
+    res = fmap_with_path((kp, p, q) -> (push!(kps, kp); p .+ q), x, y)
+    ref = fmap((p, q) -> p .+ q, x, y)
+    @test res isa OneChild3
+    @test (res.x, res.y, res.z) == (ref.x, ref.y, ref.z) == ("x", [11.0, 22.0], "z")
+    @test kps == [KeyPath(:y)]
+
+    # fields in a different order
+    x = Foo([1.0], [2.0])
+    y = (y = [20.0], x = [10.0])
+    kps = []
+    res = fmap_with_path((kp, p, q) -> (push!(kps, kp); p .+ q), x, y)
+    @test res == fmap((p, q) -> p .+ q, x, y) == Foo([11.0], [22.0])
+    @test kps == [KeyPath(:x), KeyPath(:y)]
+
+    # x holds an Adjoint, y a plain matrix
+    x = (w = [1.0 2.0; 3.0 4.0]',)
+    y = (w = [10.0 20.0; 30.0 40.0],)
+    res = fmap_with_path((kp, p, q) -> p .+ q, x, y)
+    @test res == fmap((p, q) -> p .+ q, x, y) == (w = [11.0 23.0; 32.0 44.0],)
+  end
 end
 
 @testset "fmapstructure_with_path" begin
